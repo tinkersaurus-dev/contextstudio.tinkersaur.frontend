@@ -5,7 +5,6 @@ import {
   calculatePan,
   getCanvasMousePosition,
   type Point,
-  type Transform,
 } from '@/shared/lib/canvas-coordinates';
 import { ZOOM_CONFIG } from '@/shared/config/canvas-config';
 
@@ -58,15 +57,13 @@ export interface EntityInteractionCallbacks {
 
 export function setupMouseInput(
   canvas: HTMLCanvasElement,
-  onZoomChange: (state: ZoomState) => void,
+  getZoomState: () => ZoomState,
+  setZoomState: (state: ZoomState) => void,
   entityCallbacks?: EntityInteractionCallbacks
 ): () => void {
-  // Current viewport state
-  let zoomState: ZoomState = {
-    scale: 1.0,
-    panX: 0,
-    panY: 0,
-  };
+  // Get current viewport state from the getter function
+  // This ensures we always use the latest state from React
+  const getCurrentZoomState = () => getZoomState();
 
   // Panning state
   const panState: PanState = {
@@ -104,21 +101,23 @@ export function setupMouseInput(
     // Calculate zoom delta
     const delta = -event.deltaY * ZOOM_CONFIG.zoomSpeed;
 
+    // Get current zoom state
+    const currentZoomState = getCurrentZoomState();
+
     // Calculate new zoom state
     const newZoomState = calculateZoomToPoint(
       mousePos,
-      zoomState,
+      currentZoomState,
       delta,
       ZOOM_CONFIG.minScale,
       ZOOM_CONFIG.maxScale
     );
 
-    if (newZoomState === zoomState) {
+    if (newZoomState === currentZoomState) {
       return; // No change
     }
 
-    zoomState = newZoomState;
-    onZoomChange(zoomState);
+    setZoomState(newZoomState);
   };
 
   const handleMouseDown = (event: MouseEvent) => {
@@ -129,7 +128,7 @@ export function setupMouseInput(
     // Right click - create rectangle
     if (event.button === 2 && entityCallbacks) {
       event.preventDefault();
-      const worldPos = screenToWorld(screenX, screenY, zoomState);
+      const worldPos = screenToWorld(screenX, screenY, getCurrentZoomState());
       entityCallbacks.createRectangleAtPoint(worldPos.x, worldPos.y);
       return;
     }
@@ -137,18 +136,19 @@ export function setupMouseInput(
     // Middle mouse button - start panning
     if (event.button === 1) {
       event.preventDefault();
+      const currentZoomState = getCurrentZoomState();
       panState.isPanning = true;
       panState.startX = event.clientX;
       panState.startY = event.clientY;
-      panState.startPanX = zoomState.panX;
-      panState.startPanY = zoomState.panY;
+      panState.startPanX = currentZoomState.panX;
+      panState.startPanY = currentZoomState.panY;
       canvas.style.cursor = 'grabbing';
       return;
     }
 
     // Left click - entity selection/dragging or selection box
     if (event.button === 0 && entityCallbacks) {
-      const worldPos = screenToWorld(screenX, screenY, zoomState);
+      const worldPos = screenToWorld(screenX, screenY, getCurrentZoomState());
       const entity = entityCallbacks.getEntityAtPoint(worldPos.x, worldPos.y);
 
       if (entity) {
@@ -207,8 +207,9 @@ export function setupMouseInput(
 
     // Handle entity dragging
     if (dragState.isDragging && entityCallbacks) {
-      const deltaX = (screenX - dragState.startX) / zoomState.scale;
-      const deltaY = (screenY - dragState.startY) / zoomState.scale;
+      const currentZoomState = getCurrentZoomState();
+      const deltaX = (screenX - dragState.startX) / currentZoomState.scale;
+      const deltaY = (screenY - dragState.startY) / currentZoomState.scale;
 
       // Move all dragged entities
       dragState.draggedEntityIds.forEach((id) => {
@@ -224,7 +225,7 @@ export function setupMouseInput(
 
     // Handle selection box
     if (selectionBoxState.isSelecting && entityCallbacks) {
-      const worldPos = screenToWorld(screenX, screenY, zoomState);
+      const worldPos = screenToWorld(screenX, screenY, getCurrentZoomState());
       selectionBoxState.currentX = worldPos.x;
       selectionBoxState.currentY = worldPos.y;
 
@@ -243,13 +244,12 @@ export function setupMouseInput(
 
       const newPan = calculatePan(currentPos, panStart, initialPan);
 
-      zoomState = {
-        ...zoomState,
+      const currentZoomState = getCurrentZoomState();
+      setZoomState({
+        ...currentZoomState,
         panX: newPan.x,
         panY: newPan.y,
-      };
-
-      onZoomChange(zoomState);
+      });
     }
   };
 

@@ -1,4 +1,4 @@
-import { RectangleShape, BaseShape } from '../model/types';
+import { BaseShape } from '../model/types';
 
 /**
  * Renders a rectangle shape to the canvas

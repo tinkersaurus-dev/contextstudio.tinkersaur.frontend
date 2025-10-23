@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Shape, ShapeType } from '@/entities/shape';
+import { Shape } from '@/entities/shape';
 import { DiagramEntity } from '@/entities/diagram-entity';
 
 interface CanvasState {

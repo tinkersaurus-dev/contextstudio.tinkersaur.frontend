@@ -4,7 +4,6 @@ import {
   ZOOM_THRESHOLDS,
   DEFAULT_GRID_CONFIG,
   type GridConfig,
-  type ZoomThreshold,
 } from '@/shared/config/canvas-config';
 
 // Re-export for external use

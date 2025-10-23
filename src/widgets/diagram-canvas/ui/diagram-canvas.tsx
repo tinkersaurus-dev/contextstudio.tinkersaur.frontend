@@ -7,11 +7,16 @@ import { renderShapes } from '../lib/shape-renderer';
 import { SelectionBox } from '../lib/selection-box-renderer';
 import { useCanvasStore } from '../model/canvas-store';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
+import { CanvasBadgeMenu } from '@/shared/ui';
 
 export function DiagramCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [zoomState, setZoomState] = useState<ZoomState>({ scale: 1.0, panX: 0, panY: 0 });
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
+
+  // Use a ref to always have access to current zoom state without recreating handlers
+  const zoomStateRef = useRef(zoomState);
+  zoomStateRef.current = zoomState;
 
   // Get Zustand store
   const {
@@ -31,7 +36,7 @@ export function DiagramCanvas() {
     clearDraggingEntities,
   } = useCanvasStore();
 
-  // Setup mouse input handlers
+  // Setup mouse input handlers (only once)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -69,7 +74,14 @@ export function DiagramCanvas() {
       },
     };
 
-    const cleanup = setupMouseInput(canvas, setZoomState, entityCallbacks);
+    // Pass getter function that always returns current zoom state
+    const cleanup = setupMouseInput(
+      canvas,
+      () => zoomStateRef.current,
+      setZoomState,
+      entityCallbacks
+    );
+
     return cleanup;
   }, [
     addShape,
@@ -127,6 +139,11 @@ export function DiagramCanvas() {
     };
   }, [zoomState, shapes, selectedEntityIds, selectionBox]);
 
+  // Handler to reset zoom to 100%
+  const handleResetZoom = () => {
+    setZoomState({ scale: 1.0, panX: 0, panY: 0 });
+  };
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <canvas
@@ -137,22 +154,24 @@ export function DiagramCanvas() {
           display: 'block',
         }}
       />
-      <div
+      <CanvasBadgeMenu
+        badgeContent={`${Math.round(zoomState.scale * 100)}%`}
+        menuItems={[
+          {
+            id: 'reset-zoom',
+            label: 'Reset',
+            onSelect: handleResetZoom,
+          },
+        ]}
+        colorPalette="gray"
+        variant="solid"
+        size="md"
         style={{
           position: 'absolute',
           bottom: '16px',
           right: '16px',
-          padding: '8px 12px',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          color: 'white',
-          borderRadius: '4px',
-          fontSize: '14px',
-          fontFamily: 'monospace',
-          pointerEvents: 'none',
         }}
-      >
-        {Math.round(zoomState.scale * 100)}%
-      </div>
+      />
     </div>
   );
 }
