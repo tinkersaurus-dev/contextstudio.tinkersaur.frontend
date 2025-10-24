@@ -199,7 +199,16 @@ Refactored [canvas-store.ts](src/widgets/diagram-canvas/model/canvas-store.ts) t
 
 **Recommendation:** Extract callback builders and simplify event listener setup
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:** Refactored [mouse-input.ts](src/widgets/diagram-canvas/lib/mouse-input.ts) to improve modularity and maintainability:
+- Extracted `createMouseStates()` - Separates state initialization from setup logic
+- Created builder functions: `buildWheelHandler()`, `buildMouseDownHandler()`, `buildMouseMoveHandler()`, `buildMouseUpHandler()`, `buildContextMenuHandler()`
+- Extracted `shouldSkipClick()` - Consolidates connection point checking logic, eliminating duplication
+- Extracted `handleLeftMouseDown()` - Separates left-click logic for better readability
+- Created `attachEventListeners()` and `createCleanupFunction()` - Centralizes listener management
+- Main `setupMouseInput()` function is now clean and declarative (29 lines vs 169 lines)
+- Improved testability with smaller, focused functions
+- File grew from 211 to 321 lines due to extracted functions and documentation, but complexity decreased significantly
 
 ---
 
@@ -735,6 +744,7 @@ if (!endpoints) return; // No warning or log
 3. ~~⬜ Extract duplicate factory patterns~~ **DEFERRED**
 4. ✅ Separate hit detection from store
 5. ~~⬜ Extract duplicate selection state management~~ **REJECTED**
+6. ✅ Refactor mouse input setup
 
 ### Phase 2 - Quality Improvements
 6. ⬜ Create Transform system class
@@ -755,9 +765,9 @@ if (!endpoints) return; // No warning or log
 ## Progress Tracking
 
 **Total Items:** 40
-**Completed:** 3
+**Completed:** 4
 **In Progress:** 0
-**Not Started:** 35
+**Not Started:** 34
 **Deferred:** 1
 **Rejected:** 1
 

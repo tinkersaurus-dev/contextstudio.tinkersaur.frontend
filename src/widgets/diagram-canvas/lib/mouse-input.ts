@@ -31,21 +31,9 @@ export type {
 } from './mouse-input-types';
 
 /**
- * Setup mouse input handlers for a canvas element
- *
- * @param canvas - Canvas element to attach listeners to
- * @param getZoomState - Function to get current zoom state
- * @param setZoomState - Function to update zoom state
- * @param entityCallbacks - Optional callbacks for entity interaction
- * @returns Cleanup function to remove all event listeners
+ * Create initial state objects for mouse interaction
  */
-export function setupMouseInput(
-  canvas: HTMLCanvasElement,
-  getZoomState: () => ZoomState,
-  setZoomState: (state: ZoomState) => void,
-  entityCallbacks?: EntityInteractionCallbacks
-): () => void {
-  // State management
+function createMouseStates() {
   const panState: PanState = {
     isPanning: false,
     startX: 0,
@@ -70,37 +58,100 @@ export function setupMouseInput(
     currentY: 0,
   };
 
-  // Handler context
-  const context: MouseHandlerContext = {
-    canvas,
-    getCurrentZoomState: getZoomState,
-    setZoomState,
-    entityCallbacks,
-    panState,
-    dragState,
-    selectionBoxState,
-  };
+  return { panState, dragState, selectionBoxState };
+}
 
-  // Wheel handler - zoom
-  const handleWheel = (event: WheelEvent) => {
+/**
+ * Build wheel event handler for zooming
+ */
+function buildWheelHandler(context: MouseHandlerContext) {
+  return (event: WheelEvent) => {
     handlers.handleWheel(event, context);
   };
+}
 
-  // Mouse down handler
-  const handleMouseDown = (event: MouseEvent) => {
-    // Check if we should skip default handlers (e.g., when handling connection points)
+/**
+ * Check if a click should be skipped for default handling
+ */
+function shouldSkipClick(
+  callbacks: EntityInteractionCallbacks | undefined,
+  worldX: number,
+  worldY: number
+): boolean {
+  if (!callbacks) return false;
+
+  // Skip if we're handling connection points
+  if (callbacks.shouldSkipDefaultHandlers?.()) {
+    return true;
+  }
+
+  // Skip if clicking on a connection point
+  if (callbacks.isConnectionPointAt?.(worldX, worldY)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Handle left mouse button down events
+ */
+function handleLeftMouseDown(
+  event: MouseEvent,
+  screenX: number,
+  screenY: number,
+  context: MouseHandlerContext
+): void {
+  const { getCurrentZoomState, entityCallbacks } = context;
+
+  if (!entityCallbacks) return;
+
+  const worldPos = screenToWorld(screenX, screenY, getCurrentZoomState());
+
+  // Check if we should skip this click
+  if (shouldSkipClick(entityCallbacks, worldPos.x, worldPos.y)) {
+    return;
+  }
+
+  const entity = entityCallbacks.getEntityAtPoint(worldPos.x, worldPos.y);
+
+  if (entity) {
+    // Clicked on an entity
+    handlers.handleEntityMouseDown(
+      entity.id,
+      screenX,
+      screenY,
+      {
+        shift: event.shiftKey,
+        ctrl: event.ctrlKey || event.metaKey,
+      },
+      context
+    );
+  } else {
+    // Clicked on empty space
+    const hasModifier = event.shiftKey || event.ctrlKey || event.metaKey;
+    handlers.handleEmptySpaceMouseDown(worldPos.x, worldPos.y, hasModifier, context);
+  }
+}
+
+/**
+ * Build mouse down event handler
+ */
+function buildMouseDownHandler(context: MouseHandlerContext) {
+  return (event: MouseEvent) => {
+    const { canvas, entityCallbacks } = context;
+
+    // Early exit if we should skip default handlers
     if (entityCallbacks?.shouldSkipDefaultHandlers?.()) {
-      return; // Don't handle shape drag/selection when connection point is being handled
+      return;
     }
 
     const screenPos = getCanvasMousePosition(event, canvas);
-    const screenX = screenPos.x;
-    const screenY = screenPos.y;
 
     // Right click - open toolset popover (or create rectangle)
     if (event.button === MOUSE_BUTTONS.RIGHT && entityCallbacks) {
       event.preventDefault();
-      handlers.handleRightMouseDown(screenX, screenY, context);
+      handlers.handleRightMouseDown(screenPos.x, screenPos.y, context);
       return;
     }
 
@@ -112,52 +163,30 @@ export function setupMouseInput(
     }
 
     // Left click - entity selection/dragging or selection box
-    if (event.button === MOUSE_BUTTONS.LEFT && entityCallbacks) {
-      const worldPos = screenToWorld(screenX, screenY, getZoomState());
-
-      // Check if clicking on a connection point first (before entity/shape check)
-      if (entityCallbacks.isConnectionPointAt?.(worldPos.x, worldPos.y)) {
-        // Let the React handler deal with connection points
-        return;
-      }
-
-      const entity = entityCallbacks.getEntityAtPoint(worldPos.x, worldPos.y);
-
-      if (entity) {
-        // Clicked on an entity
-        handlers.handleEntityMouseDown(
-          entity.id,
-          screenX,
-          screenY,
-          {
-            shift: event.shiftKey,
-            ctrl: event.ctrlKey || event.metaKey,
-          },
-          context
-        );
-      } else {
-        // Clicked on empty space
-        const hasModifier = event.shiftKey || event.ctrlKey || event.metaKey;
-        handlers.handleEmptySpaceMouseDown(worldPos.x, worldPos.y, hasModifier, context);
-      }
+    if (event.button === MOUSE_BUTTONS.LEFT) {
+      handleLeftMouseDown(event, screenPos.x, screenPos.y, context);
     }
   };
+}
 
-  // Mouse move handler
-  const handleMouseMove = (event: MouseEvent) => {
+/**
+ * Build mouse move event handler
+ */
+function buildMouseMoveHandler(context: MouseHandlerContext) {
+  return (event: MouseEvent) => {
+    const { canvas, getCurrentZoomState, entityCallbacks, dragState, selectionBoxState, panState } = context;
+
     const screenPos = getCanvasMousePosition(event, canvas);
-    const screenX = screenPos.x;
-    const screenY = screenPos.y;
 
     // Handle entity dragging
     if (dragState.isDragging && entityCallbacks) {
-      handlers.handleEntityDrag(screenX, screenY, context);
+      handlers.handleEntityDrag(screenPos.x, screenPos.y, context);
       return;
     }
 
     // Handle selection box
     if (selectionBoxState.isSelecting && entityCallbacks) {
-      const worldPos = screenToWorld(screenX, screenY, getZoomState());
+      const worldPos = screenToWorld(screenPos.x, screenPos.y, getCurrentZoomState());
       handlers.handleSelectionBoxDrag(worldPos.x, worldPos.y, context);
       return;
     }
@@ -167,9 +196,15 @@ export function setupMouseInput(
       handlers.handleCanvasPan(event.clientX, event.clientY, context);
     }
   };
+}
 
-  // Mouse up handler
-  const handleMouseUp = () => {
+/**
+ * Build mouse up event handler
+ */
+function buildMouseUpHandler(context: MouseHandlerContext) {
+  return () => {
+    const { entityCallbacks, dragState, selectionBoxState, panState } = context;
+
     // Complete entity dragging
     if (dragState.isDragging && entityCallbacks) {
       handlers.handleDragComplete(context);
@@ -185,27 +220,102 @@ export function setupMouseInput(
       handlers.handlePanComplete(context);
     }
   };
+}
 
-  // Context menu handler - prevent default to allow right-click shape creation
-  const handleContextMenu = (event: MouseEvent) => {
+/**
+ * Build context menu event handler
+ */
+function buildContextMenuHandler() {
+  return (event: MouseEvent) => {
     event.preventDefault();
   };
+}
 
-  // Attach event listeners
-  canvas.addEventListener('wheel', handleWheel, { passive: false });
-  canvas.addEventListener('mousedown', handleMouseDown);
-  canvas.addEventListener('mousemove', handleMouseMove);
-  canvas.addEventListener('mouseup', handleMouseUp);
-  canvas.addEventListener('mouseleave', handleMouseUp);
-  canvas.addEventListener('contextmenu', handleContextMenu);
+/**
+ * Attach all event listeners to the canvas
+ */
+function attachEventListeners(
+  canvas: HTMLCanvasElement,
+  handlers: {
+    wheel: (event: WheelEvent) => void;
+    mousedown: (event: MouseEvent) => void;
+    mousemove: (event: MouseEvent) => void;
+    mouseup: () => void;
+    contextmenu: (event: MouseEvent) => void;
+  }
+): void {
+  canvas.addEventListener('wheel', handlers.wheel, { passive: false });
+  canvas.addEventListener('mousedown', handlers.mousedown);
+  canvas.addEventListener('mousemove', handlers.mousemove);
+  canvas.addEventListener('mouseup', handlers.mouseup);
+  canvas.addEventListener('mouseleave', handlers.mouseup);
+  canvas.addEventListener('contextmenu', handlers.contextmenu);
+}
+
+/**
+ * Create cleanup function to remove all event listeners
+ */
+function createCleanupFunction(
+  canvas: HTMLCanvasElement,
+  handlers: {
+    wheel: (event: WheelEvent) => void;
+    mousedown: (event: MouseEvent) => void;
+    mousemove: (event: MouseEvent) => void;
+    mouseup: () => void;
+    contextmenu: (event: MouseEvent) => void;
+  }
+): () => void {
+  return () => {
+    canvas.removeEventListener('wheel', handlers.wheel);
+    canvas.removeEventListener('mousedown', handlers.mousedown);
+    canvas.removeEventListener('mousemove', handlers.mousemove);
+    canvas.removeEventListener('mouseup', handlers.mouseup);
+    canvas.removeEventListener('mouseleave', handlers.mouseup);
+    canvas.removeEventListener('contextmenu', handlers.contextmenu);
+  };
+}
+
+/**
+ * Setup mouse input handlers for a canvas element
+ *
+ * @param canvas - Canvas element to attach listeners to
+ * @param getZoomState - Function to get current zoom state
+ * @param setZoomState - Function to update zoom state
+ * @param entityCallbacks - Optional callbacks for entity interaction
+ * @returns Cleanup function to remove all event listeners
+ */
+export function setupMouseInput(
+  canvas: HTMLCanvasElement,
+  getZoomState: () => ZoomState,
+  setZoomState: (state: ZoomState) => void,
+  entityCallbacks?: EntityInteractionCallbacks
+): () => void {
+  // Create state objects
+  const { panState, dragState, selectionBoxState } = createMouseStates();
+
+  // Build handler context
+  const context: MouseHandlerContext = {
+    canvas,
+    getCurrentZoomState: getZoomState,
+    setZoomState,
+    entityCallbacks,
+    panState,
+    dragState,
+    selectionBoxState,
+  };
+
+  // Build event handlers
+  const eventHandlers = {
+    wheel: buildWheelHandler(context),
+    mousedown: buildMouseDownHandler(context),
+    mousemove: buildMouseMoveHandler(context),
+    mouseup: buildMouseUpHandler(context),
+    contextmenu: buildContextMenuHandler(),
+  };
+
+  // Attach listeners
+  attachEventListeners(canvas, eventHandlers);
 
   // Return cleanup function
-  return () => {
-    canvas.removeEventListener('wheel', handleWheel);
-    canvas.removeEventListener('mousedown', handleMouseDown);
-    canvas.removeEventListener('mousemove', handleMouseMove);
-    canvas.removeEventListener('mouseup', handleMouseUp);
-    canvas.removeEventListener('mouseleave', handleMouseUp);
-    canvas.removeEventListener('contextmenu', handleContextMenu);
-  };
+  return createCleanupFunction(canvas, eventHandlers);
 }
