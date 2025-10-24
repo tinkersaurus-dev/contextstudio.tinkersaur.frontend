@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { setupMouseInput, ZoomState, EntityInteractionCallbacks } from '../lib/mouse-input';
+import { setupMouseInput, EntityInteractionCallbacks } from '../lib/mouse-input';
 import { renderCanvas } from '../lib/canvas-renderer';
 import { SelectionBox } from '../lib/selection-box-renderer';
 import { useCanvasStore } from '../model/canvas-store';
@@ -9,12 +9,12 @@ import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
 import { createStraightConnector, type AnchorPosition } from '@/entities/connector';
 import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
 import { ToolsetPopover, useToolsetPopoverStore } from '@/widgets/toolset-popover';
-import { screenToWorld } from '@/shared/lib/canvas-coordinates';
+import { CanvasTransform } from '@/shared/lib/canvas-transform';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
 
 export function DiagramCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [zoomState, setZoomState] = useState<ZoomState>({ scale: 1.0, panX: 0, panY: 0 });
+  const [transform, setTransform] = useState<CanvasTransform>(CanvasTransform.identity());
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
 
   // Connection point hover and drag state
@@ -38,9 +38,9 @@ export function DiagramCanvas() {
   // Minimum drag distance in pixels before considering it a real drag
   const MIN_DRAG_DISTANCE = 5;
 
-  // Use a ref to always have access to current zoom state without recreating handlers
-  const zoomStateRef = useRef(zoomState);
-  zoomStateRef.current = zoomState;
+  // Use a ref to always have access to current transform without recreating handlers
+  const transformRef = useRef(transform);
+  transformRef.current = transform;
 
   // Get Zustand store
   const {
@@ -51,9 +51,9 @@ export function DiagramCanvas() {
     addShape,
     updateShape,
     addConnector,
-    getEntityAtPoint,
+    findEntityAtPoint,
     isSelected,
-    getSelectedEntities,
+    getAllSelectedEntities,
     setSelectedEntities,
     addToSelection,
     toggleSelection,
@@ -83,9 +83,9 @@ export function DiagramCanvas() {
 
     // Entity interaction callbacks
     const entityCallbacks: EntityInteractionCallbacks = {
-      getEntityAtPoint,
+      findEntityAtPoint,
       isSelected,
-      getSelectedEntities,
+      getAllSelectedEntities,
       setSelectedEntities,
       addToSelection,
       toggleSelection,
@@ -124,16 +124,16 @@ export function DiagramCanvas() {
           return false;
         }
         return ConnectionPointSystem.isHitByPoint(worldX, worldY, shapesRef.current, {
-          scale: zoomStateRef.current.scale,
+          scale: transformRef.current.scale,
         });
       },
     };
 
-    // Pass getter function that always returns current zoom state
+    // Pass getter function that always returns current transform
     const cleanup = setupMouseInput(
       canvas,
-      () => zoomStateRef.current,
-      setZoomState,
+      () => transformRef.current,
+      setTransform,
       entityCallbacks
     );
 
@@ -141,9 +141,9 @@ export function DiagramCanvas() {
   }, [
     addShape,
     updateShape,
-    getEntityAtPoint,
+    findEntityAtPoint,
     isSelected,
-    getSelectedEntities,
+    getAllSelectedEntities,
     setSelectedEntities,
     addToSelection,
     toggleSelection,
@@ -163,7 +163,7 @@ export function DiagramCanvas() {
     const screenX = event.clientX - rect.left;
     const screenY = event.clientY - rect.top;
 
-    const worldPos = screenToWorld(screenX, screenY, zoomStateRef.current);
+    const worldPos = transformRef.current.screenToWorld(screenX, screenY);
 
     // If dragging a connector, update the drag end position
     if (isDraggingConnector && connectorDragStart) {
@@ -175,7 +175,7 @@ export function DiagramCanvas() {
           worldPos.x - connectorDragStart.x,
           worldPos.y - connectorDragStart.y
         );
-        if (distance > MIN_DRAG_DISTANCE / zoomStateRef.current.scale) {
+        if (distance > MIN_DRAG_DISTANCE / transformRef.current.scale) {
           setHasMovedDuringDrag(true);
         }
       }
@@ -194,7 +194,7 @@ export function DiagramCanvas() {
         worldPos.x,
         worldPos.y,
         shapes,
-        { scale: zoomStateRef.current.scale }
+        { scale: transformRef.current.scale }
       );
 
       if (connectionPoint) {
@@ -224,7 +224,7 @@ export function DiagramCanvas() {
         worldPos.x,
         worldPos.y,
         shapes,
-        { scale: zoomStateRef.current.scale }
+        { scale: transformRef.current.scale }
       );
 
       if (connectionPoint) {
@@ -256,14 +256,14 @@ export function DiagramCanvas() {
     const screenX = event.clientX - rect.left;
     const screenY = event.clientY - rect.top;
 
-    const worldPos = screenToWorld(screenX, screenY, zoomStateRef.current);
+    const worldPos = transformRef.current.screenToWorld(screenX, screenY);
 
     // Check if clicking on a connection point
     const connectionPoint = ConnectionPointSystem.findAtPosition(
       worldPos.x,
       worldPos.y,
       shapes,
-      { scale: zoomStateRef.current.scale }
+      { scale: transformRef.current.scale }
     );
 
     if (connectionPoint) {
@@ -316,14 +316,14 @@ export function DiagramCanvas() {
     const screenX = event.clientX - rect.left;
     const screenY = event.clientY - rect.top;
 
-    const worldPos = screenToWorld(screenX, screenY, zoomStateRef.current);
+    const worldPos = transformRef.current.screenToWorld(screenX, screenY);
 
     // Check if releasing on a connection point
     const targetPoint = ConnectionPointSystem.findAtPosition(
       worldPos.x,
       worldPos.y,
       shapes,
-      { scale: zoomStateRef.current.scale }
+      { scale: transformRef.current.scale }
     );
 
     if (targetPoint) {
@@ -377,9 +377,7 @@ export function DiagramCanvas() {
 
       renderCanvas({
         canvas,
-        scale: zoomState.scale,
-        panX: zoomState.panX,
-        panY: zoomState.panY,
+        transform,
         shapes,
         connectors,
         selectedEntityIds,
@@ -402,7 +400,7 @@ export function DiagramCanvas() {
       window.removeEventListener('resize', render);
     };
   }, [
-    zoomState,
+    transform,
     shapes,
     connectors,
     selectedEntityIds,
@@ -417,7 +415,7 @@ export function DiagramCanvas() {
 
   // Handler to reset zoom to 100%
   const handleResetZoom = () => {
-    setZoomState({ scale: 1.0, panX: 0, panY: 0 });
+    setTransform(CanvasTransform.identity());
   };
 
   return (
@@ -443,7 +441,7 @@ export function DiagramCanvas() {
         }}
       />
       <CanvasControls />
-      <ZoomControl zoom={zoomState.scale} onReset={handleResetZoom} />
+      <ZoomControl zoom={transform.scale} onReset={handleResetZoom} />
       <ToolsetPopover />
     </div>
   );

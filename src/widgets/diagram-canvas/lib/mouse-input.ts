@@ -5,10 +5,9 @@
  * Handler logic is extracted to separate files for better testability.
  */
 
-import { getCanvasMousePosition, screenToWorld } from '@/shared/lib/canvas-coordinates';
+import { getCanvasMousePosition, CanvasTransform } from '@/shared/lib/canvas-transform';
 import { MOUSE_BUTTONS } from '@/shared/config/mouse-config';
 import type {
-  ZoomState,
   EntityInteractionCallbacks,
 } from './mouse-input-types';
 import type {
@@ -102,18 +101,19 @@ function handleLeftMouseDown(
   screenY: number,
   context: MouseHandlerContext
 ): void {
-  const { getCurrentZoomState, entityCallbacks } = context;
+  const { getCurrentTransform, entityCallbacks } = context;
 
   if (!entityCallbacks) return;
 
-  const worldPos = screenToWorld(screenX, screenY, getCurrentZoomState());
+  const currentTransform = getCurrentTransform();
+  const worldPos = currentTransform.screenToWorld(screenX, screenY);
 
   // Check if we should skip this click
   if (shouldSkipClick(entityCallbacks, worldPos.x, worldPos.y)) {
     return;
   }
 
-  const entity = entityCallbacks.getEntityAtPoint(worldPos.x, worldPos.y);
+  const entity = entityCallbacks.findEntityAtPoint(worldPos.x, worldPos.y);
 
   if (entity) {
     // Clicked on an entity
@@ -174,7 +174,7 @@ function buildMouseDownHandler(context: MouseHandlerContext) {
  */
 function buildMouseMoveHandler(context: MouseHandlerContext) {
   return (event: MouseEvent) => {
-    const { canvas, getCurrentZoomState, entityCallbacks, dragState, selectionBoxState, panState } = context;
+    const { canvas, getCurrentTransform, entityCallbacks, dragState, selectionBoxState, panState } = context;
 
     const screenPos = getCanvasMousePosition(event, canvas);
 
@@ -186,7 +186,8 @@ function buildMouseMoveHandler(context: MouseHandlerContext) {
 
     // Handle selection box
     if (selectionBoxState.isSelecting && entityCallbacks) {
-      const worldPos = screenToWorld(screenPos.x, screenPos.y, getCurrentZoomState());
+      const currentTransform = getCurrentTransform();
+      const worldPos = currentTransform.screenToWorld(screenPos.x, screenPos.y);
       handlers.handleSelectionBoxDrag(worldPos.x, worldPos.y, context);
       return;
     }
@@ -279,15 +280,15 @@ function createCleanupFunction(
  * Setup mouse input handlers for a canvas element
  *
  * @param canvas - Canvas element to attach listeners to
- * @param getZoomState - Function to get current zoom state
- * @param setZoomState - Function to update zoom state
+ * @param getTransform - Function to get current transform
+ * @param setTransform - Function to update transform
  * @param entityCallbacks - Optional callbacks for entity interaction
  * @returns Cleanup function to remove all event listeners
  */
 export function setupMouseInput(
   canvas: HTMLCanvasElement,
-  getZoomState: () => ZoomState,
-  setZoomState: (state: ZoomState) => void,
+  getTransform: () => CanvasTransform,
+  setTransform: (transform: CanvasTransform) => void,
   entityCallbacks?: EntityInteractionCallbacks
 ): () => void {
   // Create state objects
@@ -296,8 +297,8 @@ export function setupMouseInput(
   // Build handler context
   const context: MouseHandlerContext = {
     canvas,
-    getCurrentZoomState: getZoomState,
-    setZoomState,
+    getCurrentTransform: getTransform,
+    setTransform,
     entityCallbacks,
     panState,
     dragState,

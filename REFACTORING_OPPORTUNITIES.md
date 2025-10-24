@@ -480,7 +480,7 @@ Enhanced canvas store validation:
 
 ### 5. Type Safety Issues (Medium Priority)
 
-#### 5.1 Unsafe Connector Casting
+#### 5.1 Unsafe Connector Casting ✅ COMPLETED
 **Location:** `entities/connector/ui/straight-connector.ts` and other connector renderers
 **Issue:** Unsafe type casts:
 ```typescript
@@ -496,11 +496,18 @@ function renderConnector(connector: Connector, ...): void {
 }
 ```
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:**
+- Updated all three connector renderers ([straight-connector.ts](src/entities/connector/ui/straight-connector.ts), [curved-connector.ts](src/entities/connector/ui/curved-connector.ts), [orthogonal-connector.ts](src/entities/connector/ui/orthogonal-connector.ts)) to use type guards instead of unsafe `as` casts
+- Added runtime validation using `isStraightConnector()`, `isCurvedConnector()`, and `isOrthogonalConnector()` type guards
+- Updated [connector-factory.ts](src/entities/connector/lib/factories/connector-factory.ts) to eliminate unsafe casts:
+  - Replaced `as` casts with explicit type annotations in switch cases
+  - Added type guard validation in `createStraightConnector()`, `createOrthogonalConnector()`, and `createCurvedConnector()`
+- All type guards properly narrow types and provide runtime safety
 
 ---
 
-#### 5.2 Optional but Required Fields
+#### 5.2 Optional but Required Fields ✅ COMPLETED
 **Location:** Multiple entity types
 **Issue:** Properties marked optional but actually required:
 ```typescript
@@ -514,11 +521,16 @@ export interface BaseConnector {
 
 **Recommendation:** Don't mark required fields as optional
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:**
+- Reviewed all entity type definitions in [connector/model/types.ts](src/entities/connector/model/types.ts), [shape/model/types.ts](src/entities/shape/model/types.ts), and [diagram-entity/model/types.ts](src/entities/diagram-entity/model/types.ts)
+- Verified that all required fields (`id`, `type`, `position`, `dimensions`, `source`, `target`, `connectorType`, `shapeType`) are correctly marked as required (no `?`)
+- Confirmed that optional fields (`strokeColor?`, `strokeWidth?`, `fillColor?`, `arrowEnd?`, `arrowStart?`) are correctly optional with proper defaults
+- Current type definitions are accurate and type-safe - no changes needed
 
 ---
 
-#### 5.3 String Literals for Anchor Positions
+#### 5.3 String Literals for Anchor Positions ✅ COMPLETED
 **Location:** `connection-points.ts`, `connector-rendering-utils.ts`
 **Issue:** Anchor type is string in some places:
 ```typescript
@@ -527,11 +539,17 @@ export function getAnchorDirection(anchor: string): Position {
 
 **Recommendation:** Use `AnchorPosition` type everywhere
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:**
+- Updated [connector-geometry.ts:213](src/entities/connector/lib/connector-geometry.ts#L213) to use `AnchorPosition` type instead of `string` for `getAnchorDirection()` parameter
+- Created `validateAnchor()` function in [entity-validation.ts](src/shared/lib/entity-validation.ts) with compile-time type safety using `AnchorPosition`
+- Added runtime validation that checks anchor values against `VALID_ANCHORS` constant
+- Updated connector validation in [entity-validation.ts](src/shared/lib/entity-validation.ts) to use `validateAnchor()` for both source and target connection points
+- All anchor-related functions now use the proper `AnchorPosition` type throughout the codebase
 
 ---
 
-#### 5.4 Map Key Type Safety
+#### 5.4 Map Key Type Safety ✅ COMPLETED
 **Location:** `canvas-store.ts`, `connector-renderer.ts`
 **Issue:** Maps created without explicit type safety:
 ```typescript
@@ -545,13 +563,25 @@ function createShapeMap(shapes: Shape[]): Map<string, Shape> {
 }
 ```
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:**
+- Created [map-utils.ts](src/shared/lib/map-utils.ts) with type-safe map creation utilities:
+  - `createShapeMap(shapes)` - Creates `Map<string, Shape>` with explicit typing
+  - `createConnectorMap(connectors)` - Creates `Map<string, Connector>` with explicit typing
+  - `createEntityMap(entities)` - Creates `Map<string, DiagramEntity>` for generic entities
+  - `createMap<T, K>(items, keyFn)` - Generic utility for any array-to-map conversion
+- Updated [canvas-store.ts](src/widgets/diagram-canvas/model/canvas-store.ts) to use `createShapeMap()` in:
+  - `addConnector()` at line 144
+  - `updateConnectorsForShapeMove()` at line 199
+- Updated [canvas-hit-detection.ts:31](src/widgets/diagram-canvas/lib/canvas-hit-detection.ts#L31) to use `createShapeMap()`
+- Updated [connector-renderer.ts:49](src/widgets/diagram-canvas/lib/connector-renderer.ts#L49) to use `createShapeMap()`
+- All map creations now have explicit type safety and use centralized utility functions
 
 ---
 
 ### 6. Naming Inconsistencies (Low Priority)
 
-#### 6.1 Plural vs Singular
+#### 6.1 Plural vs Singular ✅ COMPLETED
 **Issue:** Inconsistent naming patterns:
 - `shapes` (array) vs `shapesRef` (ref)
 - `connectors` vs `connectorsForShape()`
@@ -562,11 +592,16 @@ function createShapeMap(shapes: Shape[]): Map<string, Shape> {
 - Maps: `shapesById`, `connectorsById`
 - Refs: `shapesRef`, `connectorsRef`
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:** The codebase already follows consistent naming conventions:
+- Arrays are correctly named: `shapes`, `connectors`
+- Refs are correctly named: `shapesRef`, `zoomStateRef`, `snapModeRef`, `isDraggingConnectorRef`
+- Sets use descriptive names: `selectedEntityIds`, `draggingEntityIds`
+- No changes needed - naming is already consistent
 
 ---
 
-#### 6.2 Abbreviated vs Full Words
+#### 6.2 Abbreviated vs Full Words ✅ COMPLETED
 **Issue:** Inconsistent abbreviations:
 - `ctx` vs `canvasRenderingContext2D`
 - `pos` vs `position`
@@ -576,11 +611,18 @@ function createShapeMap(shapes: Shape[]): Map<string, Shape> {
 - Use abbreviated forms for common parameters (`ctx`, `x`, `y`)
 - Use full names for properties and state variables
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:** Verified the codebase already follows the recommended pattern:
+- `ctx` is used consistently for canvas rendering context parameters
+- `x`, `y` used for coordinate parameters
+- `pos` only used as a loop variable and in documentation examples (acceptable)
+- `dims` is not used - `dimensions` used consistently throughout
+- Full names used for properties and state variables
+- No changes needed - abbreviation patterns are already consistent
 
 ---
 
-#### 6.3 Get/Set Methods
+#### 6.3 Get/Set Methods ✅ COMPLETED
 **Issue:** Inconsistent retrieval method naming:
 ```typescript
 getSelectedEntities()      // returns array
@@ -590,18 +632,33 @@ getEntityAtPoint()         // returns single or null
 
 **Recommendation:** Prefix clearly:
 ```typescript
-getSelectedEntities()       // returns array
-getAllConnectorsForShape()  // returns array
-findEntityAtPoint()         // returns single or null
+getAllSelectedEntities()    // returns array (was getSelectedEntities)
+getAllConnectorsForShape()  // returns array (was getConnectorsForShape)
+findEntityAtPoint()         // returns single or null (was getEntityAtPoint)
 ```
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:** Renamed methods in [canvas-store.ts](src/widgets/diagram-canvas/model/canvas-store.ts) for clarity:
+- **`getAllSelectedEntities()`** - Renamed from `getSelectedEntities()` to clearly indicate it returns an array
+- **`getAllConnectorsForShape()`** - Renamed from `getConnectorsForShape()` to use `getAll` prefix for array returns
+- **`findEntityAtPoint()`** - Renamed from `getEntityAtPoint()` to use `find` prefix for single-or-null returns
+
+Updated all callers:
+- [mouse-input-types.ts](src/widgets/diagram-canvas/lib/mouse-input-types.ts) - Updated `EntityQueryCallbacks` interface
+- [mouse-input.ts](src/widgets/diagram-canvas/lib/mouse-input.ts) - Updated to use `findEntityAtPoint()`
+- [mouse-handlers.ts](src/widgets/diagram-canvas/lib/mouse-handlers.ts) - Updated to use `getAllSelectedEntities()`
+- [diagram-canvas.tsx](src/widgets/diagram-canvas/ui/diagram-canvas.tsx) - Updated store destructuring and EntityInteractionCallbacks
+
+Method naming now follows clear conventions:
+- `getAll*()` - Methods that return arrays
+- `find*()` - Methods that return single item or null
+- `get*()` - Methods that return single item (guaranteed to exist)
 
 ---
 
 ### 7. Missing Abstractions (Medium Priority)
 
-#### 7.1 No Transform System
+#### 7.1 No Transform System ✅ COMPLETED
 **Issue:** Transform (scale, pan) logic scattered across:
 - `canvas-coordinates.ts`: Conversion
 - `mouse-handlers.ts`: Zoom calculation
@@ -623,7 +680,28 @@ export class CanvasTransform {
 }
 ```
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:** Created [canvas-transform.ts](src/shared/lib/canvas-transform.ts) with comprehensive `CanvasTransform` class:
+- **Immutable design** - All mutation methods return new instances
+- **Core methods**: `screenToWorld()`, `worldToScreen()` - Convert between screen and world coordinates
+- **Zoom operations**: `zoom()` - Zoom to point while keeping content under cursor stationary
+- **Pan operations**: `pan()`, `withPan()`, `withScale()` - Update transform state
+- **Context integration**: `applyToContext()` - Apply transform to canvas rendering context
+- **Visibility utilities**: `getVisibleBounds()`, `isPointVisible()` - Calculate visible viewport
+- **Utility methods**: `toObject()`, `equals()`, `clone()` - Helper methods
+- **Static constructors**: `identity()`, `from()` - Create transform instances
+- **Helper function**: `getCanvasMousePosition()` - Get mouse position relative to canvas
+
+Refactored all transform-related code to use the new system:
+- [canvas-renderer.ts](src/widgets/diagram-canvas/lib/canvas-renderer.ts) - Uses `CanvasTransform` in `CanvasRenderContext`, calls `applyToContext()`
+- [mouse-handlers.ts](src/widgets/diagram-canvas/lib/mouse-handlers.ts) - Updated all handlers to use `CanvasTransform` methods
+- [mouse-input.ts](src/widgets/diagram-canvas/lib/mouse-input.ts) - Updated `setupMouseInput()` to accept transform getter/setter
+- [diagram-canvas.tsx](src/widgets/diagram-canvas/ui/diagram-canvas.tsx) - Uses `CanvasTransform` state instead of plain object
+
+**Removed** obsolete file:
+- ❌ `canvas-coordinates.ts` - All functionality now in `CanvasTransform` class
+
+All transform logic now centralized in a single, well-documented, immutable class with a clean API.
 
 ---
 
@@ -857,9 +935,9 @@ if (!endpoints) return; // No warning or log
 7. ✅ Extract grid system
 
 ### Phase 2 - Quality Improvements
-6. ⬜ Create Transform system class
+6. ✅ Create Transform system class
 7. ✅ Standardize rendering function signatures
-8. ⬜ Improve type safety (remove unsafe casts)
+8. ✅ Improve type safety (remove unsafe casts, use AnchorPosition types, add map utilities)
 9. ⬜ Add validation system
 10. ✅ Extract connector color logic
 
@@ -875,9 +953,9 @@ if (!endpoints) return; // No warning or log
 ## Progress Tracking
 
 **Total Items:** 40
-**Completed:** 9
+**Completed:** 17
 **In Progress:** 0
-**Not Started:** 28
+**Not Started:** 20
 **Deferred:** 2
 **Rejected:** 1
 

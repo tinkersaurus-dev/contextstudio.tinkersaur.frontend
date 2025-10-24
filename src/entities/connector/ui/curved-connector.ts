@@ -4,7 +4,8 @@
  * Renders a smooth bezier curve connector between two shapes.
  */
 
-import type { Connector, CurvedConnector } from '../model/types';
+import type { Connector } from '../model/types';
+import { isCurvedConnector } from '../model/types';
 import type { Shape } from '@/entities/shape';
 import {
   getConnectorEndpoints,
@@ -32,7 +33,12 @@ export function renderCurvedConnector(
   isSelected: boolean,
   scale: number
 ): void {
-  const curvedConnector = connector as CurvedConnector;
+  if (!isCurvedConnector(connector)) {
+    console.error('renderCurvedConnector called with non-curved connector:', connector);
+    return;
+  }
+
+  const curvedConnector = connector;
 
   // Get actual endpoints from connected shapes
   const endpoints = getConnectorEndpoints(curvedConnector, shapes);

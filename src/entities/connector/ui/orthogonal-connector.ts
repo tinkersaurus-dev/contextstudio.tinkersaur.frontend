@@ -4,7 +4,8 @@
  * Renders a right-angle connector with horizontal and vertical segments.
  */
 
-import type { Connector, OrthogonalConnector } from '../model/types';
+import type { Connector } from '../model/types';
+import { isOrthogonalConnector } from '../model/types';
 import type { Shape } from '@/entities/shape';
 import type { Position } from '@/entities/diagram-entity';
 import { getConnectorEndpoints, generateOrthogonalPath } from '../lib/connector-geometry';
@@ -30,7 +31,12 @@ export function renderOrthogonalConnector(
   isSelected: boolean,
   scale: number
 ): void {
-  const orthogonalConnector = connector as OrthogonalConnector;
+  if (!isOrthogonalConnector(connector)) {
+    console.error('renderOrthogonalConnector called with non-orthogonal connector:', connector);
+    return;
+  }
+
+  const orthogonalConnector = connector;
 
   // Get actual endpoints from connected shapes
   const endpoints = getConnectorEndpoints(orthogonalConnector, shapes);

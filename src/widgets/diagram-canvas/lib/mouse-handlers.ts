@@ -6,16 +6,13 @@
  */
 
 import {
-  screenToWorld,
-  calculateZoomToPoint,
-  calculatePan,
+  CanvasTransform,
   getCanvasMousePosition,
   type Point,
-} from '@/shared/lib/canvas-coordinates';
+} from '@/shared/lib/canvas-transform';
 import { ZOOM_CONFIG } from '@/shared/config/canvas-config';
 import { GridSystem } from '@/shared/lib/grid-system';
 import type {
-  ZoomState,
   EntityInteractionCallbacks,
 } from './mouse-input-types';
 
@@ -47,8 +44,8 @@ export interface SelectionBoxState {
 // Handler context
 export interface MouseHandlerContext {
   canvas: HTMLCanvasElement;
-  getCurrentZoomState: () => ZoomState;
-  setZoomState: (state: ZoomState) => void;
+  getCurrentTransform: () => CanvasTransform;
+  setTransform: (transform: CanvasTransform) => void;
   entityCallbacks?: EntityInteractionCallbacks;
   panState: PanState;
   dragState: DragState;
@@ -63,22 +60,21 @@ export function handleWheel(
   context: MouseHandlerContext
 ): void {
   event.preventDefault();
-  const { canvas, getCurrentZoomState, setZoomState } = context;
+  const { canvas, getCurrentTransform, setTransform } = context;
 
   const mousePos = getCanvasMousePosition(event, canvas);
   const delta = -event.deltaY * ZOOM_CONFIG.zoomSpeed;
-  const currentZoomState = getCurrentZoomState();
+  const currentTransform = getCurrentTransform();
 
-  const newZoomState = calculateZoomToPoint(
+  const newTransform = currentTransform.zoom(
     mousePos,
-    currentZoomState,
     delta,
     ZOOM_CONFIG.minScale,
     ZOOM_CONFIG.maxScale
   );
 
-  if (newZoomState !== currentZoomState) {
-    setZoomState(newZoomState);
+  if (!newTransform.equals(currentTransform)) {
+    setTransform(newTransform);
   }
 }
 
@@ -90,11 +86,12 @@ export function handleRightMouseDown(
   screenY: number,
   context: MouseHandlerContext
 ): void {
-  const { getCurrentZoomState, entityCallbacks } = context;
+  const { getCurrentTransform, entityCallbacks } = context;
 
   if (!entityCallbacks) return;
 
-  const worldPos = screenToWorld(screenX, screenY, getCurrentZoomState());
+  const currentTransform = getCurrentTransform();
+  const worldPos = currentTransform.screenToWorld(screenX, screenY);
 
   if (entityCallbacks.openToolsetPopover) {
     entityCallbacks.openToolsetPopover(screenX, screenY, worldPos.x, worldPos.y);
@@ -110,14 +107,14 @@ export function handleMiddleMouseDown(
   event: MouseEvent,
   context: MouseHandlerContext
 ): void {
-  const { canvas, getCurrentZoomState, panState } = context;
-  const currentZoomState = getCurrentZoomState();
+  const { canvas, getCurrentTransform, panState } = context;
+  const currentTransform = getCurrentTransform();
 
   panState.isPanning = true;
   panState.startX = event.clientX;
   panState.startY = event.clientY;
-  panState.startPanX = currentZoomState.panX;
-  panState.startPanY = currentZoomState.panY;
+  panState.startPanX = currentTransform.panX;
+  panState.startPanY = currentTransform.panY;
   canvas.style.cursor = 'grabbing';
 }
 
@@ -147,7 +144,7 @@ export function handleEntityMouseDown(
   }
 
   // Start dragging all selected entities
-  const selectedEntities = entityCallbacks.getSelectedEntities();
+  const selectedEntities = entityCallbacks.getAllSelectedEntities();
   dragState.isDragging = true;
   dragState.draggedEntityIds = selectedEntities.map((e) => e.id);
   dragState.startX = screenX;
@@ -194,13 +191,13 @@ export function handleEntityDrag(
   screenY: number,
   context: MouseHandlerContext
 ): void {
-  const { getCurrentZoomState, entityCallbacks, dragState } = context;
+  const { getCurrentTransform, entityCallbacks, dragState } = context;
 
   if (!entityCallbacks) return;
 
-  const currentZoomState = getCurrentZoomState();
-  const deltaX = (screenX - dragState.startX) / currentZoomState.scale;
-  const deltaY = (screenY - dragState.startY) / currentZoomState.scale;
+  const currentTransform = getCurrentTransform();
+  const deltaX = (screenX - dragState.startX) / currentTransform.scale;
+  const deltaY = (screenY - dragState.startY) / currentTransform.scale;
   const snapMode = entityCallbacks.getSnapMode();
 
   dragState.draggedEntityIds.forEach((id) => {
@@ -210,7 +207,7 @@ export function handleEntityDrag(
       let newY = initialPos.y + deltaY;
 
       if (snapMode !== 'none') {
-        const snapped = GridSystem.snapPoint(newX, newY, currentZoomState.scale, snapMode);
+        const snapped = GridSystem.snapPoint(newX, newY, currentTransform.scale, snapMode);
         newX = snapped.x;
         newY = snapped.y;
       }
@@ -246,20 +243,16 @@ export function handleCanvasPan(
   clientY: number,
   context: MouseHandlerContext
 ): void {
-  const { getCurrentZoomState, setZoomState, panState } = context;
+  const { getCurrentTransform, setTransform, panState } = context;
 
   const currentPos: Point = { x: clientX, y: clientY };
   const panStart: Point = { x: panState.startX, y: panState.startY };
   const initialPan: Point = { x: panState.startPanX, y: panState.startPanY };
 
-  const newPan = calculatePan(currentPos, panStart, initialPan);
-  const currentZoomState = getCurrentZoomState();
+  const currentTransform = getCurrentTransform();
+  const newTransform = currentTransform.pan(currentPos, panStart, initialPan);
 
-  setZoomState({
-    ...currentZoomState,
-    panX: newPan.x,
-    panY: newPan.y,
-  });
+  setTransform(newTransform);
 }
 
 /**

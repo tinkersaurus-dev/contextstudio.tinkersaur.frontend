@@ -11,6 +11,7 @@ import { renderConnectorFromRegistry } from '@/entities/connector';
 import { isConnectorValid } from '@/entities/connector';
 import type { ConnectorRenderContext } from '@/shared/lib/rendering-types';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
+import { createShapeMap } from '@/shared/lib/map-utils';
 
 /**
  * Render a single connector using the standardized context pattern
@@ -45,7 +46,7 @@ export function renderConnectors(
   scale: number
 ): void {
   // Create a map of shapes for efficient lookup
-  const shapesMap = new Map(shapes.map((shape) => [shape.id, shape]));
+  const shapesMap = createShapeMap(shapes);
 
   // Render each connector
   connectors.forEach((connector) => {

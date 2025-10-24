@@ -6,7 +6,7 @@
  */
 
 import type { Position, Dimensions } from '@/entities/diagram-entity';
-import type { Connector } from '../model/types';
+import type { Connector, AnchorPosition } from '../model/types';
 import type { Shape } from '@/entities/shape';
 import { getConnectionPointPosition } from '@/shared/lib/connection-points';
 
@@ -210,7 +210,7 @@ export function calculateArrowAngle(from: Position, to: Position): number {
  * @param anchor - Anchor position
  * @returns Normalized direction vector
  */
-export function getAnchorDirection(anchor: string): Position {
+export function getAnchorDirection(anchor: AnchorPosition): Position {
   switch (anchor) {
     case 'n':
       return { x: 0, y: -1 };

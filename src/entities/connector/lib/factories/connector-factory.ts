@@ -11,7 +11,12 @@ import type {
   CurvedConnector,
   ConnectionPoint,
 } from '../../model/types';
-import { ConnectorType } from '../../model/types';
+import {
+  ConnectorType,
+  isStraightConnector,
+  isOrthogonalConnector,
+  isCurvedConnector,
+} from '../../model/types';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import { generateEntityId } from '@/shared/lib/id-generator';
 import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
@@ -77,10 +82,10 @@ export function createConnector(options: ConnectorCreationOptions): Result<Conne
   // Generate unique ID
   const id = generateEntityId('connector');
 
-  // Base connector properties
+  // Base connector properties (shared by all connector types)
   const baseConnector = {
     id,
-    type: DiagramEntityType.Connector,
+    type: DiagramEntityType.Connector as const,
     source,
     target,
     strokeColor,
@@ -96,28 +101,34 @@ export function createConnector(options: ConnectorCreationOptions): Result<Conne
   // Create specific connector type
   let connector: Connector;
   switch (connectorType) {
-    case ConnectorType.Straight:
-      connector = {
+    case ConnectorType.Straight: {
+      const straightConnector: StraightConnector = {
         ...baseConnector,
         connectorType: ConnectorType.Straight,
-      } as StraightConnector;
+      };
+      connector = straightConnector;
       break;
+    }
 
-    case ConnectorType.Orthogonal:
-      connector = {
+    case ConnectorType.Orthogonal: {
+      const orthogonalConnector: OrthogonalConnector = {
         ...baseConnector,
         connectorType: ConnectorType.Orthogonal,
         waypoints: [],
-      } as OrthogonalConnector;
+      };
+      connector = orthogonalConnector;
       break;
+    }
 
-    case ConnectorType.Curved:
-      connector = {
+    case ConnectorType.Curved: {
+      const curvedConnector: CurvedConnector = {
         ...baseConnector,
         connectorType: ConnectorType.Curved,
         curvature,
-      } as CurvedConnector;
+      };
+      connector = curvedConnector;
       break;
+    }
 
     default:
       return err(`Unknown connector type: ${connectorType}`);
@@ -156,7 +167,12 @@ export function createStraightConnector(
     return result;
   }
 
-  return ok(result.value as StraightConnector);
+  // Type guard validation
+  if (!isStraightConnector(result.value)) {
+    return err('Created connector is not a StraightConnector');
+  }
+
+  return ok(result.value);
 }
 
 /**
@@ -183,7 +199,12 @@ export function createOrthogonalConnector(
     return result;
   }
 
-  return ok(result.value as OrthogonalConnector);
+  // Type guard validation
+  if (!isOrthogonalConnector(result.value)) {
+    return err('Created connector is not an OrthogonalConnector');
+  }
+
+  return ok(result.value);
 }
 
 /**
@@ -210,5 +231,10 @@ export function createCurvedConnector(
     return result;
   }
 
-  return ok(result.value as CurvedConnector);
+  // Type guard validation
+  if (!isCurvedConnector(result.value)) {
+    return err('Created connector is not a CurvedConnector');
+  }
+
+  return ok(result.value);
 }

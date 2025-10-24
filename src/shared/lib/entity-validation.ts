@@ -6,9 +6,44 @@
  */
 
 import type { Shape } from '@/entities/shape';
-import type { Connector } from '@/entities/connector';
+import type { Connector, AnchorPosition } from '@/entities/connector';
 import type { Position, Dimensions } from '@/entities/diagram-entity';
 import { ValidationResult, valid, invalid, combineValidations } from './result';
+
+/**
+ * Valid anchor position values
+ */
+const VALID_ANCHORS: readonly AnchorPosition[] = [
+  'n',
+  's',
+  'e',
+  'w',
+  'ne',
+  'nw',
+  'se',
+  'sw',
+  'center',
+] as const;
+
+/**
+ * Validate an anchor position value
+ *
+ * @param anchor - Anchor to validate
+ * @returns Validation result
+ */
+export function validateAnchor(anchor: unknown): ValidationResult {
+  if (typeof anchor !== 'string') {
+    return invalid('Anchor must be a string');
+  }
+
+  if (!VALID_ANCHORS.includes(anchor as AnchorPosition)) {
+    return invalid(
+      `Anchor must be one of: ${VALID_ANCHORS.join(', ')}. Got: ${anchor}`
+    );
+  }
+
+  return valid();
+}
 
 /**
  * Validate a position object
@@ -201,8 +236,13 @@ export function validateConnector(
     if (!connector.source.shapeId || typeof connector.source.shapeId !== 'string') {
       results.push(invalid('Source connection point must have a valid shape ID'));
     }
-    if (!connector.source.anchor || typeof connector.source.anchor !== 'string') {
-      results.push(invalid('Source connection point must have a valid anchor'));
+    if (!connector.source.anchor) {
+      results.push(invalid('Source connection point must have an anchor'));
+    } else {
+      const anchorResult = validateAnchor(connector.source.anchor);
+      if (!anchorResult.valid) {
+        results.push(invalid(`Source connection point: ${anchorResult.errors[0]}`));
+      }
     }
 
     // Validate source shape exists if shapes map provided
@@ -218,8 +258,13 @@ export function validateConnector(
     if (!connector.target.shapeId || typeof connector.target.shapeId !== 'string') {
       results.push(invalid('Target connection point must have a valid shape ID'));
     }
-    if (!connector.target.anchor || typeof connector.target.anchor !== 'string') {
-      results.push(invalid('Target connection point must have a valid anchor'));
+    if (!connector.target.anchor) {
+      results.push(invalid('Target connection point must have an anchor'));
+    } else {
+      const anchorResult = validateAnchor(connector.target.anchor);
+      if (!anchorResult.valid) {
+        results.push(invalid(`Target connection point: ${anchorResult.errors[0]}`));
+      }
     }
 
     // Validate target shape exists if shapes map provided

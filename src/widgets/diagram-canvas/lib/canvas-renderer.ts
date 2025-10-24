@@ -9,6 +9,7 @@ import { GridSystem, DEFAULT_GRID_CONFIG, type GridConfig } from '@/shared/lib/g
 import { renderShapes } from './shape-renderer';
 import { renderConnectors } from './connector-renderer';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
+import { CanvasTransform } from '@/shared/lib/canvas-transform';
 import type { SelectionBox } from './selection-box-renderer';
 import type { Shape } from '@/entities/shape';
 import type { Connector, AnchorPosition } from '@/entities/connector';
@@ -17,12 +18,8 @@ import { CANVAS_COLORS } from '@/shared/config/canvas-config';
 export interface CanvasRenderContext {
   /** Canvas element to render to */
   canvas: HTMLCanvasElement;
-  /** Current zoom/scale level */
-  scale: number;
-  /** Pan offset X */
-  panX: number;
-  /** Pan offset Y */
-  panY: number;
+  /** Canvas transform (zoom and pan) */
+  transform: CanvasTransform;
   /** Shapes to render */
   shapes: Shape[];
   /** Connectors to render */
@@ -63,9 +60,7 @@ export interface CanvasRenderContext {
  * @example
  * renderCanvas({
  *   canvas: canvasRef.current,
- *   scale: 1.5,
- *   panX: 100,
- *   panY: 200,
+ *   transform: new CanvasTransform(1.5, 100, 200),
  *   shapes: shapes,
  *   connectors: connectors,
  *   selectedEntityIds: new Set(['shape-1', 'connector-1']),
@@ -75,9 +70,7 @@ export interface CanvasRenderContext {
 export function renderCanvas(context: CanvasRenderContext): void {
   const {
     canvas,
-    scale,
-    panX,
-    panY,
+    transform,
     shapes,
     connectors,
     selectedEntityIds,
@@ -111,11 +104,9 @@ export function renderCanvas(context: CanvasRenderContext): void {
     ctx.fillStyle = CANVAS_COLORS.background;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Apply pan and zoom transform
-    // IMPORTANT: scale first, then translate!
+    // Apply transform to context
     ctx.save();
-    ctx.scale(scale, scale);
-    ctx.translate(panX / scale, panY / scale);
+    transform.applyToContext(ctx);
 
     try {
       // Render grid
@@ -123,9 +114,9 @@ export function renderCanvas(context: CanvasRenderContext): void {
         ctx,
         width: canvas.width,
         height: canvas.height,
-        scale,
-        panX,
-        panY,
+        scale: transform.scale,
+        panX: transform.panX,
+        panY: transform.panY,
         config: gridConfig,
       });
     } catch (error) {
@@ -135,7 +126,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
 
     try {
       // Render all shapes with selection and selection box
-      renderShapes(ctx, shapes, selectedEntityIds, scale, selectionBox);
+      renderShapes(ctx, shapes, selectedEntityIds, transform.scale, selectionBox);
     } catch (error) {
       console.error('Error rendering shapes:', error);
       // Continue rendering despite error
@@ -143,7 +134,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
 
     try {
       // Render all connectors
-      renderConnectors(ctx, connectors, shapes, selectedEntityIds, scale);
+      renderConnectors(ctx, connectors, shapes, selectedEntityIds, transform.scale);
     } catch (error) {
       console.error('Error rendering connectors:', error);
       // Continue rendering despite error
@@ -160,7 +151,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
               ? hoveredConnectionPoint.anchor
               : undefined;
           ConnectionPointSystem.renderConnectionPoints(ctx, shape, {
-            scale,
+            scale: transform.scale,
             highlightAnchor,
           });
         });
@@ -174,7 +165,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
           connectorDragStart.y,
           connectorDragEnd.x,
           connectorDragEnd.y,
-          scale
+          transform.scale
         );
       }
     } catch (error) {

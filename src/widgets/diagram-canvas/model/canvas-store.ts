@@ -10,6 +10,7 @@ import {
 } from '../lib/canvas-hit-detection';
 import { validateShape, validateConnector } from '@/shared/lib/entity-validation';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
+import { createShapeMap } from '@/shared/lib/map-utils';
 
 interface CanvasState {
   // Store all shapes and connectors (DiagramEntities)
@@ -32,7 +33,7 @@ interface CanvasState {
   addConnector: (connector: Connector) => void;
   updateConnector: (id: string, updates: Partial<Connector>) => void;
   deleteConnector: (id: string) => void;
-  getConnectorsForShape: (shapeId: string) => Connector[];
+  getAllConnectorsForShape: (shapeId: string) => Connector[];
   updateConnectorsForShapeMove: (shapeId: string) => void;
 
   // Selection actions
@@ -42,7 +43,7 @@ interface CanvasState {
   toggleSelection: (id: string) => void;
   clearSelection: () => void;
   selectEntitiesInBox: (x1: number, y1: number, x2: number, y2: number) => void;
-  getSelectedEntities: () => DiagramEntity[];
+  getAllSelectedEntities: () => DiagramEntity[];
   isSelected: (id: string) => boolean;
 
   // Drag actions
@@ -58,7 +59,7 @@ interface CanvasState {
   resetConnectorCreation: () => void;
 
   // Hit detection
-  getEntityAtPoint: (x: number, y: number) => DiagramEntity | null;
+  findEntityAtPoint: (x: number, y: number) => DiagramEntity | null;
   getAllEntities: () => DiagramEntity[];
 }
 
@@ -140,7 +141,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   addConnector: (connector) => {
     // Validate connector before adding
     const { shapes } = get();
-    const shapesMap = new Map(shapes.map((s) => [s.id, s]));
+    const shapesMap = createShapeMap(shapes);
     const validationResult = validateConnector(connector, shapesMap);
 
     if (!validationResult.valid) {
@@ -185,7 +186,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     };
   }),
 
-  getConnectorsForShape: (shapeId) => {
+  getAllConnectorsForShape: (shapeId) => {
     const { connectors } = get();
     return connectors.filter(
       (connector) =>
@@ -195,7 +196,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   updateConnectorsForShapeMove: (shapeId) => {
     const { connectors, shapes } = get();
-    const shapesMap = new Map(shapes.map((s) => [s.id, s]));
+    const shapesMap = createShapeMap(shapes);
 
     // Find all connectors attached to this shape
     const affectedConnectors = connectors.filter(
@@ -249,7 +250,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     set({ selectedEntityIds: new Set(selectedIds) });
   },
 
-  getSelectedEntities: () => {
+  getAllSelectedEntities: () => {
     const { shapes, connectors, selectedEntityIds } = get();
     const allEntities = [...shapes, ...connectors];
     return allEntities.filter((entity) => selectedEntityIds.has(entity.id));
@@ -287,7 +288,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   }),
 
   // Hit detection
-  getEntityAtPoint: (x, y) => {
+  findEntityAtPoint: (x, y) => {
     const { shapes, connectors } = get();
     return getEntityAtPointHitDetection(x, y, shapes, connectors);
   },

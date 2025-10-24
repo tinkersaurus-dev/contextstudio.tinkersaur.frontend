@@ -11,6 +11,7 @@ import type { DiagramEntity } from '@/entities/diagram-entity';
 import { getConnectorEndpoints } from '@/entities/connector';
 import { distanceToLineSegment } from '@/shared/lib/connection-points';
 import { CONNECTOR_HIT_CONFIG } from '@/shared/config/canvas-config';
+import { createShapeMap } from '@/shared/lib/map-utils';
 
 /**
  * Find the topmost entity at a specific point
@@ -27,7 +28,7 @@ export function getEntityAtPoint(
   shapes: Shape[],
   connectors: Connector[]
 ): DiagramEntity | null {
-  const shapesMap = new Map(shapes.map((s) => [s.id, s]));
+  const shapesMap = createShapeMap(shapes);
 
   // Check shapes first (iterate in reverse to check topmost first)
   for (let i = shapes.length - 1; i >= 0; i--) {

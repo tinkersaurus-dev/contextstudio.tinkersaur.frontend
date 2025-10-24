@@ -4,7 +4,8 @@
  * Renders a straight line connector between two shapes.
  */
 
-import type { Connector, StraightConnector } from '../model/types';
+import type { Connector } from '../model/types';
+import { isStraightConnector } from '../model/types';
 import type { Shape } from '@/entities/shape';
 import { getConnectorEndpoints } from '../lib/connector-geometry';
 import {
@@ -29,7 +30,12 @@ export function renderStraightConnector(
   isSelected: boolean,
   scale: number
 ): void {
-  const straightConnector = connector as StraightConnector;
+  if (!isStraightConnector(connector)) {
+    console.error('renderStraightConnector called with non-straight connector:', connector);
+    return;
+  }
+
+  const straightConnector = connector;
 
   // Get actual endpoints from connected shapes
   const endpoints = getConnectorEndpoints(straightConnector, shapes);

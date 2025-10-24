@@ -27,12 +27,12 @@ export interface SelectionBoxState {
  * Entity query callbacks for hit detection and retrieval
  */
 export interface EntityQueryCallbacks {
-  /** Get entity at a specific world coordinate point */
-  getEntityAtPoint: (x: number, y: number) => DiagramEntity | null;
+  /** Find entity at a specific world coordinate point (returns single or null) */
+  findEntityAtPoint: (x: number, y: number) => DiagramEntity | null;
   /** Check if an entity is currently selected */
   isSelected: (id: string) => boolean;
-  /** Get all currently selected entities */
-  getSelectedEntities: () => DiagramEntity[];
+  /** Get all currently selected entities (returns array) */
+  getAllSelectedEntities: () => DiagramEntity[];
 }
 
 /**
