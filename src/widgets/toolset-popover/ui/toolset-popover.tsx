@@ -89,6 +89,8 @@ export function ToolsetPopover() {
           <PopoverContent
             portalled
             onContextMenu={(e) => e.preventDefault()}
+            width="fit-content"
+            bg="panel.bg"
             style={{
               position: 'fixed',
               left: screenPosition?.x ?? 0,
@@ -97,7 +99,8 @@ export function ToolsetPopover() {
           >
             <PopoverBody p={2} onContextMenu={(e) => e.preventDefault()}>
               <Grid
-                gridTemplateColumns="repeat(3, 1fr)"
+                gridAutoFlow="column"
+                gridTemplateRows="repeat(5, 1fr)"
                 gap={1}
               >
                 {bpmnToolset.tools.map((tool) => {
@@ -106,12 +109,22 @@ export function ToolsetPopover() {
                   const Icon = tool.icon;
 
                   return (
-                    <Tooltip key={tool.id} content={tool.name}>
+                    <Tooltip key={tool.id} content={tool.name} positioning={{ placement: 'right' }}>
                       <IconButton
                         aria-label={tool.name}
                         onClick={() => handleToolSelect(tool)}
                         variant="ghost"
-                        size="sm"
+                        size="xs"
+                        width="24px"
+                        height="24px"
+                        minWidth="24px"
+                        minHeight="24px"
+                        padding={0}
+                        color='white'
+                        _hover={{
+                          bg: 'white',
+                          color: 'brand.900',
+                        }}
                       >
                         <Icon />
                       </IconButton>

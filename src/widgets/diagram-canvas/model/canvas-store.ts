@@ -2,10 +2,12 @@ import { create } from 'zustand';
 import { Shape } from '@/entities/shape';
 import { Connector } from '@/entities/connector';
 import { DiagramEntity } from '@/entities/diagram-entity';
-import { distanceToLineSegment } from '@/shared/lib/connection-points';
-import { getConnectorEndpoints, updateConnectorForShapeMove } from '@/entities/connector';
-import { CONNECTOR_HIT_CONFIG } from '@/shared/config/canvas-config';
+import { updateConnectorForShapeMove } from '@/entities/connector';
 import type { SnapMode } from '@/shared/lib/snap-to-grid';
+import {
+  getEntityAtPoint as getEntityAtPointHitDetection,
+  selectEntitiesInBox as selectEntitiesInBoxHitDetection,
+} from '../lib/canvas-hit-detection';
 
 interface CanvasState {
   // Store all shapes and connectors (DiagramEntities)
@@ -199,24 +201,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   selectEntitiesInBox: (x1, y1, x2, y2) => {
     const entities = get().getAllEntities();
-    const minX = Math.min(x1, x2);
-    const maxX = Math.max(x1, x2);
-    const minY = Math.min(y1, y2);
-    const maxY = Math.max(y1, y2);
-
-    const selectedIds = entities
-      .filter((entity) => {
-        const { position, dimensions } = entity;
-        // Check if entity intersects with selection box
-        return !(
-          position.x + dimensions.width < minX ||
-          position.x > maxX ||
-          position.y + dimensions.height < minY ||
-          position.y > maxY
-        );
-      })
-      .map((entity) => entity.id);
-
+    const selectedIds = selectEntitiesInBoxHitDetection(x1, y1, x2, y2, entities);
     set({ selectedEntityIds: new Set(selectedIds) });
   },
 
@@ -260,44 +245,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   // Hit detection
   getEntityAtPoint: (x, y) => {
     const { shapes, connectors } = get();
-    const shapesMap = new Map(shapes.map((s) => [s.id, s]));
-
-    // Check shapes first (iterate in reverse to check topmost first)
-    for (let i = shapes.length - 1; i >= 0; i--) {
-      const shape = shapes[i];
-      const { position, dimensions } = shape;
-
-      if (
-        x >= position.x &&
-        x <= position.x + dimensions.width &&
-        y >= position.y &&
-        y <= position.y + dimensions.height
-      ) {
-        return shape;
-      }
-    }
-
-    // Check connectors (iterate in reverse to check topmost first)
-    for (let i = connectors.length - 1; i >= 0; i--) {
-      const connector = connectors[i];
-      const endpoints = getConnectorEndpoints(connector, shapesMap);
-
-      if (!endpoints) {
-        continue;
-      }
-
-      const distance = distanceToLineSegment(
-        { x, y },
-        endpoints.start,
-        endpoints.end
-      );
-
-      if (distance <= CONNECTOR_HIT_CONFIG.tolerance) {
-        return connector;
-      }
-    }
-
-    return null;
+    return getEntityAtPointHitDetection(x, y, shapes, connectors);
   },
 
   getAllEntities: () => {

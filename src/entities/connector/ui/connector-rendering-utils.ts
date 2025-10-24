@@ -5,7 +5,8 @@
  */
 
 import type { Position } from '@/entities/diagram-entity';
-import { ARROWHEAD_CONFIG } from '@/shared/config/canvas-config';
+import type { Connector } from '../model/types';
+import { ARROWHEAD_CONFIG, CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
 
 /**
  * Render an arrowhead at a specific position and angle
@@ -113,4 +114,36 @@ export function getPointAlongLine(
     x: start.x + dx * ratio,
     y: start.y + dy * ratio,
   };
+}
+
+/**
+ * Get the stroke color for a connector based on selection state
+ *
+ * @param connector - The connector to determine color for
+ * @param isSelected - Whether the connector is selected
+ * @returns The stroke color to use
+ */
+export function getConnectorStrokeColor(
+  connector: Connector,
+  isSelected: boolean
+): string {
+  return isSelected
+    ? CANVAS_COLORS.connectorStrokeSelected
+    : (connector.strokeColor ?? CANVAS_COLORS.connectorStroke);
+}
+
+/**
+ * Get the stroke width for a connector based on selection state
+ *
+ * @param connector - The connector to determine width for
+ * @param isSelected - Whether the connector is selected
+ * @returns The stroke width to use
+ */
+export function getConnectorStrokeWidth(
+  connector: Connector,
+  isSelected: boolean
+): number {
+  return isSelected
+    ? STROKE_WIDTHS.connectorSelected
+    : (connector.strokeWidth ?? STROKE_WIDTHS.connector);
 }

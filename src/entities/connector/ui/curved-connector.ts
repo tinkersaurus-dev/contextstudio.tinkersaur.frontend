@@ -10,8 +10,11 @@ import {
   getConnectorEndpoints,
   generateCurveControlPoints,
 } from '../lib/connector-geometry';
-import { renderArrowhead } from './connector-rendering-utils';
-import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+import {
+  renderArrowhead,
+  getConnectorStrokeColor,
+  getConnectorStrokeWidth,
+} from './connector-rendering-utils';
 
 /**
  * Render a curved (bezier) connector
@@ -46,13 +49,8 @@ export function renderCurvedConnector(
   const [cp1, cp2] = generateCurveControlPoints(start, end, curvature);
 
   // Determine stroke color and width
-  const strokeColor = isSelected
-    ? CANVAS_COLORS.connectorStrokeSelected
-    : (curvedConnector.strokeColor ?? CANVAS_COLORS.connectorStroke);
-
-  const strokeWidth = isSelected
-    ? STROKE_WIDTHS.connectorSelected
-    : (curvedConnector.strokeWidth ?? STROKE_WIDTHS.connector);
+  const strokeColor = getConnectorStrokeColor(curvedConnector, isSelected);
+  const strokeWidth = getConnectorStrokeWidth(curvedConnector, isSelected);
 
   // Draw the bezier curve
   ctx.beginPath();

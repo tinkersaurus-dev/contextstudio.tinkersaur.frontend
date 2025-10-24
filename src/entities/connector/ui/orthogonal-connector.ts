@@ -8,8 +8,11 @@ import type { Connector, OrthogonalConnector } from '../model/types';
 import type { Shape } from '@/entities/shape';
 import type { Position } from '@/entities/diagram-entity';
 import { getConnectorEndpoints, generateOrthogonalPath } from '../lib/connector-geometry';
-import { renderArrowhead } from './connector-rendering-utils';
-import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+import {
+  renderArrowhead,
+  getConnectorStrokeColor,
+  getConnectorStrokeWidth,
+} from './connector-rendering-utils';
 
 /**
  * Render an orthogonal (right-angle) connector
@@ -48,13 +51,8 @@ export function renderOrthogonalConnector(
   }
 
   // Determine stroke color and width
-  const strokeColor = isSelected
-    ? CANVAS_COLORS.connectorStrokeSelected
-    : (orthogonalConnector.strokeColor ?? CANVAS_COLORS.connectorStroke);
-
-  const strokeWidth = isSelected
-    ? STROKE_WIDTHS.connectorSelected
-    : (orthogonalConnector.strokeWidth ?? STROKE_WIDTHS.connector);
+  const strokeColor = getConnectorStrokeColor(orthogonalConnector, isSelected);
+  const strokeWidth = getConnectorStrokeWidth(orthogonalConnector, isSelected);
 
   // Draw the path
   ctx.beginPath();

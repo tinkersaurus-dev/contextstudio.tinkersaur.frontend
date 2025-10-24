@@ -7,8 +7,11 @@
 import type { Connector, StraightConnector } from '../model/types';
 import type { Shape } from '@/entities/shape';
 import { getConnectorEndpoints } from '../lib/connector-geometry';
-import { renderArrowhead } from './connector-rendering-utils';
-import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+import {
+  renderArrowhead,
+  getConnectorStrokeColor,
+  getConnectorStrokeWidth,
+} from './connector-rendering-utils';
 
 /**
  * Render a straight line connector
@@ -39,13 +42,8 @@ export function renderStraightConnector(
   const { start, end } = endpoints;
 
   // Determine stroke color and width
-  const strokeColor = isSelected
-    ? CANVAS_COLORS.connectorStrokeSelected
-    : (straightConnector.strokeColor ?? CANVAS_COLORS.connectorStroke);
-
-  const strokeWidth = isSelected
-    ? STROKE_WIDTHS.connectorSelected
-    : (straightConnector.strokeWidth ?? STROKE_WIDTHS.connector);
+  const strokeColor = getConnectorStrokeColor(straightConnector, isSelected);
+  const strokeWidth = getConnectorStrokeWidth(straightConnector, isSelected);
 
   // Draw the line
   ctx.beginPath();
