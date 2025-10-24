@@ -10,11 +10,7 @@ import { createStraightConnector, type AnchorPosition } from '@/entities/connect
 import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
 import { ToolsetPopover, useToolsetPopoverStore } from '@/widgets/toolset-popover';
 import { screenToWorld } from '@/shared/lib/canvas-coordinates';
-import {
-  findConnectionPointAtPosition,
-  getShapesNearPosition,
-} from '@/shared/lib/connection-points';
-import { CONNECTION_POINT_CONFIG } from '@/shared/config/canvas-config';
+import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
 
 export function DiagramCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -127,13 +123,9 @@ export function DiagramCanvas() {
         if (isDraggingConnectorRef.current) {
           return false;
         }
-        const connectionPoint = findConnectionPointAtPosition(
-          worldX,
-          worldY,
-          shapesRef.current,
-          CONNECTION_POINT_CONFIG.hitTolerance / zoomStateRef.current.scale
-        );
-        return connectionPoint !== null;
+        return ConnectionPointSystem.isHitByPoint(worldX, worldY, shapesRef.current, {
+          scale: zoomStateRef.current.scale,
+        });
       },
     };
 
@@ -189,15 +181,20 @@ export function DiagramCanvas() {
       }
 
       // Show connection points on nearby shapes while dragging
-      const nearbyShapes = getShapesNearPosition(worldPos.x, worldPos.y, shapes, 50);
-      setHoveredShapeIds(nearbyShapes.map((s) => s.id));
-
-      // Check if hovering over a specific connection point
-      const connectionPoint = findConnectionPointAtPosition(
+      const nearbyShapes = ConnectionPointSystem.getShapesNearPosition(
         worldPos.x,
         worldPos.y,
         shapes,
-        CONNECTION_POINT_CONFIG.hitTolerance / zoomStateRef.current.scale
+        50
+      );
+      setHoveredShapeIds(nearbyShapes.map((s) => s.id));
+
+      // Check if hovering over a specific connection point
+      const connectionPoint = ConnectionPointSystem.findAtPosition(
+        worldPos.x,
+        worldPos.y,
+        shapes,
+        { scale: zoomStateRef.current.scale }
       );
 
       if (connectionPoint) {
@@ -212,17 +209,22 @@ export function DiagramCanvas() {
     }
 
     // Check if hovering near any shapes
-    const nearbyShapes = getShapesNearPosition(worldPos.x, worldPos.y, shapes, 50);
+    const nearbyShapes = ConnectionPointSystem.getShapesNearPosition(
+      worldPos.x,
+      worldPos.y,
+      shapes,
+      50
+    );
 
     if (nearbyShapes.length > 0) {
       setHoveredShapeIds(nearbyShapes.map((s) => s.id));
 
       // Check if hovering over a specific connection point
-      const connectionPoint = findConnectionPointAtPosition(
+      const connectionPoint = ConnectionPointSystem.findAtPosition(
         worldPos.x,
         worldPos.y,
         shapes,
-        CONNECTION_POINT_CONFIG.hitTolerance / zoomStateRef.current.scale
+        { scale: zoomStateRef.current.scale }
       );
 
       if (connectionPoint) {
@@ -257,11 +259,11 @@ export function DiagramCanvas() {
     const worldPos = screenToWorld(screenX, screenY, zoomStateRef.current);
 
     // Check if clicking on a connection point
-    const connectionPoint = findConnectionPointAtPosition(
+    const connectionPoint = ConnectionPointSystem.findAtPosition(
       worldPos.x,
       worldPos.y,
       shapes,
-      CONNECTION_POINT_CONFIG.hitTolerance / zoomStateRef.current.scale
+      { scale: zoomStateRef.current.scale }
     );
 
     if (connectionPoint) {
@@ -317,11 +319,11 @@ export function DiagramCanvas() {
     const worldPos = screenToWorld(screenX, screenY, zoomStateRef.current);
 
     // Check if releasing on a connection point
-    const targetPoint = findConnectionPointAtPosition(
+    const targetPoint = ConnectionPointSystem.findAtPosition(
       worldPos.x,
       worldPos.y,
       shapes,
-      CONNECTION_POINT_CONFIG.hitTolerance / zoomStateRef.current.scale
+      { scale: zoomStateRef.current.scale }
     );
 
     if (targetPoint) {

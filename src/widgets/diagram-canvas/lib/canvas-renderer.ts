@@ -8,13 +8,10 @@
 import { renderGrid, DEFAULT_GRID_CONFIG, type GridConfig } from './grid-renderer';
 import { renderShapes } from './shape-renderer';
 import { renderConnectors } from './connector-renderer';
-import {
-  renderConnectionPointsForShape,
-  renderConnectorPreview,
-} from './connection-point-renderer';
+import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
 import type { SelectionBox } from './selection-box-renderer';
 import type { Shape } from '@/entities/shape';
-import type { Connector } from '@/entities/connector';
+import type { Connector, AnchorPosition } from '@/entities/connector';
 import { CANVAS_COLORS } from '@/shared/config/canvas-config';
 
 export interface CanvasRenderContext {
@@ -44,7 +41,7 @@ export interface CanvasRenderContext {
   /** Shape IDs to show connection points for */
   hoveredShapeIds?: string[];
   /** Specific connection point being hovered */
-  hoveredConnectionPoint?: { shapeId: string; anchor: string } | null;
+  hoveredConnectionPoint?: { shapeId: string; anchor: AnchorPosition } | null;
 }
 
 /**
@@ -154,13 +151,16 @@ export function renderCanvas(context: CanvasRenderContext): void {
             hoveredConnectionPoint?.shapeId === shape.id
               ? hoveredConnectionPoint.anchor
               : undefined;
-          renderConnectionPointsForShape(ctx, shape, scale, highlightAnchor);
+          ConnectionPointSystem.renderConnectionPoints(ctx, shape, {
+            scale,
+            highlightAnchor,
+          });
         });
       }
 
       // Show preview line if dragging connector
       if (connectorDragStart && connectorDragEnd) {
-        renderConnectorPreview(
+        ConnectionPointSystem.renderConnectorPreview(
           ctx,
           connectorDragStart.x,
           connectorDragStart.y,
