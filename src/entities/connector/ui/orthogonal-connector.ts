@@ -1,0 +1,101 @@
+/**
+ * Orthogonal Connector Renderer
+ *
+ * Renders a right-angle connector with horizontal and vertical segments.
+ */
+
+import type { Connector, OrthogonalConnector } from '../model/types';
+import type { Shape } from '@/entities/shape';
+import type { Position } from '@/entities/diagram-entity';
+import { getConnectorEndpoints, generateOrthogonalPath } from '../lib/connector-geometry';
+import { renderArrowhead } from './connector-rendering-utils';
+import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+
+/**
+ * Render an orthogonal (right-angle) connector
+ *
+ * @param ctx - Canvas rendering context
+ * @param connector - The connector to render
+ * @param shapes - Map of shape ID to shape object
+ * @param isSelected - Whether the connector is selected
+ * @param scale - Current canvas scale
+ */
+export function renderOrthogonalConnector(
+  ctx: CanvasRenderingContext2D,
+  connector: Connector,
+  shapes: Map<string, Shape>,
+  isSelected: boolean,
+  scale: number
+): void {
+  const orthogonalConnector = connector as OrthogonalConnector;
+
+  // Get actual endpoints from connected shapes
+  const endpoints = getConnectorEndpoints(orthogonalConnector, shapes);
+
+  if (!endpoints) {
+    // Cannot render if shapes are missing
+    return;
+  }
+
+  const { start, end } = endpoints;
+
+  // Generate path (use custom waypoints if specified, otherwise auto-generate)
+  let path: Position[];
+  if (orthogonalConnector.waypoints && orthogonalConnector.waypoints.length > 0) {
+    path = [start, ...orthogonalConnector.waypoints, end];
+  } else {
+    path = generateOrthogonalPath(start, end);
+  }
+
+  // Determine stroke color and width
+  const strokeColor = isSelected
+    ? CANVAS_COLORS.connectorStrokeSelected
+    : (orthogonalConnector.strokeColor ?? CANVAS_COLORS.connectorStroke);
+
+  const strokeWidth = isSelected
+    ? STROKE_WIDTHS.connectorSelected
+    : (orthogonalConnector.strokeWidth ?? STROKE_WIDTHS.connector);
+
+  // Draw the path
+  ctx.beginPath();
+  ctx.moveTo(path[0].x, path[0].y);
+
+  for (let i = 1; i < path.length; i++) {
+    ctx.lineTo(path[i].x, path[i].y);
+  }
+
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = strokeWidth / scale;
+  ctx.stroke();
+
+  // Calculate angle for arrowheads based on last segment
+  const lastSegment = {
+    start: path[path.length - 2],
+    end: path[path.length - 1],
+  };
+
+  const endAngle = Math.atan2(
+    lastSegment.end.y - lastSegment.start.y,
+    lastSegment.end.x - lastSegment.start.x
+  );
+
+  // Render arrowhead at end if specified
+  if (orthogonalConnector.arrowEnd) {
+    renderArrowhead(ctx, end, endAngle, scale, strokeColor);
+  }
+
+  // Render arrowhead at start if specified
+  if (orthogonalConnector.arrowStart) {
+    const firstSegment = {
+      start: path[0],
+      end: path[1],
+    };
+
+    const startAngle = Math.atan2(
+      firstSegment.end.y - firstSegment.start.y,
+      firstSegment.end.x - firstSegment.start.x
+    );
+
+    renderArrowhead(ctx, start, startAngle + Math.PI, scale, strokeColor);
+  }
+}

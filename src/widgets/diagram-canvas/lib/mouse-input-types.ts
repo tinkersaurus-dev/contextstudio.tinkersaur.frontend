@@ -81,6 +81,10 @@ export interface EntityCreationCallbacks {
 export interface CanvasSettingsCallbacks {
   /** Get the current snap mode */
   getSnapMode: () => SnapMode;
+  /** Check if default handlers should be skipped (e.g., when handling connection points) */
+  shouldSkipDefaultHandlers?: () => boolean;
+  /** Check if a world position is on a connection point */
+  isConnectionPointAt?: (worldX: number, worldY: number) => boolean;
 }
 
 /**

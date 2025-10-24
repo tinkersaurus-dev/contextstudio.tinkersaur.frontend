@@ -1,20 +1,35 @@
 import { create } from 'zustand';
 import { Shape } from '@/entities/shape';
+import { Connector } from '@/entities/connector';
 import { DiagramEntity } from '@/entities/diagram-entity';
+import { distanceToLineSegment } from '@/shared/lib/connection-points';
+import { getConnectorEndpoints, updateConnectorForShapeMove } from '@/entities/connector';
+import { CONNECTOR_HIT_CONFIG } from '@/shared/config/canvas-config';
 import type { SnapMode } from '@/shared/lib/snap-to-grid';
 
 interface CanvasState {
-  // Store all shapes (which are DiagramEntities)
-  // Currently only shapes, but prepared for future entity types (connectors, annotations, etc.)
+  // Store all shapes and connectors (DiagramEntities)
   shapes: Shape[];
+  connectors: Connector[];
   selectedEntityIds: Set<string>;
   draggingEntityIds: Set<string>;
   snapMode: SnapMode;
+
+  // Connector creation mode
+  isConnectorMode: boolean;
+  connectorSourceShapeId: string | null;
 
   // Shape actions
   addShape: (shape: Shape) => void;
   updateShape: (id: string, updates: Partial<Shape>) => void;
   deleteShape: (id: string) => void;
+
+  // Connector actions
+  addConnector: (connector: Connector) => void;
+  updateConnector: (id: string, updates: Partial<Connector>) => void;
+  deleteConnector: (id: string) => void;
+  getConnectorsForShape: (shapeId: string) => Connector[];
+  updateConnectorsForShapeMove: (shapeId: string) => void;
 
   // Selection actions
   setSelectedEntities: (ids: string[]) => void;
@@ -33,6 +48,11 @@ interface CanvasState {
   // Snap actions
   setSnapMode: (mode: SnapMode) => void;
 
+  // Connector mode actions
+  setConnectorMode: (enabled: boolean) => void;
+  setConnectorSource: (shapeId: string | null) => void;
+  resetConnectorCreation: () => void;
+
   // Hit detection
   getEntityAtPoint: (x: number, y: number) => DiagramEntity | null;
   getAllEntities: () => DiagramEntity[];
@@ -40,20 +60,30 @@ interface CanvasState {
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
   shapes: [],
+  connectors: [],
   selectedEntityIds: new Set<string>(),
   draggingEntityIds: new Set<string>(),
   snapMode: 'none',
+  isConnectorMode: false,
+  connectorSourceShapeId: null,
 
   // Shape actions
   addShape: (shape) => set((state) => ({
     shapes: [...state.shapes, shape],
   })),
 
-  updateShape: (id, updates) => set((state) => ({
-    shapes: state.shapes.map((shape) =>
-      shape.id === id ? { ...shape, ...updates } : shape
-    ),
-  })),
+  updateShape: (id, updates) => {
+    set((state) => ({
+      shapes: state.shapes.map((shape) =>
+        shape.id === id ? { ...shape, ...updates } : shape
+      ),
+    }));
+
+    // If position changed, update connected connectors
+    if (updates.position) {
+      get().updateConnectorsForShapeMove(id);
+    }
+  },
 
   deleteShape: (id) => set((state) => {
     const newSelectedIds = new Set(state.selectedEntityIds);
@@ -61,12 +91,80 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     const newDraggingIds = new Set(state.draggingEntityIds);
     newDraggingIds.delete(id);
 
+    // Also delete any connectors attached to this shape
+    const remainingConnectors = state.connectors.filter(
+      (connector) =>
+        connector.source.shapeId !== id && connector.target.shapeId !== id
+    );
+
+    // Remove deleted connectors from selection
+    const deletedConnectorIds = state.connectors
+      .filter(
+        (connector) =>
+          connector.source.shapeId === id || connector.target.shapeId === id
+      )
+      .map((c) => c.id);
+
+    deletedConnectorIds.forEach((connectorId) => newSelectedIds.delete(connectorId));
+
     return {
       shapes: state.shapes.filter((shape) => shape.id !== id),
+      connectors: remainingConnectors,
       selectedEntityIds: newSelectedIds,
       draggingEntityIds: newDraggingIds,
     };
   }),
+
+  // Connector actions
+  addConnector: (connector) => set((state) => ({
+    connectors: [...state.connectors, connector],
+  })),
+
+  updateConnector: (id, updates) => set((state) => ({
+    connectors: state.connectors.map((connector) =>
+      connector.id === id ? { ...connector, ...updates } : connector
+    ),
+  })),
+
+  deleteConnector: (id) => set((state) => {
+    const newSelectedIds = new Set(state.selectedEntityIds);
+    newSelectedIds.delete(id);
+    const newDraggingIds = new Set(state.draggingEntityIds);
+    newDraggingIds.delete(id);
+
+    return {
+      connectors: state.connectors.filter((connector) => connector.id !== id),
+      selectedEntityIds: newSelectedIds,
+      draggingEntityIds: newDraggingIds,
+    };
+  }),
+
+  getConnectorsForShape: (shapeId) => {
+    const { connectors } = get();
+    return connectors.filter(
+      (connector) =>
+        connector.source.shapeId === shapeId || connector.target.shapeId === shapeId
+    );
+  },
+
+  updateConnectorsForShapeMove: (shapeId) => {
+    const { connectors, shapes } = get();
+    const shapesMap = new Map(shapes.map((s) => [s.id, s]));
+
+    // Find all connectors attached to this shape
+    const affectedConnectors = connectors.filter(
+      (connector) =>
+        connector.source.shapeId === shapeId || connector.target.shapeId === shapeId
+    );
+
+    // Update each affected connector's bounding box
+    affectedConnectors.forEach((connector) => {
+      const updates = updateConnectorForShapeMove(connector, shapesMap);
+      if (updates) {
+        get().updateConnector(connector.id, updates);
+      }
+    });
+  },
 
   // Selection actions
   setSelectedEntities: (ids) => set({
@@ -123,9 +221,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
 
   getSelectedEntities: () => {
-    const { shapes, selectedEntityIds } = get();
-    // Shapes are DiagramEntities (no cast needed, type-safe)
-    return shapes.filter((entity) => selectedEntityIds.has(entity.id));
+    const { shapes, connectors, selectedEntityIds } = get();
+    const allEntities = [...shapes, ...connectors];
+    return allEntities.filter((entity) => selectedEntityIds.has(entity.id));
   },
 
   isSelected: (id) => {
@@ -144,13 +242,30 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   // Snap actions
   setSnapMode: (mode) => set({ snapMode: mode }),
 
+  // Connector mode actions
+  setConnectorMode: (enabled) => set({
+    isConnectorMode: enabled,
+    connectorSourceShapeId: enabled ? null : get().connectorSourceShapeId,
+  }),
+
+  setConnectorSource: (shapeId) => set({
+    connectorSourceShapeId: shapeId,
+  }),
+
+  resetConnectorCreation: () => set({
+    isConnectorMode: false,
+    connectorSourceShapeId: null,
+  }),
+
   // Hit detection
   getEntityAtPoint: (x, y) => {
-    const entities = get().getAllEntities();
-    // Iterate in reverse to check topmost entities first
-    for (let i = entities.length - 1; i >= 0; i--) {
-      const entity = entities[i];
-      const { position, dimensions } = entity;
+    const { shapes, connectors } = get();
+    const shapesMap = new Map(shapes.map((s) => [s.id, s]));
+
+    // Check shapes first (iterate in reverse to check topmost first)
+    for (let i = shapes.length - 1; i >= 0; i--) {
+      const shape = shapes[i];
+      const { position, dimensions } = shape;
 
       if (
         x >= position.x &&
@@ -158,16 +273,36 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         y >= position.y &&
         y <= position.y + dimensions.height
       ) {
-        return entity;
+        return shape;
       }
     }
+
+    // Check connectors (iterate in reverse to check topmost first)
+    for (let i = connectors.length - 1; i >= 0; i--) {
+      const connector = connectors[i];
+      const endpoints = getConnectorEndpoints(connector, shapesMap);
+
+      if (!endpoints) {
+        continue;
+      }
+
+      const distance = distanceToLineSegment(
+        { x, y },
+        endpoints.start,
+        endpoints.end
+      );
+
+      if (distance <= CONNECTOR_HIT_CONFIG.tolerance) {
+        return connector;
+      }
+    }
+
     return null;
   },
 
   getAllEntities: () => {
-    const { shapes } = get();
-    // Shapes are DiagramEntities (no cast needed, type-safe)
-    // Future: When adding connectors/annotations, concatenate all entity arrays here
-    return shapes;
+    const { shapes, connectors } = get();
+    // Return all entities: shapes and connectors
+    return [...shapes, ...connectors];
   },
 }));

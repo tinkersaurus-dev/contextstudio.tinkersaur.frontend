@@ -89,7 +89,7 @@ export const GRID_EPSILON = 0.01;
  */
 export const CANVAS_COLORS = {
   // Background
-  background: '#ffffff',
+  background: '#f7f7f7ff',
 
   // Grid
   gridMinor: '#CED8F7',
@@ -106,6 +106,15 @@ export const CANVAS_COLORS = {
   // Default Shape Colors
   defaultShapeFill: '#ffffff',
   defaultShapeStroke: '#000000',
+
+  // Connector Colors
+  connectorStroke: '#000000',
+  connectorStrokeSelected: '#ff6b35', // Bright orange (matches selection)
+  connectorStrokeHover: '#3b82f6', // Blue
+
+  // Connection Point Colors
+  connectionPoint: '#3b82f6', // Blue
+  connectionPointHover: '#ff6b35', // Orange
 } as const;
 
 // ============================================================================
@@ -119,6 +128,8 @@ export const STROKE_WIDTHS = {
   shape: 1,
   selection: 2,
   selectionBox: 1,
+  connector: 2,
+  connectorSelected: 3,
 } as const;
 
 /**
@@ -127,6 +138,32 @@ export const STROKE_WIDTHS = {
 export const DASH_PATTERNS = {
   selection: [8, 4], // [dash length, gap length]
   selectionBox: [5, 5],
+} as const;
+
+/**
+ * Arrowhead configuration
+ */
+export const ARROWHEAD_CONFIG = {
+  length: 12, // Length of arrowhead in pixels
+  width: 8, // Width of arrowhead base in pixels
+  angle: Math.PI / 6, // Angle of arrowhead (30 degrees)
+} as const;
+
+/**
+ * Connection point configuration
+ */
+export const CONNECTION_POINT_CONFIG = {
+  radius: 4, // Radius of connection point circles
+  hoverRadius: 6, // Radius when hovering
+  hitTolerance: 10, // Hit detection tolerance in pixels
+} as const;
+
+/**
+ * Connector hit detection configuration
+ */
+export const CONNECTOR_HIT_CONFIG = {
+  tolerance: 8, // Distance tolerance for clicking on connectors (pixels)
+  hoverTolerance: 10, // Distance tolerance for hovering (pixels)
 } as const;
 
 // ============================================================================

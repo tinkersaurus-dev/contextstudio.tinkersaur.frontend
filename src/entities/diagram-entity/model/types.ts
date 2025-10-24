@@ -7,8 +7,8 @@
 
 export enum DiagramEntityType {
   Shape = 'shape',
+  Connector = 'connector',
   // Future entity types:
-  // Connector = 'connector',
   // Annotation = 'annotation',
   // Group = 'group',
 }

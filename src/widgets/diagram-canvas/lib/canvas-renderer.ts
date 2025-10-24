@@ -7,8 +7,14 @@
 
 import { renderGrid, DEFAULT_GRID_CONFIG, type GridConfig } from './grid-renderer';
 import { renderShapes } from './shape-renderer';
+import { renderConnectors } from './connector-renderer';
+import {
+  renderConnectionPointsForShape,
+  renderConnectorPreview,
+} from './connection-point-renderer';
 import type { SelectionBox } from './selection-box-renderer';
 import type { Shape } from '@/entities/shape';
+import type { Connector } from '@/entities/connector';
 import { CANVAS_COLORS } from '@/shared/config/canvas-config';
 
 export interface CanvasRenderContext {
@@ -22,12 +28,23 @@ export interface CanvasRenderContext {
   panY: number;
   /** Shapes to render */
   shapes: Shape[];
+  /** Connectors to render */
+  connectors: Connector[];
   /** Set of selected entity IDs */
   selectedEntityIds: Set<string>;
   /** Optional selection box for multi-select */
   selectionBox?: SelectionBox | null;
   /** Optional grid configuration */
   gridConfig?: GridConfig;
+  /** Connector drag state */
+  connectorDragStart?: { x: number; y: number } | null;
+  connectorDragEnd?: { x: number; y: number } | null;
+  /** Whether in connector mode (showing connection points) */
+  isConnectorMode?: boolean;
+  /** Shape IDs to show connection points for */
+  hoveredShapeIds?: string[];
+  /** Specific connection point being hovered */
+  hoveredConnectionPoint?: { shapeId: string; anchor: string } | null;
 }
 
 /**
@@ -39,6 +56,7 @@ export interface CanvasRenderContext {
  * - Transform application (zoom and pan)
  * - Grid rendering
  * - Shape rendering
+ * - Connector rendering
  * - Selection box rendering
  *
  * Includes error handling to prevent rendering failures from crashing the canvas.
@@ -52,7 +70,8 @@ export interface CanvasRenderContext {
  *   panX: 100,
  *   panY: 200,
  *   shapes: shapes,
- *   selectedEntityIds: new Set(['shape-1', 'shape-2']),
+ *   connectors: connectors,
+ *   selectedEntityIds: new Set(['shape-1', 'connector-1']),
  *   selectionBox: null,
  * });
  */
@@ -63,9 +82,14 @@ export function renderCanvas(context: CanvasRenderContext): void {
     panX,
     panY,
     shapes,
+    connectors,
     selectedEntityIds,
     selectionBox = null,
     gridConfig = DEFAULT_GRID_CONFIG,
+    connectorDragStart = null,
+    connectorDragEnd = null,
+    hoveredShapeIds = [],
+    hoveredConnectionPoint = null,
   } = context;
 
   try {
@@ -109,6 +133,44 @@ export function renderCanvas(context: CanvasRenderContext): void {
       renderShapes(ctx, shapes, selectedEntityIds, scale, selectionBox);
     } catch (error) {
       console.error('Error rendering shapes:', error);
+      // Continue rendering despite error
+    }
+
+    try {
+      // Render all connectors
+      renderConnectors(ctx, connectors, shapes, selectedEntityIds, scale);
+    } catch (error) {
+      console.error('Error rendering connectors:', error);
+      // Continue rendering despite error
+    }
+
+    try {
+      // Render connection points for hovered shapes
+      if (hoveredShapeIds.length > 0) {
+        const hoveredShapes = shapes.filter((s) => hoveredShapeIds.includes(s.id));
+
+        hoveredShapes.forEach((shape) => {
+          const highlightAnchor =
+            hoveredConnectionPoint?.shapeId === shape.id
+              ? hoveredConnectionPoint.anchor
+              : undefined;
+          renderConnectionPointsForShape(ctx, shape, scale, highlightAnchor);
+        });
+      }
+
+      // Show preview line if dragging connector
+      if (connectorDragStart && connectorDragEnd) {
+        renderConnectorPreview(
+          ctx,
+          connectorDragStart.x,
+          connectorDragStart.y,
+          connectorDragEnd.x,
+          connectorDragEnd.y,
+          scale
+        );
+      }
+    } catch (error) {
+      console.error('Error rendering connection points:', error);
       // Continue to restore context despite error
     }
 

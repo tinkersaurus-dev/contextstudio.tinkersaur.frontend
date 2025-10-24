@@ -88,6 +88,11 @@ export function setupMouseInput(
 
   // Mouse down handler
   const handleMouseDown = (event: MouseEvent) => {
+    // Check if we should skip default handlers (e.g., when handling connection points)
+    if (entityCallbacks?.shouldSkipDefaultHandlers?.()) {
+      return; // Don't handle shape drag/selection when connection point is being handled
+    }
+
     const screenPos = getCanvasMousePosition(event, canvas);
     const screenX = screenPos.x;
     const screenY = screenPos.y;
@@ -109,6 +114,13 @@ export function setupMouseInput(
     // Left click - entity selection/dragging or selection box
     if (event.button === MOUSE_BUTTONS.LEFT && entityCallbacks) {
       const worldPos = screenToWorld(screenX, screenY, getZoomState());
+
+      // Check if clicking on a connection point first (before entity/shape check)
+      if (entityCallbacks.isConnectionPointAt?.(worldPos.x, worldPos.y)) {
+        // Let the React handler deal with connection points
+        return;
+      }
+
       const entity = entityCallbacks.getEntityAtPoint(worldPos.x, worldPos.y);
 
       if (entity) {
