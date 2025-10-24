@@ -293,7 +293,27 @@ export class GridSystem {
 }
 ```
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED** - 2025-10-24
+**Details:** Created [grid-system.ts](src/shared/lib/grid-system.ts) as a unified API for all grid operations:
+- **`GridSystem` class** - Static methods providing cohesive API
+- **Grid sizing**: `getGridSizeForZoom()` - Adaptive grid sizing based on zoom level
+- **Snapping**: `snapPoint()`, `snapToMinorGrid()`, `snapToMajorGrid()` - Snap coordinates to grid intersections
+- **Rendering**: `render()`, `renderLegacy()` - Draw grid on canvas with adaptive spacing
+- **Internal utilities**: `drawGridLines()`, `snapToGridLine()` - Private helper methods
+
+Refactored existing files to use the new system:
+- [canvas-renderer.ts](src/widgets/diagram-canvas/lib/canvas-renderer.ts) - Uses `GridSystem.renderLegacy()`
+- [mouse-handlers.ts](src/widgets/diagram-canvas/lib/mouse-handlers.ts) - Uses `GridSystem.snapPoint()` for entity dragging
+- [canvas-store.ts](src/widgets/diagram-canvas/model/canvas-store.ts) - Imports `SnapMode` type from `GridSystem`
+- [mouse-input-types.ts](src/widgets/diagram-canvas/lib/mouse-input-types.ts) - Imports `SnapMode` type from `GridSystem`
+- [snap-mode-config.tsx](src/widgets/canvas-controls/config/snap-mode-config.tsx) - Imports `SnapMode` type from `GridSystem`
+
+**Removed** obsolete files:
+- ❌ `grid-renderer.ts`
+- ❌ `grid-utils.ts`
+- ❌ `snap-to-grid.ts`
+
+All grid functionality now accessible through a single, well-documented interface. Grid configuration constants remain in `canvas-config.ts` as the single source of truth for configuration values.
 
 ---
 
@@ -316,7 +336,7 @@ export class ShapeSystem {
 }
 ```
 
-**Status:** ⬜ Not Started
+**Status:** ~~⬜ Not Started~~ **DEFERRED** - Shape system still evolving, will revisit after shape features stabilize
 
 ---
 
@@ -758,6 +778,7 @@ if (!endpoints) return; // No warning or log
 4. ✅ Separate hit detection from store
 5. ~~⬜ Extract duplicate selection state management~~ **REJECTED**
 6. ✅ Refactor mouse input setup
+7. ✅ Extract grid system
 
 ### Phase 2 - Quality Improvements
 6. ⬜ Create Transform system class
@@ -778,9 +799,9 @@ if (!endpoints) return; // No warning or log
 ## Progress Tracking
 
 **Total Items:** 40
-**Completed:** 5
+**Completed:** 6
 **In Progress:** 0
-**Not Started:** 33
+**Not Started:** 32
 **Deferred:** 1
 **Rejected:** 1
 

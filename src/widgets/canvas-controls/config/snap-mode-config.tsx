@@ -7,7 +7,7 @@
 
 import { MdGrid3X3, MdGridGoldenratio } from 'react-icons/md';
 import { CiNoWaitingSign } from 'react-icons/ci';
-import type { SnapMode } from '@/shared/lib/snap-to-grid';
+import type { SnapMode } from '@/shared/lib/grid-system';
 import type { IconType } from 'react-icons';
 
 export interface SnapModeOption {

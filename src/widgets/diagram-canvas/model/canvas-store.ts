@@ -3,7 +3,7 @@ import { Shape } from '@/entities/shape';
 import { Connector } from '@/entities/connector';
 import { DiagramEntity } from '@/entities/diagram-entity';
 import { updateConnectorForShapeMove } from '@/entities/connector';
-import type { SnapMode } from '@/shared/lib/snap-to-grid';
+import type { SnapMode } from '@/shared/lib/grid-system';
 import {
   getEntityAtPoint as getEntityAtPointHitDetection,
   selectEntitiesInBox as selectEntitiesInBoxHitDetection,

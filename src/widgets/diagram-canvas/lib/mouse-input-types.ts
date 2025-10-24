@@ -5,7 +5,7 @@
  */
 
 import type { DiagramEntity } from '@/entities/diagram-entity';
-import type { SnapMode } from '@/shared/lib/snap-to-grid';
+import type { SnapMode } from '@/shared/lib/grid-system';
 
 // Zoom state
 export interface ZoomState {

@@ -5,7 +5,7 @@
  * This separates rendering concerns from component logic for better testability.
  */
 
-import { renderGrid, DEFAULT_GRID_CONFIG, type GridConfig } from './grid-renderer';
+import { GridSystem, DEFAULT_GRID_CONFIG, type GridConfig } from '@/shared/lib/grid-system';
 import { renderShapes } from './shape-renderer';
 import { renderConnectors } from './connector-renderer';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
@@ -119,7 +119,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
 
     try {
       // Render grid
-      renderGrid(ctx, canvas.width, canvas.height, scale, panX, panY, gridConfig);
+      GridSystem.renderLegacy(ctx, canvas.width, canvas.height, scale, panX, panY, gridConfig);
     } catch (error) {
       console.error('Error rendering grid:', error);
       // Continue rendering despite grid error

@@ -13,7 +13,7 @@ import {
   type Point,
 } from '@/shared/lib/canvas-coordinates';
 import { ZOOM_CONFIG } from '@/shared/config/canvas-config';
-import { snapToGrid } from '@/shared/lib/snap-to-grid';
+import { GridSystem } from '@/shared/lib/grid-system';
 import type {
   ZoomState,
   EntityInteractionCallbacks,
@@ -210,7 +210,7 @@ export function handleEntityDrag(
       let newY = initialPos.y + deltaY;
 
       if (snapMode !== 'none') {
-        const snapped = snapToGrid(newX, newY, currentZoomState.scale, snapMode);
+        const snapped = GridSystem.snapPoint(newX, newY, currentZoomState.scale, snapMode);
         newX = snapped.x;
         newY = snapped.y;
       }
