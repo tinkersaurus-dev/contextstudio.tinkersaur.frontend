@@ -7,6 +7,7 @@ import { SelectionBox } from '../lib/selection-box-renderer';
 import { useCanvasStore } from '../model/canvas-store';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
 import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
+import { ToolsetPopover, useToolsetPopoverStore } from '@/widgets/toolset-popover';
 
 export function DiagramCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -40,6 +41,9 @@ export function DiagramCanvas() {
   const snapModeRef = useRef(snapMode);
   snapModeRef.current = snapMode;
 
+  // Get toolset popover store
+  const { open: openToolsetPopover } = useToolsetPopoverStore();
+
   // Setup mouse input handlers (only once)
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -63,6 +67,9 @@ export function DiagramCanvas() {
       createRectangleAtPoint: (x, y) => {
         const newShape = createRectangleAtPoint(x, y);
         addShape(newShape);
+      },
+      openToolsetPopover: (screenX, screenY, worldX, worldY) => {
+        openToolsetPopover(screenX, screenY, worldX, worldY);
       },
       onSelectionBoxChange: (box) => {
         if (box) {
@@ -101,6 +108,7 @@ export function DiagramCanvas() {
     selectEntitiesInBox,
     setDraggingEntities,
     clearDraggingEntities,
+    openToolsetPopover,
   ]);
 
   // Render canvas when zoom, shapes, selection, or size changes
@@ -134,9 +142,13 @@ export function DiagramCanvas() {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%' }}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <canvas
         ref={canvasRef}
+        onContextMenu={(e) => e.preventDefault()}
         style={{
           width: '100%',
           height: '100%',
@@ -145,6 +157,7 @@ export function DiagramCanvas() {
       />
       <CanvasControls />
       <ZoomControl zoom={zoomState.scale} onReset={handleResetZoom} />
+      <ToolsetPopover />
     </div>
   );
 }

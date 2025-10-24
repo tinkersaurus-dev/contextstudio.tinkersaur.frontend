@@ -88,6 +88,8 @@ export interface EntityDragCallbacks {
 export interface EntityCreationCallbacks {
   /** Create a rectangle at the specified point */
   createRectangleAtPoint: (x: number, y: number) => void;
+  /** Open toolset popover at the specified screen and world positions */
+  openToolsetPopover?: (screenX: number, screenY: number, worldX: number, worldY: number) => void;
 }
 
 /**
@@ -179,11 +181,18 @@ export function setupMouseInput(
     const screenX = screenPos.x;
     const screenY = screenPos.y;
 
-    // Right click - create rectangle
+    // Right click - open toolset popover (or create rectangle as fallback)
     if (event.button === 2 && entityCallbacks) {
       event.preventDefault();
       const worldPos = screenToWorld(screenX, screenY, getCurrentZoomState());
-      entityCallbacks.createRectangleAtPoint(worldPos.x, worldPos.y);
+
+      // Use toolset popover if available, otherwise fallback to rectangle creation
+      if (entityCallbacks.openToolsetPopover) {
+        // Pass both screen coordinates (for UI positioning) and world coordinates (for shape creation)
+        entityCallbacks.openToolsetPopover(screenX, screenY, worldPos.x, worldPos.y);
+      } else {
+        entityCallbacks.createRectangleAtPoint(worldPos.x, worldPos.y);
+      }
       return;
     }
 

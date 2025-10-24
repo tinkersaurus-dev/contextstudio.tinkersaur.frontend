@@ -20,3 +20,5 @@ export { ButtonGroup } from "./button-group";
 export type { ButtonGroupProps } from "./button-group";
 export { ActionBar, ActionBarRoot, ActionBarPositioner, ActionBarContent, ActionBarSelectionTrigger, ActionBarSeparator, ActionBarCloseTrigger } from "./action-bar";
 export type { ActionBarRootProps, ActionBarPositionerProps, ActionBarContentProps, ActionBarSelectionTriggerProps, ActionBarSeparatorProps, ActionBarCloseTriggerProps } from "./action-bar";
+export { PopoverRoot, PopoverTrigger, PopoverAnchor, PopoverPositioner, PopoverContent, PopoverArrow, PopoverArrowTip, PopoverBody, PopoverHeader, PopoverFooter, PopoverTitle, PopoverDescription, PopoverCloseTrigger } from "./popover";
+export type { PopoverRootProps, PopoverContentProps } from "./popover";

@@ -2,6 +2,12 @@ import { DiagramEntity, DiagramEntityType, Position, Dimensions } from '@/entiti
 
 export enum ShapeType {
   Rectangle = 'rectangle',
+  // BPMN Shape Types
+  Task = 'task',
+  StartEvent = 'start-event',
+  EndEvent = 'end-event',
+  Gateway = 'gateway',
+  Pool = 'pool',
 }
 
 /**
@@ -20,7 +26,50 @@ export interface RectangleShape extends BaseShape {
   shapeType: ShapeType.Rectangle;
 }
 
-export type Shape = RectangleShape;
+/**
+ * BPMN Task shape (rounded rectangle)
+ */
+export interface TaskShape extends BaseShape {
+  shapeType: ShapeType.Task;
+  /** Corner radius for rounded corners */
+  cornerRadius?: number;
+}
+
+/**
+ * BPMN Start Event shape (circle)
+ */
+export interface StartEventShape extends BaseShape {
+  shapeType: ShapeType.StartEvent;
+}
+
+/**
+ * BPMN End Event shape (double circle)
+ */
+export interface EndEventShape extends BaseShape {
+  shapeType: ShapeType.EndEvent;
+}
+
+/**
+ * BPMN Gateway shape (diamond/rhombus)
+ */
+export interface GatewayShape extends BaseShape {
+  shapeType: ShapeType.Gateway;
+}
+
+/**
+ * BPMN Pool shape (large rectangle for process grouping)
+ */
+export interface PoolShape extends BaseShape {
+  shapeType: ShapeType.Pool;
+}
+
+export type Shape =
+  | RectangleShape
+  | TaskShape
+  | StartEventShape
+  | EndEventShape
+  | GatewayShape
+  | PoolShape;
 
 // Re-export common types for convenience
 export type { Position, Dimensions };

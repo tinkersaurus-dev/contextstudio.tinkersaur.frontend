@@ -7,6 +7,11 @@
 
 import { ShapeType, type BaseShape } from '../model/types';
 import { renderRectangle } from '../ui/rectangle-shape';
+import { renderTask } from '../ui/task-shape';
+import { renderStartEvent } from '../ui/start-event-shape';
+import { renderEndEvent } from '../ui/end-event-shape';
+import { renderGateway } from '../ui/gateway-shape';
+import { renderPool } from '../ui/pool-shape';
 
 /**
  * Shape renderer function signature
@@ -43,6 +48,12 @@ class ShapeRegistry {
    */
   private registerDefaultShapes(): void {
     this.register(ShapeType.Rectangle, renderRectangle, 'Rectangle');
+    // Register BPMN shapes
+    this.register(ShapeType.Task, renderTask, 'Task');
+    this.register(ShapeType.StartEvent, renderStartEvent, 'Start Event');
+    this.register(ShapeType.EndEvent, renderEndEvent, 'End Event');
+    this.register(ShapeType.Gateway, renderGateway, 'Gateway');
+    this.register(ShapeType.Pool, renderPool, 'Pool');
   }
 
   /**
