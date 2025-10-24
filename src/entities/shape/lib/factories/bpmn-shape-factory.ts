@@ -7,6 +7,7 @@
 
 import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
 import { generateShapeId } from '@/shared/lib/id-generator';
+import { calculatePosition } from '@/shared/lib/shape-position-utils';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import { ShapeType } from '../../model/types';
 import type {
@@ -16,6 +17,11 @@ import type {
   GatewayShape,
   PoolShape,
 } from '../../model/types';
+import type {
+  RectangularShapeOptions,
+  CircularShapeOptions,
+  SquareShapeOptions,
+} from './base-factory-types';
 
 // ============================================================================
 // BPMN Task Shape
@@ -24,14 +30,9 @@ import type {
 /**
  * Options for creating a BPMN Task shape
  */
-export interface CreateTaskOptions {
-  width?: number;
-  height?: number;
+export interface CreateTaskOptions extends RectangularShapeOptions {
+  /** Corner radius for rounded rectangle */
   cornerRadius?: number;
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  centered?: boolean;
 }
 
 /**
@@ -57,14 +58,13 @@ export function createTask(
     centered = true,
   } = options;
 
-  const positionX = centered ? x - width / 2 : x;
-  const positionY = centered ? y - height / 2 : y;
+  const position = calculatePosition(x, y, width, height, centered);
 
   return {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.Task,
-    position: { x: positionX, y: positionY },
+    position,
     dimensions: { width, height },
     cornerRadius,
     fillColor,
@@ -80,13 +80,7 @@ export function createTask(
 /**
  * Options for creating a BPMN Start Event shape
  */
-export interface CreateStartEventOptions {
-  diameter?: number;
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  centered?: boolean;
-}
+export type CreateStartEventOptions = CircularShapeOptions;
 
 /**
  * Create a BPMN Start Event shape (circle)
@@ -109,14 +103,13 @@ export function createStartEvent(
     centered = true,
   } = options;
 
-  const positionX = centered ? x - diameter / 2 : x;
-  const positionY = centered ? y - diameter / 2 : y;
+  const position = calculatePosition(x, y, diameter, diameter, centered);
 
   return {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.StartEvent,
-    position: { x: positionX, y: positionY },
+    position,
     dimensions: { width: diameter, height: diameter },
     fillColor,
     strokeColor,
@@ -127,13 +120,7 @@ export function createStartEvent(
 /**
  * Options for creating a BPMN End Event shape
  */
-export interface CreateEndEventOptions {
-  diameter?: number;
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  centered?: boolean;
-}
+export type CreateEndEventOptions = CircularShapeOptions;
 
 /**
  * Create a BPMN End Event shape (double circle)
@@ -156,14 +143,13 @@ export function createEndEvent(
     centered = true,
   } = options;
 
-  const positionX = centered ? x - diameter / 2 : x;
-  const positionY = centered ? y - diameter / 2 : y;
+  const position = calculatePosition(x, y, diameter, diameter, centered);
 
   return {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.EndEvent,
-    position: { x: positionX, y: positionY },
+    position,
     dimensions: { width: diameter, height: diameter },
     fillColor,
     strokeColor,
@@ -178,13 +164,7 @@ export function createEndEvent(
 /**
  * Options for creating a BPMN Gateway shape
  */
-export interface CreateGatewayOptions {
-  size?: number;
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  centered?: boolean;
-}
+export type CreateGatewayOptions = SquareShapeOptions;
 
 /**
  * Create a BPMN Gateway shape (diamond)
@@ -207,14 +187,13 @@ export function createGateway(
     centered = true,
   } = options;
 
-  const positionX = centered ? x - size / 2 : x;
-  const positionY = centered ? y - size / 2 : y;
+  const position = calculatePosition(x, y, size, size, centered);
 
   return {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.Gateway,
-    position: { x: positionX, y: positionY },
+    position,
     dimensions: { width: size, height: size },
     fillColor,
     strokeColor,
@@ -229,14 +208,7 @@ export function createGateway(
 /**
  * Options for creating a BPMN Pool shape
  */
-export interface CreatePoolOptions {
-  width?: number;
-  height?: number;
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  centered?: boolean;
-}
+export type CreatePoolOptions = RectangularShapeOptions;
 
 /**
  * Create a BPMN Pool shape (large rectangle for process grouping)
@@ -260,14 +232,13 @@ export function createPool(
     centered = true,
   } = options;
 
-  const positionX = centered ? x - width / 2 : x;
-  const positionY = centered ? y - height / 2 : y;
+  const position = calculatePosition(x, y, width, height, centered);
 
   return {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.Pool,
-    position: { x: positionX, y: positionY },
+    position,
     dimensions: { width, height },
     fillColor,
     strokeColor,

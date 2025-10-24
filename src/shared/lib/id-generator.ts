@@ -19,7 +19,10 @@
  * // Returns: "shape-1234567890-abc123xyz"
  */
 export function generateId(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  // Use modern substring() instead of deprecated substr()
+  // Generate random alphanumeric string using base36 encoding
+  const randomPart = Math.random().toString(36).substring(2, 11);
+  return `${prefix}-${Date.now()}-${randomPart}`;
 }
 
 /**

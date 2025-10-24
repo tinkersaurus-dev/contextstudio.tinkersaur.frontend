@@ -5,6 +5,8 @@ import { renderSelectionBox, SelectionBox } from './selection-box-renderer';
 
 /**
  * Renders all shapes to the canvas
+ *
+ * Includes per-shape error handling to prevent single shape failures from affecting others.
  */
 export function renderShapes(
   ctx: CanvasRenderingContext2D,
@@ -14,14 +16,23 @@ export function renderShapes(
   selectionBox: SelectionBox | null = null
 ): void {
   shapes.forEach((shape) => {
-    const isSelected = selectedEntityIds.has(shape.id);
+    try {
+      const isSelected = selectedEntityIds.has(shape.id);
 
-    // Use registry pattern for extensible shape rendering
-    renderBaseShape(ctx, shape, isSelected, scale, renderShapeFromRegistry);
+      // Use registry pattern for extensible shape rendering
+      renderBaseShape(ctx, shape, isSelected, scale, renderShapeFromRegistry);
+    } catch (error) {
+      console.error(`Error rendering shape ${shape.id}:`, error);
+      // Continue rendering other shapes despite error
+    }
   });
 
   // Render selection box if active
   if (selectionBox) {
-    renderSelectionBox(ctx, selectionBox, scale);
+    try {
+      renderSelectionBox(ctx, selectionBox, scale);
+    } catch (error) {
+      console.error('Error rendering selection box:', error);
+    }
   }
 }

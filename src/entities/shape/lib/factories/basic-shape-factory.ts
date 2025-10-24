@@ -8,12 +8,13 @@
 import {
   CANVAS_COLORS,
   STROKE_WIDTHS,
-  SHAPE_CREATION_OFFSET,
 } from '@/shared/config/canvas-config';
 import { generateShapeId } from '@/shared/lib/id-generator';
+import { calculatePosition } from '@/shared/lib/shape-position-utils';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import { ShapeType } from '../../model/types';
 import type { RectangleShape } from '../../model/types';
+import type { RectangularShapeOptions } from './base-factory-types';
 
 // ============================================================================
 // Rectangle Shape
@@ -22,14 +23,7 @@ import type { RectangleShape } from '../../model/types';
 /**
  * Options for creating a rectangle
  */
-export interface CreateRectangleOptions {
-  width?: number;
-  height?: number;
-  fillColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  centered?: boolean; // If true, (x, y) is the center; if false, it's the top-left corner
-}
+export type CreateRectangleOptions = RectangularShapeOptions;
 
 /**
  * Create a rectangle shape at the specified position
@@ -67,18 +61,14 @@ export function createRectangle(
     centered = true,
   } = options;
 
-  // Calculate position (center the shape by default)
-  const positionX = centered ? x - SHAPE_CREATION_OFFSET.x : x;
-  const positionY = centered ? y - SHAPE_CREATION_OFFSET.y : y;
+  // Calculate position using utility function
+  const position = calculatePosition(x, y, width, height, centered);
 
   return {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.Rectangle,
-    position: {
-      x: positionX,
-      y: positionY,
-    },
+    position,
     dimensions: {
       width,
       height,

@@ -41,6 +41,8 @@ export interface CanvasRenderContext {
  * - Shape rendering
  * - Selection box rendering
  *
+ * Includes error handling to prevent rendering failures from crashing the canvas.
+ *
  * @param context - Rendering context with all necessary data
  *
  * @example
@@ -66,33 +68,62 @@ export function renderCanvas(context: CanvasRenderContext): void {
     gridConfig = DEFAULT_GRID_CONFIG,
   } = context;
 
-  // Ensure canvas matches parent size
-  const parent = canvas.parentElement;
-  if (!parent) return;
+  try {
+    // Ensure canvas matches parent size
+    const parent = canvas.parentElement;
+    if (!parent) {
+      console.warn('Canvas has no parent element, skipping render');
+      return;
+    }
 
-  canvas.width = parent.clientWidth;
-  canvas.height = parent.clientHeight;
+    canvas.width = parent.clientWidth;
+    canvas.height = parent.clientHeight;
 
-  // Get rendering context
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+    // Get rendering context
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.error('Failed to get 2D rendering context');
+      return;
+    }
 
-  // Fill canvas with background color
-  ctx.fillStyle = CANVAS_COLORS.background;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Fill canvas with background color
+    ctx.fillStyle = CANVAS_COLORS.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Apply pan and zoom transform
-  // IMPORTANT: scale first, then translate!
-  ctx.save();
-  ctx.scale(scale, scale);
-  ctx.translate(panX / scale, panY / scale);
+    // Apply pan and zoom transform
+    // IMPORTANT: scale first, then translate!
+    ctx.save();
+    ctx.scale(scale, scale);
+    ctx.translate(panX / scale, panY / scale);
 
-  // Render grid
-  renderGrid(ctx, canvas.width, canvas.height, scale, panX, panY, gridConfig);
+    try {
+      // Render grid
+      renderGrid(ctx, canvas.width, canvas.height, scale, panX, panY, gridConfig);
+    } catch (error) {
+      console.error('Error rendering grid:', error);
+      // Continue rendering despite grid error
+    }
 
-  // Render all shapes with selection and selection box
-  renderShapes(ctx, shapes, selectedEntityIds, scale, selectionBox);
+    try {
+      // Render all shapes with selection and selection box
+      renderShapes(ctx, shapes, selectedEntityIds, scale, selectionBox);
+    } catch (error) {
+      console.error('Error rendering shapes:', error);
+      // Continue to restore context despite error
+    }
 
-  // Restore context
-  ctx.restore();
+    // Restore context
+    ctx.restore();
+  } catch (error) {
+    console.error('Critical error in canvas rendering:', error);
+    // Try to restore a basic canvas state
+    try {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.restore();
+      }
+    } catch {
+      // Ignore restore errors
+    }
+  }
 }

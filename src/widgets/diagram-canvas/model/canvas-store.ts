@@ -4,6 +4,8 @@ import { DiagramEntity } from '@/entities/diagram-entity';
 import type { SnapMode } from '@/shared/lib/snap-to-grid';
 
 interface CanvasState {
+  // Store all shapes (which are DiagramEntities)
+  // Currently only shapes, but prepared for future entity types (connectors, annotations, etc.)
   shapes: Shape[];
   selectedEntityIds: Set<string>;
   draggingEntityIds: Set<string>;
@@ -122,8 +124,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   getSelectedEntities: () => {
     const { shapes, selectedEntityIds } = get();
-    const allEntities = shapes as DiagramEntity[];
-    return allEntities.filter((entity) => selectedEntityIds.has(entity.id));
+    // Shapes are DiagramEntities (no cast needed, type-safe)
+    return shapes.filter((entity) => selectedEntityIds.has(entity.id));
   },
 
   isSelected: (id) => {
@@ -164,7 +166,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   getAllEntities: () => {
     const { shapes } = get();
-    // Currently only shapes, but will include other entity types in the future
-    return shapes as DiagramEntity[];
+    // Shapes are DiagramEntities (no cast needed, type-safe)
+    // Future: When adding connectors/annotations, concatenate all entity arrays here
+    return shapes;
   },
 }));
