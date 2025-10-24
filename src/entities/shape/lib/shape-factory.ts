@@ -8,7 +8,6 @@
 import {
   CANVAS_COLORS,
   STROKE_WIDTHS,
-  DEFAULT_SHAPE_DIMENSIONS,
   SHAPE_CREATION_OFFSET,
 } from '@/shared/config/canvas-config';
 import { DiagramEntityType } from '@/entities/diagram-entity';
@@ -61,8 +60,8 @@ export function createRectangle(
   options: CreateRectangleOptions = {}
 ): RectangleShape {
   const {
-    width = DEFAULT_SHAPE_DIMENSIONS.width,
-    height = DEFAULT_SHAPE_DIMENSIONS.height,
+    width = 120,
+    height = 80,
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,

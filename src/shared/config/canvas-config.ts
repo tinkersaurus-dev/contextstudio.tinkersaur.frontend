@@ -43,12 +43,12 @@ export interface ZoomThreshold {
  * Higher zoom = finer grid, lower zoom = coarser grid
  */
 export const ZOOM_THRESHOLDS: readonly ZoomThreshold[] = [
-  { minZoom: 4.0, minor: 5, major: 25 }, // 400%+ zoom
-  { minZoom: 2.0, minor: 10, major: 50 }, // 200% zoom
-  { minZoom: 0.75, minor: 20, major: 100 }, // 75% zoom
-  { minZoom: 0.5, minor: 40, major: 200 }, // 50% zoom
-  { minZoom: 0.25, minor: 80, major: 400 }, // 25% zoom
-  { minZoom: 0.0, minor: 160, major: 800 }, // Below 25% zoom
+  { minZoom: 4.0, minor: 1, major: 4 }, // 400%+ zoom
+  { minZoom: 2.0, minor: 5, major: 20 }, // 200% zoom
+  { minZoom: 0.75, minor: 10, major: 40 }, // 75% zoom
+  { minZoom: 0.5, minor: 20, major: 80 }, // 50% zoom
+  { minZoom: 0.25, minor: 40, major: 160 }, // 25% zoom
+  { minZoom: 0.0, minor: 80, major: 320 }, // Below 25% zoom
 ] as const;
 
 export interface GridConfig {
@@ -116,9 +116,9 @@ export const CANVAS_COLORS = {
  * Default stroke widths for various elements
  */
 export const STROKE_WIDTHS = {
-  shape: 2,
-  selection: 3,
-  selectionBox: 1.5,
+  shape: 1,
+  selection: 2,
+  selectionBox: 1,
 } as const;
 
 /**

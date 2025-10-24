@@ -7,6 +7,7 @@ import {
   type Point,
 } from '@/shared/lib/canvas-coordinates';
 import { ZOOM_CONFIG } from '@/shared/config/canvas-config';
+import { snapToGrid, type SnapMode } from '@/shared/lib/snap-to-grid';
 
 // Types
 export interface ZoomState {
@@ -53,6 +54,7 @@ export interface EntityInteractionCallbacks {
   updateEntityPosition: (id: string, x: number, y: number) => void;
   createRectangleAtPoint: (x: number, y: number) => void;
   onSelectionBoxChange?: (box: SelectionBoxState | null) => void;
+  getSnapMode: () => SnapMode;
 }
 
 export function setupMouseInput(
@@ -210,13 +212,22 @@ export function setupMouseInput(
       const currentZoomState = getCurrentZoomState();
       const deltaX = (screenX - dragState.startX) / currentZoomState.scale;
       const deltaY = (screenY - dragState.startY) / currentZoomState.scale;
+      const snapMode = entityCallbacks.getSnapMode();
 
       // Move all dragged entities
       dragState.draggedEntityIds.forEach((id) => {
         const initialPos = dragState.initialPositions.get(id);
         if (initialPos) {
-          const newX = initialPos.x + deltaX;
-          const newY = initialPos.y + deltaY;
+          let newX = initialPos.x + deltaX;
+          let newY = initialPos.y + deltaY;
+
+          // Apply snapping if enabled - each entity snaps independently to maintain relative distances
+          if (snapMode !== 'none') {
+            const snapped = snapToGrid(newX, newY, currentZoomState.scale, snapMode);
+            newX = snapped.x;
+            newY = snapped.y;
+          }
+
           entityCallbacks.updateEntityPosition(id, newX, newY);
         }
       });

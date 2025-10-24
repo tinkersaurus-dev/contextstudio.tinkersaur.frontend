@@ -9,7 +9,7 @@ export function renderRectangle(
   isSelected: boolean,
   scale: number
 ): void {
-  const { position, dimensions, fillColor = '#ffffff', strokeColor = '#000000', strokeWidth = 2 } = shape;
+  const { position, dimensions, fillColor = '#ffffff', strokeColor = '#000000', strokeWidth = 0.5 } = shape;
 
   // Fill the rectangle
   ctx.fillStyle = fillColor;

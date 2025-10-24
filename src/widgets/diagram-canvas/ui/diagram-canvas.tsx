@@ -8,6 +8,7 @@ import { SelectionBox } from '../lib/selection-box-renderer';
 import { useCanvasStore } from '../model/canvas-store';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
 import { CanvasBadgeMenu } from '@/shared/ui';
+import { CanvasControls } from '@/widgets/canvas-controls';
 
 export function DiagramCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,6 +23,7 @@ export function DiagramCanvas() {
   const {
     shapes,
     selectedEntityIds,
+    snapMode,
     addShape,
     updateShape,
     getEntityAtPoint,
@@ -35,6 +37,10 @@ export function DiagramCanvas() {
     setDraggingEntities,
     clearDraggingEntities,
   } = useCanvasStore();
+
+  // Use a ref to always have access to current snap mode
+  const snapModeRef = useRef(snapMode);
+  snapModeRef.current = snapMode;
 
   // Setup mouse input handlers (only once)
   useEffect(() => {
@@ -72,6 +78,7 @@ export function DiagramCanvas() {
           setSelectionBox(null);
         }
       },
+      getSnapMode: () => snapModeRef.current,
     };
 
     // Pass getter function that always returns current zoom state
@@ -154,6 +161,7 @@ export function DiagramCanvas() {
           display: 'block',
         }}
       />
+      <CanvasControls />
       <CanvasBadgeMenu
         badgeContent={`${Math.round(zoomState.scale * 100)}%`}
         menuItems={[

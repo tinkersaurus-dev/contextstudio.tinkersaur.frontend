@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { Shape } from '@/entities/shape';
 import { DiagramEntity } from '@/entities/diagram-entity';
+import type { SnapMode } from '@/shared/lib/snap-to-grid';
 
 interface CanvasState {
   shapes: Shape[];
   selectedEntityIds: Set<string>;
   draggingEntityIds: Set<string>;
+  snapMode: SnapMode;
 
   // Shape actions
   addShape: (shape: Shape) => void;
@@ -26,6 +28,9 @@ interface CanvasState {
   setDraggingEntities: (ids: string[]) => void;
   clearDraggingEntities: () => void;
 
+  // Snap actions
+  setSnapMode: (mode: SnapMode) => void;
+
   // Hit detection
   getEntityAtPoint: (x: number, y: number) => DiagramEntity | null;
   getAllEntities: () => DiagramEntity[];
@@ -35,6 +40,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   shapes: [],
   selectedEntityIds: new Set<string>(),
   draggingEntityIds: new Set<string>(),
+  snapMode: 'none',
 
   // Shape actions
   addShape: (shape) => set((state) => ({
@@ -132,6 +138,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   clearDraggingEntities: () => set({
     draggingEntityIds: new Set<string>(),
   }),
+
+  // Snap actions
+  setSnapMode: (mode) => set({ snapMode: mode }),
 
   // Hit detection
   getEntityAtPoint: (x, y) => {
