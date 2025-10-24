@@ -381,7 +381,7 @@ All renderers now follow a consistent pattern with context objects. No obsolete 
 
 ---
 
-#### 4.2 Position Calculation Inconsistency
+#### 4.2 Position Calculation Inconsistency ✅ COMPLETED
 **Issue:** Multiple ways to handle centering:
 - `calculatePosition()` with boolean flag
 - `calculateCenteredPosition()` direct
@@ -395,7 +395,18 @@ interface PositionOptions {
 }
 ```
 
-**Status:** ⬜ Not Started
+**Solution Implemented:**
+- Created new types in [shape-position-utils.ts](src/shared/lib/shape-position-utils.ts): `PositionReference` and `PositionOptions` interface
+- Changed `calculatePosition()` signature from boolean `centered` to `PositionOptions { reference }`
+- Updated [base-factory-types.ts](src/entities/shape/lib/factories/base-factory-types.ts): Changed `centered?: boolean` to `reference?: PositionReference`
+- Updated all shape factory functions to use `reference: 'center'` instead of `centered: true`:
+  - [basic-shape-factory.ts](src/entities/shape/lib/factories/basic-shape-factory.ts) - 3 functions updated
+  - [bpmn-shape-factory.ts](src/entities/shape/lib/factories/bpmn-shape-factory.ts) - 5 functions updated (Task, StartEvent, EndEvent, Gateway, Pool)
+  - [tool-utils.ts](src/entities/tool/lib/tool-utils.ts) - 7 shape creation calls updated
+- All `calculatePosition()` calls now use `{ reference }` options object
+- Updated documentation examples to show new API
+
+**Status:** ✅ Completed
 
 ---
 
@@ -814,9 +825,9 @@ if (!endpoints) return; // No warning or log
 ## Progress Tracking
 
 **Total Items:** 40
-**Completed:** 7
+**Completed:** 8
 **In Progress:** 0
-**Not Started:** 30
+**Not Started:** 29
 **Deferred:** 2
 **Rejected:** 1
 

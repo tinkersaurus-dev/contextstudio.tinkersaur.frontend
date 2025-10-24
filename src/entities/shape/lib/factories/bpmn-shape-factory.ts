@@ -55,10 +55,10 @@ export function createTask(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
-    centered = true,
+    reference = 'center',
   } = options;
 
-  const position = calculatePosition(x, y, width, height, centered);
+  const position = calculatePosition(x, y, width, height, { reference });
 
   return {
     id: generateShapeId(),
@@ -100,10 +100,10 @@ export function createStartEvent(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
-    centered = true,
+    reference = 'center',
   } = options;
 
-  const position = calculatePosition(x, y, diameter, diameter, centered);
+  const position = calculatePosition(x, y, diameter, diameter, { reference });
 
   return {
     id: generateShapeId(),
@@ -140,10 +140,10 @@ export function createEndEvent(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
-    centered = true,
+    reference = 'center',
   } = options;
 
-  const position = calculatePosition(x, y, diameter, diameter, centered);
+  const position = calculatePosition(x, y, diameter, diameter, { reference });
 
   return {
     id: generateShapeId(),
@@ -184,10 +184,10 @@ export function createGateway(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
-    centered = true,
+    reference = 'center',
   } = options;
 
-  const position = calculatePosition(x, y, size, size, centered);
+  const position = calculatePosition(x, y, size, size, { reference });
 
   return {
     id: generateShapeId(),
@@ -229,10 +229,10 @@ export function createPool(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
-    centered = true,
+    reference = 'center',
   } = options;
 
-  const position = calculatePosition(x, y, width, height, centered);
+  const position = calculatePosition(x, y, width, height, { reference });
 
   return {
     id: generateShapeId(),

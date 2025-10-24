@@ -44,7 +44,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
-        centered: true,
+        reference: 'center',
       });
 
     case ShapeType.Task:
@@ -55,7 +55,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
-        centered: true,
+        reference: 'center',
       });
 
     case ShapeType.StartEvent:
@@ -64,7 +64,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
-        centered: true,
+        reference: 'center',
       });
 
     case ShapeType.EndEvent:
@@ -73,7 +73,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
-        centered: true,
+        reference: 'center',
       });
 
     case ShapeType.Gateway:
@@ -82,7 +82,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
-        centered: true,
+        reference: 'center',
       });
 
     case ShapeType.Pool:
@@ -92,7 +92,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
-        centered: true,
+        reference: 'center',
       });
 
     default:
@@ -104,7 +104,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
-        centered: true,
+        reference: 'center',
       });
   }
 }

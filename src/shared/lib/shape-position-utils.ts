@@ -8,6 +8,19 @@
 import type { Position, Dimensions } from '@/entities/diagram-entity';
 
 /**
+ * Position reference point
+ */
+export type PositionReference = 'center' | 'top-left';
+
+/**
+ * Options for position calculation
+ */
+export interface PositionOptions {
+  /** Reference point for the provided coordinates */
+  reference: PositionReference;
+}
+
+/**
  * Calculate the top-left position for a centered shape
  *
  * @param centerX - X coordinate of the center point
@@ -33,22 +46,22 @@ export function calculateCenteredPosition(
 }
 
 /**
- * Calculate position based on centering preference
+ * Calculate position based on reference point
  *
- * @param x - X coordinate (either center or top-left depending on centered param)
- * @param y - Y coordinate (either center or top-left depending on centered param)
+ * @param x - X coordinate
+ * @param y - Y coordinate
  * @param width - Width of the shape
  * @param height - Height of the shape
- * @param centered - If true, (x,y) is treated as center; if false, as top-left
+ * @param options - Position options specifying the reference point
  * @returns Position object for top-left corner
  *
  * @example
- * // Centered mode
- * const pos1 = calculatePosition(100, 100, 120, 80, true);
+ * // Using center as reference
+ * const pos1 = calculatePosition(100, 100, 120, 80, { reference: 'center' });
  * // Returns: { x: 40, y: 60 }
  *
- * // Top-left mode
- * const pos2 = calculatePosition(100, 100, 120, 80, false);
+ * // Using top-left as reference
+ * const pos2 = calculatePosition(100, 100, 120, 80, { reference: 'top-left' });
  * // Returns: { x: 100, y: 100 }
  */
 export function calculatePosition(
@@ -56,9 +69,9 @@ export function calculatePosition(
   y: number,
   width: number,
   height: number,
-  centered: boolean
+  options: PositionOptions
 ): Position {
-  if (centered) {
+  if (options.reference === 'center') {
     return calculateCenteredPosition(x, y, width, height);
   }
   return { x, y };

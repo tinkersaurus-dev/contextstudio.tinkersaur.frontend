@@ -5,6 +5,8 @@
  * Reduces duplication across different shape factories.
  */
 
+import type { PositionReference } from '@/shared/lib/shape-position-utils';
+
 /**
  * Base options common to all shape creation functions
  */
@@ -15,8 +17,8 @@ export interface BaseCreateShapeOptions {
   strokeColor?: string;
   /** Stroke/border width in pixels */
   strokeWidth?: number;
-  /** If true, (x, y) is treated as center; if false, as top-left corner */
-  centered?: boolean;
+  /** Reference point for the provided coordinates ('center' or 'top-left') */
+  reference?: PositionReference;
 }
 
 /**

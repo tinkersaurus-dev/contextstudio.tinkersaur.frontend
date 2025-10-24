@@ -44,7 +44,7 @@ export type CreateRectangleOptions = RectangularShapeOptions;
  *   height: 150,
  *   fillColor: '#ff0000',
  *   strokeColor: '#000000',
- *   centered: false // Position is top-left corner
+ *   reference: 'top-left' // Position is top-left corner
  * });
  */
 export function createRectangle(
@@ -58,11 +58,11 @@ export function createRectangle(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
-    centered = true,
+    reference = 'center',
   } = options;
 
   // Calculate position using utility function
-  const position = calculatePosition(x, y, width, height, centered);
+  const position = calculatePosition(x, y, width, height, { reference });
 
   return {
     id: generateShapeId(),
@@ -90,7 +90,7 @@ export function createRectangle(
  * const rect = createRectangleAtPoint(100, 100);
  */
 export function createRectangleAtPoint(x: number, y: number): RectangleShape {
-  return createRectangle(x, y, { centered: true });
+  return createRectangle(x, y, { reference: 'center' });
 }
 
 // ============================================================================
@@ -150,7 +150,7 @@ export function createRectangleGrid(
     for (let col = 0; col < cols; col++) {
       const x = startX + col * spacingX;
       const y = startY + row * spacingY;
-      shapes.push(createRectangle(x, y, { ...options, centered: false }));
+      shapes.push(createRectangle(x, y, { ...options, reference: 'top-left' }));
     }
   }
 
