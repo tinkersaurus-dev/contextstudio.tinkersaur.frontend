@@ -12,6 +12,7 @@ import {
   ZOOM_THRESHOLDS,
   type GridConfig,
 } from '@/shared/config/canvas-config';
+import type { GridRenderContext } from './rendering-types';
 
 /**
  * Snap mode options for grid snapping
@@ -32,24 +33,6 @@ export interface Point {
 export interface GridSize {
   minor: number;
   major: number;
-}
-
-/**
- * Options for rendering the grid
- */
-export interface RenderGridOptions {
-  /** Canvas width in pixels */
-  width: number;
-  /** Canvas height in pixels */
-  height: number;
-  /** Current zoom/scale level */
-  scale: number;
-  /** Pan offset X */
-  panX: number;
-  /** Pan offset Y */
-  panY: number;
-  /** Optional grid configuration (uses defaults if not provided) */
-  config?: GridConfig;
 }
 
 /**
@@ -187,13 +170,13 @@ export class GridSystem {
   }
 
   /**
-   * Render the grid on a canvas
+   * Render the grid on a canvas using standardized context pattern
    *
-   * @param ctx - Canvas rendering context
-   * @param options - Rendering options
+   * @param context - Grid rendering context
    *
    * @example
-   * GridSystem.render(ctx, {
+   * GridSystem.render({
+   *   ctx,
    *   width: 800,
    *   height: 600,
    *   scale: 1.5,
@@ -201,8 +184,8 @@ export class GridSystem {
    *   panY: 0,
    * });
    */
-  static render(ctx: CanvasRenderingContext2D, options: RenderGridOptions): void {
-    const { width, height, scale: zoom, panX, panY, config = DEFAULT_GRID_CONFIG } = options;
+  static render(context: GridRenderContext): void {
+    const { ctx, width, height, scale: zoom, panX, panY, config = DEFAULT_GRID_CONFIG } = context;
     const { gridColor, minorLineWidth, majorLineWidth } = config;
 
     // Get grid sizes based on zoom level
@@ -228,29 +211,6 @@ export class GridSystem {
     this.drawGridLines(ctx, 'y', startY, endY, startX, endX, majorGridSize, null, zoom);
   }
 
-  /**
-   * Render the grid with legacy parameter format
-   * This method maintains compatibility with existing rendering code
-   *
-   * @param ctx - Canvas rendering context
-   * @param width - Canvas width in pixels
-   * @param height - Canvas height in pixels
-   * @param zoom - Current zoom/scale level
-   * @param panX - Pan offset X
-   * @param panY - Pan offset Y
-   * @param config - Optional grid configuration
-   */
-  static renderLegacy(
-    ctx: CanvasRenderingContext2D,
-    width: number,
-    height: number,
-    zoom: number,
-    panX: number,
-    panY: number,
-    config?: GridConfig
-  ): void {
-    this.render(ctx, { width, height, scale: zoom, panX, panY, config });
-  }
 }
 
 // Re-export types and constants for convenience

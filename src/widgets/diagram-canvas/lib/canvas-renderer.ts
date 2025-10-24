@@ -119,7 +119,15 @@ export function renderCanvas(context: CanvasRenderContext): void {
 
     try {
       // Render grid
-      GridSystem.renderLegacy(ctx, canvas.width, canvas.height, scale, panX, panY, gridConfig);
+      GridSystem.render({
+        ctx,
+        width: canvas.width,
+        height: canvas.height,
+        scale,
+        panX,
+        panY,
+        config: gridConfig,
+      });
     } catch (error) {
       console.error('Error rendering grid:', error);
       // Continue rendering despite grid error

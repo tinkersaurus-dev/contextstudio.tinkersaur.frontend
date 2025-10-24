@@ -9,6 +9,17 @@ import type { Connector } from '@/entities/connector';
 import type { Shape } from '@/entities/shape';
 import { renderConnectorFromRegistry } from '@/entities/connector';
 import { isConnectorValid } from '@/entities/connector';
+import type { ConnectorRenderContext } from '@/shared/lib/rendering-types';
+
+/**
+ * Render a single connector using the standardized context pattern
+ *
+ * @param context - Connector rendering context
+ */
+export function renderConnector(context: ConnectorRenderContext): void {
+  const { ctx, connector, shapes, isSelected, scale } = context;
+  renderConnectorFromRegistry(ctx, connector, shapes, isSelected, scale);
+}
 
 /**
  * Render all connectors on the canvas
@@ -49,8 +60,8 @@ export function renderConnectors(
 
       const isSelected = selectedEntityIds.has(connector.id);
 
-      // Render using registry
-      renderConnectorFromRegistry(ctx, connector, shapesMap, isSelected, scale);
+      // Use standardized rendering context
+      renderConnector({ ctx, connector, shapes: shapesMap, isSelected, scale });
     } catch (error) {
       console.error(`Error rendering connector ${connector.id}:`, error);
       // Continue rendering other connectors despite error
