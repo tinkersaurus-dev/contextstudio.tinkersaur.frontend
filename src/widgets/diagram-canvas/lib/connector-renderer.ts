@@ -10,6 +10,7 @@ import type { Shape } from '@/entities/shape';
 import { renderConnectorFromRegistry } from '@/entities/connector';
 import { isConnectorValid } from '@/entities/connector';
 import type { ConnectorRenderContext } from '@/shared/lib/rendering-types';
+import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
 
 /**
  * Render a single connector using the standardized context pattern
@@ -51,10 +52,19 @@ export function renderConnectors(
     try {
       // Skip invalid connectors (missing shapes)
       if (!isConnectorValid(connector, shapesMap)) {
-        console.warn(
-          `Skipping invalid connector ${connector.id}: ` +
-            `source ${connector.source.shapeId} or target ${connector.target.shapeId} not found`
+        const appError = createError(
+          `Skipping invalid connector ${connector.id}: source ${connector.source.shapeId} or target ${connector.target.shapeId} not found`,
+          ErrorSeverity.Warning,
+          {
+            code: 'CONNECTOR_INVALID',
+            context: {
+              connectorId: connector.id,
+              sourceShapeId: connector.source.shapeId,
+              targetShapeId: connector.target.shapeId,
+            },
+          }
         );
+        logError(appError);
         return;
       }
 
@@ -63,7 +73,16 @@ export function renderConnectors(
       // Use standardized rendering context
       renderConnector({ ctx, connector, shapes: shapesMap, isSelected, scale });
     } catch (error) {
-      console.error(`Error rendering connector ${connector.id}:`, error);
+      const appError = createError(
+        `Error rendering connector ${connector.id}`,
+        ErrorSeverity.Error,
+        {
+          code: 'CONNECTOR_RENDER_ERROR',
+          context: { connectorId: connector.id, connectorType: connector.connectorType },
+          cause: error instanceof Error ? error : undefined,
+        }
+      );
+      logError(appError);
       // Continue rendering other connectors despite error
     }
   });

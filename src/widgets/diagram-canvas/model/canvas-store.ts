@@ -8,6 +8,8 @@ import {
   getEntityAtPoint as getEntityAtPointHitDetection,
   selectEntitiesInBox as selectEntitiesInBoxHitDetection,
 } from '../lib/canvas-hit-detection';
+import { validateShape, validateConnector } from '@/shared/lib/entity-validation';
+import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
 
 interface CanvasState {
   // Store all shapes and connectors (DiagramEntities)
@@ -70,9 +72,26 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   connectorSourceShapeId: null,
 
   // Shape actions
-  addShape: (shape) => set((state) => ({
-    shapes: [...state.shapes, shape],
-  })),
+  addShape: (shape) => {
+    // Validate shape before adding
+    const validationResult = validateShape(shape);
+    if (!validationResult.valid) {
+      const error = createError(
+        `Cannot add invalid shape: ${validationResult.errors.join(', ')}`,
+        ErrorSeverity.Error,
+        {
+          code: 'INVALID_SHAPE',
+          context: { shapeId: shape.id, shapeType: shape.shapeType },
+        }
+      );
+      logError(error);
+      return; // Don't add invalid shape
+    }
+
+    set((state) => ({
+      shapes: [...state.shapes, shape],
+    }));
+  },
 
   updateShape: (id, updates) => {
     set((state) => ({
@@ -118,9 +137,34 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   }),
 
   // Connector actions
-  addConnector: (connector) => set((state) => ({
-    connectors: [...state.connectors, connector],
-  })),
+  addConnector: (connector) => {
+    // Validate connector before adding
+    const { shapes } = get();
+    const shapesMap = new Map(shapes.map((s) => [s.id, s]));
+    const validationResult = validateConnector(connector, shapesMap);
+
+    if (!validationResult.valid) {
+      const error = createError(
+        `Cannot add invalid connector: ${validationResult.errors.join(', ')}`,
+        ErrorSeverity.Error,
+        {
+          code: 'INVALID_CONNECTOR',
+          context: {
+            connectorId: connector.id,
+            connectorType: connector.connectorType,
+            sourceShapeId: connector.source.shapeId,
+            targetShapeId: connector.target.shapeId,
+          },
+        }
+      );
+      logError(error);
+      return; // Don't add invalid connector
+    }
+
+    set((state) => ({
+      connectors: [...state.connectors, connector],
+    }));
+  },
 
   updateConnector: (id, updates) => set((state) => ({
     connectors: state.connectors.map((connector) =>

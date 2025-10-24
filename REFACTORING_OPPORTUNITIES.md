@@ -410,7 +410,7 @@ interface PositionOptions {
 
 ---
 
-#### 4.3 Error Handling Patterns
+#### 4.3 Error Handling Patterns ✅ COMPLETED
 **Issue:** Inconsistent error handling:
 - Some functions return `null` on error
 - Others throw
@@ -424,7 +424,57 @@ export type Result<T> =
   | { ok: false; error: string };
 ```
 
-**Status:** ⬜ Not Started
+**Solution Implemented:**
+
+Created comprehensive error handling system in [result.ts](src/shared/lib/result.ts):
+- **`Result<T>` type** - Discriminated union for operations that may fail
+- **Helper functions**: `ok()`, `err()`, `unwrap()`, `unwrapOr()`, `map()`, `andThen()`
+- **`ValidationResult` type** - For multi-error validation scenarios
+- **Validation functions**: `valid()`, `invalid()`, `combineValidations()`
+- **`AppError` interface** - Structured errors with severity levels, codes, and context
+- **`ErrorSeverity` enum** - Info, Warning, Error, Critical severity levels
+- **Error utilities**: `createError()`, `logError()` for consistent error formatting
+
+Created entity validation system in [entity-validation.ts](src/shared/lib/entity-validation.ts):
+- **`validateShape()`** - Comprehensive shape validation (ID, position, dimensions, colors, stroke width)
+- **`validateConnector()`** - Connector validation including endpoint shape existence checks
+- **`validateEntity()`** - Generic entity validation dispatcher
+- **Component validators**: `validatePosition()`, `validateDimensions()`, `validateColor()`, `validateStrokeWidth()`
+- All validators return `ValidationResult` with detailed error messages
+
+Updated factory functions to use Result pattern:
+- [connector-factory.ts](src/entities/connector/lib/factories/connector-factory.ts):
+  - `createConnector()` now returns `Result<Connector>` instead of throwing
+  - `createStraightConnector()`, `createOrthogonalConnector()`, `createCurvedConnector()` return Result types
+  - Validates created connectors before returning
+  - Updated [diagram-canvas.tsx:337-353](src/widgets/diagram-canvas/ui/diagram-canvas.tsx#L337-L353) to handle Result type
+
+Standardized rendering error handling:
+- [connector-renderer.ts](src/widgets/diagram-canvas/lib/connector-renderer.ts):
+  - Uses `createError()` and `logError()` with structured context
+  - Warning-level errors for invalid connectors with error code `CONNECTOR_INVALID`
+  - Error-level errors for rendering failures with code `CONNECTOR_RENDER_ERROR`
+  - Includes connector ID, type, and shape IDs in error context
+- [shape-renderer.ts](src/widgets/diagram-canvas/lib/shape-renderer.ts):
+  - Uses structured error logging with `SHAPE_RENDER_ERROR` and `SELECTION_BOX_RENDER_ERROR` codes
+  - Includes shape ID and type in error context
+  - Preserves error causes for debugging
+
+Enhanced canvas store validation:
+- [canvas-store.ts](src/widgets/diagram-canvas/model/canvas-store.ts):
+  - `addShape()` validates shapes before adding, logs structured errors with `INVALID_SHAPE` code
+  - `addConnector()` validates connectors including endpoint shape existence, logs with `INVALID_CONNECTOR` code
+  - Invalid entities are rejected (not added to state) with detailed error logging
+  - Error context includes entity IDs, types, and relevant shape references
+
+**Error Handling Strategy:**
+1. **Factory functions** - Return `Result<T>` for validation errors
+2. **Renderers** - Use try-catch with structured error logging, continue rendering other items
+3. **Store mutations** - Validate before mutating state, log and reject invalid entities
+4. **Hit detection** - Return `null` for not-found cases (appropriate for query operations)
+5. **Validation** - Return `ValidationResult` with array of errors for comprehensive feedback
+
+**Status:** ✅ Completed - 2025-10-24
 
 ---
 
@@ -825,9 +875,9 @@ if (!endpoints) return; // No warning or log
 ## Progress Tracking
 
 **Total Items:** 40
-**Completed:** 8
+**Completed:** 9
 **In Progress:** 0
-**Not Started:** 29
+**Not Started:** 28
 **Deferred:** 2
 **Rejected:** 1
 

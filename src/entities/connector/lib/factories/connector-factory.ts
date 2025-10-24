@@ -15,6 +15,8 @@ import { ConnectorType } from '../../model/types';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import { generateEntityId } from '@/shared/lib/id-generator';
 import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+import { Result, ok, err } from '@/shared/lib/result';
+import { validateConnector } from '@/shared/lib/entity-validation';
 
 /**
  * Options for creating a connector
@@ -42,17 +44,25 @@ export interface ConnectorCreationOptions {
  * Create a connector with the specified options
  *
  * @param options - Connector creation options
- * @returns A new connector instance
+ * @returns A Result containing the new connector or an error message
  *
  * @example
- * const connector = createConnector({
+ * ```typescript
+ * const result = createConnector({
  *   source: { shapeId: 'shape-1', anchor: 'e' },
  *   target: { shapeId: 'shape-2', anchor: 'w' },
  *   connectorType: ConnectorType.Straight,
  *   arrowEnd: true,
  * });
+ *
+ * if (result.ok) {
+ *   // Use result.value
+ * } else {
+ *   console.error(result.error);
+ * }
+ * ```
  */
-export function createConnector(options: ConnectorCreationOptions): Connector {
+export function createConnector(options: ConnectorCreationOptions): Result<Connector> {
   const {
     source,
     target,
@@ -84,30 +94,42 @@ export function createConnector(options: ConnectorCreationOptions): Connector {
   };
 
   // Create specific connector type
+  let connector: Connector;
   switch (connectorType) {
     case ConnectorType.Straight:
-      return {
+      connector = {
         ...baseConnector,
         connectorType: ConnectorType.Straight,
       } as StraightConnector;
+      break;
 
     case ConnectorType.Orthogonal:
-      return {
+      connector = {
         ...baseConnector,
         connectorType: ConnectorType.Orthogonal,
         waypoints: [],
       } as OrthogonalConnector;
+      break;
 
     case ConnectorType.Curved:
-      return {
+      connector = {
         ...baseConnector,
         connectorType: ConnectorType.Curved,
         curvature,
       } as CurvedConnector;
+      break;
 
     default:
-      throw new Error(`Unknown connector type: ${connectorType}`);
+      return err(`Unknown connector type: ${connectorType}`);
   }
+
+  // Validate the created connector
+  const validationResult = validateConnector(connector);
+  if (!validationResult.valid) {
+    return err(`Connector validation failed: ${validationResult.errors.join(', ')}`);
+  }
+
+  return ok(connector);
 }
 
 /**
@@ -116,19 +138,25 @@ export function createConnector(options: ConnectorCreationOptions): Connector {
  * @param source - Source connection point
  * @param target - Target connection point
  * @param options - Additional options
- * @returns A new straight connector
+ * @returns A Result containing the new straight connector or an error
  */
 export function createStraightConnector(
   source: ConnectionPoint,
   target: ConnectionPoint,
   options: Partial<ConnectorCreationOptions> = {}
-): StraightConnector {
-  return createConnector({
+): Result<StraightConnector> {
+  const result = createConnector({
     source,
     target,
     connectorType: ConnectorType.Straight,
     ...options,
-  }) as StraightConnector;
+  });
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return ok(result.value as StraightConnector);
 }
 
 /**
@@ -137,19 +165,25 @@ export function createStraightConnector(
  * @param source - Source connection point
  * @param target - Target connection point
  * @param options - Additional options
- * @returns A new orthogonal connector
+ * @returns A Result containing the new orthogonal connector or an error
  */
 export function createOrthogonalConnector(
   source: ConnectionPoint,
   target: ConnectionPoint,
   options: Partial<ConnectorCreationOptions> = {}
-): OrthogonalConnector {
-  return createConnector({
+): Result<OrthogonalConnector> {
+  const result = createConnector({
     source,
     target,
     connectorType: ConnectorType.Orthogonal,
     ...options,
-  }) as OrthogonalConnector;
+  });
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return ok(result.value as OrthogonalConnector);
 }
 
 /**
@@ -158,17 +192,23 @@ export function createOrthogonalConnector(
  * @param source - Source connection point
  * @param target - Target connection point
  * @param options - Additional options
- * @returns A new curved connector
+ * @returns A Result containing the new curved connector or an error
  */
 export function createCurvedConnector(
   source: ConnectionPoint,
   target: ConnectionPoint,
   options: Partial<ConnectorCreationOptions> = {}
-): CurvedConnector {
-  return createConnector({
+): Result<CurvedConnector> {
+  const result = createConnector({
     source,
     target,
     connectorType: ConnectorType.Curved,
     ...options,
-  }) as CurvedConnector;
+  });
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return ok(result.value as CurvedConnector);
 }

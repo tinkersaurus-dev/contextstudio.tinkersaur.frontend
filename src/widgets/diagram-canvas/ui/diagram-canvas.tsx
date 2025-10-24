@@ -334,7 +334,7 @@ export function DiagramCanvas() {
 
       if (!isSamePoint) {
         // Create the connector
-        const connector = createStraightConnector(
+        const connectorResult = createStraightConnector(
           {
             shapeId: connectorDragStart.shapeId,
             anchor: connectorDragStart.anchor,
@@ -344,7 +344,12 @@ export function DiagramCanvas() {
             anchor: targetPoint.anchor,
           }
         );
-        addConnector(connector);
+
+        if (connectorResult.ok) {
+          addConnector(connectorResult.value);
+        } else {
+          console.error('Failed to create connector:', connectorResult.error);
+        }
       }
     }
 
