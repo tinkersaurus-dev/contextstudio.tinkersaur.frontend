@@ -1,4 +1,4 @@
-import { ZOOM_THRESHOLDS } from '@/shared/config/canvas-config';
+import { getGridSizeForZoom } from './grid-utils';
 
 /**
  * Snap-to-Grid Utilities
@@ -8,16 +8,6 @@ import { ZOOM_THRESHOLDS } from '@/shared/config/canvas-config';
  */
 
 export type SnapMode = 'none' | 'minor' | 'major';
-
-/**
- * Get grid sizes based on current zoom level
- * This matches the logic used in grid-renderer.ts
- */
-function getGridSizeForZoom(zoom: number): { minor: number; major: number } {
-  const threshold = ZOOM_THRESHOLDS.find(t => zoom >= t.minZoom);
-  const result = threshold || ZOOM_THRESHOLDS[ZOOM_THRESHOLDS.length - 1];
-  return { minor: result.minor, major: result.major };
-}
 
 /**
  * Snaps a coordinate value to the nearest grid line

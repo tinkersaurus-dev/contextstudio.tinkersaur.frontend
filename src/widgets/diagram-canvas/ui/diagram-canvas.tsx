@@ -2,13 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { setupMouseInput, ZoomState, EntityInteractionCallbacks } from '../lib/mouse-input';
-import { renderGrid, DEFAULT_GRID_CONFIG } from '../lib/grid-renderer';
-import { renderShapes } from '../lib/shape-renderer';
+import { renderCanvas } from '../lib/canvas-renderer';
 import { SelectionBox } from '../lib/selection-box-renderer';
 import { useCanvasStore } from '../model/canvas-store';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
-import { CanvasBadgeMenu } from '@/shared/ui';
-import { CanvasControls } from '@/widgets/canvas-controls';
+import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
 
 export function DiagramCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -111,31 +109,15 @@ export function DiagramCanvas() {
     if (!canvas) return;
 
     const render = () => {
-      const parent = canvas.parentElement;
-      if (!parent) return;
-
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      // Fill canvas with white background
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Apply pan and zoom transform - IMPORTANT: scale first, then translate!
-      ctx.save();
-      ctx.scale(zoomState.scale, zoomState.scale);
-      ctx.translate(zoomState.panX / zoomState.scale, zoomState.panY / zoomState.scale);
-
-      // Render grid
-      renderGrid(ctx, canvas.width, canvas.height, zoomState.scale, zoomState.panX, zoomState.panY, DEFAULT_GRID_CONFIG);
-
-      // Render all shapes with selection and selection box
-      renderShapes(ctx, shapes, selectedEntityIds, zoomState.scale, selectionBox);
-
-      ctx.restore();
+      renderCanvas({
+        canvas,
+        scale: zoomState.scale,
+        panX: zoomState.panX,
+        panY: zoomState.panY,
+        shapes,
+        selectedEntityIds,
+        selectionBox,
+      });
     };
 
     render();
@@ -162,24 +144,7 @@ export function DiagramCanvas() {
         }}
       />
       <CanvasControls />
-      <CanvasBadgeMenu
-        badgeContent={`${Math.round(zoomState.scale * 100)}%`}
-        menuItems={[
-          {
-            id: 'reset-zoom',
-            label: 'Reset',
-            onSelect: handleResetZoom,
-          },
-        ]}
-        colorPalette="gray"
-        variant="solid"
-        size="md"
-        style={{
-          position: 'absolute',
-          bottom: '16px',
-          right: '16px',
-        }}
-      />
+      <ZoomControl zoom={zoomState.scale} onReset={handleResetZoom} />
     </div>
   );
 }

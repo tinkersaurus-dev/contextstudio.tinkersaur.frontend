@@ -157,3 +157,28 @@ export const SHAPE_CREATION_OFFSET = {
   x: 50, // Half of default width
   y: 50, // Half of default height
 } as const;
+
+// ============================================================================
+// LAYOUT CONSTANTS
+// ============================================================================
+
+/**
+ * Application header height
+ */
+export const HEADER_HEIGHT = 40; // pixels
+
+/**
+ * Canvas controls positioning configuration
+ */
+export const CANVAS_CONTROLS_POSITION = {
+  bottom: 16, // pixels from bottom
+  horizontalCenter: '50%', // centered horizontally
+} as const;
+
+/**
+ * Zoom control positioning configuration
+ */
+export const ZOOM_CONTROL_POSITION = {
+  bottom: 16, // pixels from bottom
+  right: 16, // pixels from right
+} as const;

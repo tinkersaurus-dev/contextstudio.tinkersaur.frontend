@@ -10,6 +10,7 @@ import {
   STROKE_WIDTHS,
   SHAPE_CREATION_OFFSET,
 } from '@/shared/config/canvas-config';
+import { generateShapeId } from '@/shared/lib/id-generator';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import { ShapeType, type RectangleShape } from '../model/types';
 
@@ -23,13 +24,6 @@ export interface CreateRectangleOptions {
   strokeColor?: string;
   strokeWidth?: number;
   centered?: boolean; // If true, (x, y) is the center; if false, it's the top-left corner
-}
-
-/**
- * Generate a unique shape ID
- */
-function generateShapeId(): string {
-  return `shape-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**

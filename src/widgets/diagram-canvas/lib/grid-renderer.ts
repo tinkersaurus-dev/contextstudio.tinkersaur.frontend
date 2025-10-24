@@ -1,22 +1,13 @@
 import {
   BASE_GRID,
   GRID_EPSILON,
-  ZOOM_THRESHOLDS,
   DEFAULT_GRID_CONFIG,
   type GridConfig,
 } from '@/shared/config/canvas-config';
+import { getGridSizeForZoom } from '@/shared/lib/grid-utils';
 
 // Re-export for external use
 export { DEFAULT_GRID_CONFIG, type GridConfig };
-
-/**
- * Get grid sizes based on current zoom level
- */
-function getGridSizeForZoom(zoom: number): { minor: number; major: number } {
-  const threshold = ZOOM_THRESHOLDS.find(t => zoom >= t.minZoom);
-  const result = threshold || ZOOM_THRESHOLDS[ZOOM_THRESHOLDS.length - 1];
-  return { minor: result.minor, major: result.major };
-}
 
 /**
  * Draw grid lines for a specific axis and spacing

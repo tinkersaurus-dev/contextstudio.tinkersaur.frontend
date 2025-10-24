@@ -1,41 +1,37 @@
 'use client';
 
-import { useState } from 'react';
 import { LuGrid2X2, LuFocus } from 'react-icons/lu';
-import { MdGrid3X3, MdGridGoldenratio } from 'react-icons/md';
-import { CiNoWaitingSign } from 'react-icons/ci';
 import { IconButton, ButtonGroup, ActionBar, Tooltip } from '@/shared/ui';
 import { useCanvasStore } from '@/widgets/diagram-canvas/model/canvas-store';
+import { CANVAS_CONTROLS_POSITION } from '@/shared/config/canvas-config';
+import { SNAP_MODE_OPTIONS } from '../config/snap-mode-config';
+import { useCanvasControlsState } from '../hooks/use-canvas-controls-state';
 
 /**
  * Canvas control buttons that trigger action bars for various settings.
  * Positioned at the bottom center of the canvas.
  */
 export function CanvasControls() {
-  const [backgroundSettingsOpen, setBackgroundSettingsOpen] = useState(false);
-  const [interactionsSettingsOpen, setInteractionsSettingsOpen] = useState(false);
+  const {
+    isBackgroundOpen,
+    isInteractionsOpen,
+    isAnyPanelOpen,
+    openBackgroundPanel,
+    openInteractionsPanel,
+    closeAllPanels,
+  } = useCanvasControlsState();
   const { snapMode, setSnapMode } = useCanvasStore();
-
-  const handleBackgroundClick = () => {
-    setBackgroundSettingsOpen(true);
-    setInteractionsSettingsOpen(false);
-  };
-
-  const handleInteractionsClick = () => {
-    setInteractionsSettingsOpen(true);
-    setBackgroundSettingsOpen(false);
-  };
 
   return (
     <>
       {/* Button Group - hidden when action bar is open */}
-      {!backgroundSettingsOpen && !interactionsSettingsOpen && (
+      {!isAnyPanelOpen && (
         <ButtonGroup
           attached
           style={{
             position: 'absolute',
-            bottom: '16px',
-            left: '50%',
+            bottom: `${CANVAS_CONTROLS_POSITION.bottom}px`,
+            left: CANVAS_CONTROLS_POSITION.horizontalCenter,
             transform: 'translateX(-50%)',
             zIndex: 5,
           }}
@@ -44,7 +40,7 @@ export function CanvasControls() {
             aria-label="Background Settings"
             size="xs"
             variant="ghost"
-            onClick={handleBackgroundClick}
+            onClick={openBackgroundPanel}
           >
             <LuGrid2X2 />
           </IconButton>
@@ -52,7 +48,7 @@ export function CanvasControls() {
             aria-label="Interactions Settings"
             size="xs"
             variant="ghost"
-            onClick={handleInteractionsClick}
+            onClick={openInteractionsPanel}
           >
             <LuFocus />
           </IconButton>
@@ -61,8 +57,8 @@ export function CanvasControls() {
 
       {/* Background Settings Action Bar */}
       <ActionBar.Root
-        open={backgroundSettingsOpen}
-        onOpenChange={(e) => setBackgroundSettingsOpen(e.open)}
+        open={isBackgroundOpen}
+        onOpenChange={(e) => !e.open && closeAllPanels()}
         closeOnInteractOutside={true}
       >
         <ActionBar.Content backgroundColor="panel.bg">
@@ -76,41 +72,25 @@ export function CanvasControls() {
 
       {/* Interactions Settings Action Bar */}
       <ActionBar.Root
-        open={interactionsSettingsOpen}
-        onOpenChange={(e) => setInteractionsSettingsOpen(e.open)}
+        open={isInteractionsOpen}
+        onOpenChange={(e) => !e.open && closeAllPanels()}
         closeOnInteractOutside={true}
-        
+
       >
         <ActionBar.Content backgroundColor="panel.bg">
-          
+
           <ButtonGroup attached size="xs">
-            <Tooltip content="Snap to Minor Grid">
-              <IconButton
-                aria-label="Snap to Minor Grid"
-                variant={snapMode === 'minor' ? 'subtle' : 'solid'}
-                onClick={() => setSnapMode('minor')}
-              >
-                <MdGrid3X3 />
-              </IconButton>
-            </Tooltip>
-            <Tooltip content="Snap to Major Grid">
-              <IconButton
-                aria-label="Snap to Major Grid"
-                variant={snapMode === 'major' ? 'subtle' : 'solid'}
-                onClick={() => setSnapMode('major')}
-              >
-                <MdGridGoldenratio />
-              </IconButton>
-            </Tooltip>
-            <Tooltip content="No Grid Snapping">
-              <IconButton
-                aria-label="No Grid Snapping"
-                variant={snapMode === 'none' ? 'subtle' : 'solid'}
-                onClick={() => setSnapMode('none')}
-              >
-                <CiNoWaitingSign />
-              </IconButton>
-            </Tooltip>
+            {SNAP_MODE_OPTIONS.map(({ mode, label, tooltip, Icon }) => (
+              <Tooltip key={mode} content={tooltip}>
+                <IconButton
+                  aria-label={label}
+                  variant={snapMode === mode ? 'subtle' : 'solid'}
+                  onClick={() => setSnapMode(mode)}
+                >
+                  <Icon />
+                </IconButton>
+              </Tooltip>
+            ))}
           </ButtonGroup>
           <ActionBar.Separator />
         </ActionBar.Content>
