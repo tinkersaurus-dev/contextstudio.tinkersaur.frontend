@@ -1,8 +1,11 @@
 /**
  * Canvas Hit Detection
  *
- * Centralized hit detection logic for identifying entities at specific points
- * and selecting entities within bounding boxes.
+ * Internal hit detection functions used by EntitySystem.
+ * These provide low-level hit testing for shapes and connectors.
+ *
+ * @deprecated Use EntitySystem.hitTest() and EntitySystem.findEntityAtPoint() instead.
+ * These functions remain for backward compatibility and internal use by EntitySystem.
  */
 
 import type { Shape } from '@/entities/shape';

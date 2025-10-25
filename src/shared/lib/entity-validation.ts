@@ -10,6 +10,9 @@ import type { Connector, AnchorPosition } from '@/entities/connector';
 import type { Position, Dimensions } from '@/entities/diagram-entity';
 import { ValidationResult, valid, invalid, combineValidations } from './result';
 
+// Re-export ValidationResult for convenience
+export type { ValidationResult };
+
 /**
  * Valid anchor position values
  */

@@ -83,3 +83,40 @@ export function isShape(entity: Shape | Connector): entity is Shape {
 export function isConnector(entity: Shape | Connector): entity is Connector {
   return 'connectorType' in entity;
 }
+
+/**
+ * Context for hit testing operations
+ * Contains all information needed to test if a point hits an entity
+ */
+export interface HitTestContext {
+  /** Map of shapes (required for connector hit testing) */
+  shapes?: Map<string, Shape>;
+  /** Hit tolerance in pixels */
+  tolerance?: number;
+}
+
+/**
+ * Context for bounds calculation
+ * Required for entities that depend on other entities
+ */
+export interface BoundsContext {
+  /** Map of shapes (required for connector bounds) */
+  shapes?: Map<string, Shape>;
+}
+
+/**
+ * Unified entity context for EntitySystem operations
+ * Contains all dependencies that any entity might need
+ */
+export interface EntityContext {
+  /** Canvas rendering context (for render operations) */
+  ctx?: CanvasRenderingContext2D;
+  /** Current canvas scale (for render operations) */
+  scale?: number;
+  /** Whether entity is selected (for render operations) */
+  isSelected?: boolean;
+  /** Map of shapes (for connector operations) */
+  shapes?: Map<string, Shape>;
+  /** Hit tolerance (for hit test operations) */
+  tolerance?: number;
+}

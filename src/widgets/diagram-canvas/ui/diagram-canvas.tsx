@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { setupMouseInput, EntityInteractionCallbacks } from '../lib/mouse-input';
+import { setupKeyboardInput, KeyboardInteractionCallbacks } from '../lib/keyboard-input';
 import { renderCanvas } from '../lib/canvas-renderer';
 import { SelectionBox } from '../lib/selection-box-renderer';
 import { useCanvasStore } from '../model/canvas-store';
@@ -51,6 +52,8 @@ export function DiagramCanvas() {
     addShape,
     updateShape,
     addConnector,
+    deleteShape,
+    deleteConnector,
     findEntityAtPoint,
     isSelected,
     getAllSelectedEntities,
@@ -153,6 +156,21 @@ export function DiagramCanvas() {
     clearDraggingEntities,
     openToolsetPopover,
   ]);
+
+  // Setup keyboard input handlers (only once)
+  useEffect(() => {
+    // Keyboard interaction callbacks
+    const keyboardCallbacks: KeyboardInteractionCallbacks = {
+      getAllSelectedEntities,
+      deleteShape,
+      deleteConnector,
+    };
+
+    // Setup keyboard input
+    const cleanup = setupKeyboardInput(keyboardCallbacks);
+
+    return cleanup;
+  }, [getAllSelectedEntities, deleteShape, deleteConnector]);
 
   // Handle mouse move for connection point hover detection
   const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {

@@ -4,11 +4,7 @@ import { Connector } from '@/entities/connector';
 import { DiagramEntity } from '@/entities/diagram-entity';
 import { updateConnectorForShapeMove } from '@/entities/connector';
 import type { SnapMode } from '@/shared/lib/grid-system';
-import {
-  getEntityAtPoint as getEntityAtPointHitDetection,
-  selectEntitiesInBox as selectEntitiesInBoxHitDetection,
-} from '../lib/canvas-hit-detection';
-import { validateShape, validateConnector } from '@/shared/lib/entity-validation';
+import { EntitySystem } from '@/shared/lib/entity-system';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
 import { createShapeMap } from '@/shared/lib/map-utils';
 
@@ -74,8 +70,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   // Shape actions
   addShape: (shape) => {
-    // Validate shape before adding
-    const validationResult = validateShape(shape);
+    // Validate shape before adding using EntitySystem
+    const validationResult = EntitySystem.validate(shape);
     if (!validationResult.valid) {
       const error = createError(
         `Cannot add invalid shape: ${validationResult.errors.join(', ')}`,
@@ -139,10 +135,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   // Connector actions
   addConnector: (connector) => {
-    // Validate connector before adding
+    // Validate connector before adding using EntitySystem
     const { shapes } = get();
     const shapesMap = createShapeMap(shapes);
-    const validationResult = validateConnector(connector, shapesMap);
+    const validationResult = EntitySystem.validate(connector, { shapes: shapesMap });
 
     if (!validationResult.valid) {
       const error = createError(
@@ -245,9 +241,30 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   }),
 
   selectEntitiesInBox: (x1, y1, x2, y2) => {
+    const { shapes } = get();
     const entities = get().getAllEntities();
-    const selectedIds = selectEntitiesInBoxHitDetection(x1, y1, x2, y2, entities);
-    set({ selectedEntityIds: new Set(selectedIds) });
+    const shapesMap = createShapeMap(shapes);
+
+    // Calculate selection box bounds
+    const minX = Math.min(x1, x2);
+    const maxX = Math.max(x1, x2);
+    const minY = Math.min(y1, y2);
+    const maxY = Math.max(y1, y2);
+    const boxBounds = {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+
+    // Use EntitySystem to find entities in box
+    const selectedEntities = EntitySystem.findEntitiesInBox(
+      entities,
+      boxBounds,
+      { shapes: shapesMap }
+    );
+
+    set({ selectedEntityIds: new Set(selectedEntities.map(e => e.id)) });
   },
 
   getAllSelectedEntities: () => {
@@ -289,8 +306,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
   // Hit detection
   findEntityAtPoint: (x, y) => {
-    const { shapes, connectors } = get();
-    return getEntityAtPointHitDetection(x, y, shapes, connectors);
+    const { shapes } = get();
+    const entities = get().getAllEntities();
+    const shapesMap = createShapeMap(shapes);
+    return EntitySystem.findEntityAtPoint(entities, x, y, { shapes: shapesMap });
   },
 
   getAllEntities: () => {
