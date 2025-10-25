@@ -3,48 +3,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { setupMouseInput, EntityInteractionCallbacks } from '../lib/mouse-input';
 import { setupKeyboardInput, KeyboardInteractionCallbacks } from '../lib/keyboard-input';
-import { renderCanvas } from '../lib/canvas-renderer';
 import { SelectionBox } from '../lib/selection-box-renderer';
 import { useCanvasStore } from '../model/canvas-store';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
-import { createOrthogonalConnector, type AnchorPosition } from '@/entities/connector';
+import { createOrthogonalConnector } from '@/entities/connector';
 import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
 import { ToolsetPopover, useToolsetPopoverStore } from '@/widgets/toolset-popover';
 import { TextEditOverlay } from '@/widgets/text-edit-overlay';
 import { CanvasTransform } from '@/shared/lib/canvas-transform';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
-import {
-  CONNECTION_POINT_CONFIG,
-  SHAPE_PROXIMITY_CONFIG,
-} from '@/shared/config/canvas-config';
+import { useConnectionPointInteraction } from '../hooks/use-connection-point-interaction';
+import { useCanvasRendering } from '../hooks/use-canvas-rendering';
 
 export function DiagramCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [transform, setTransform] = useState<CanvasTransform>(CanvasTransform.identity());
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
-
-  // Connection point hover and drag state
-  const [hoveredShapeIds, setHoveredShapeIds] = useState<string[]>([]);
-  const [hoveredConnectionPoint, setHoveredConnectionPoint] = useState<{
-    shapeId: string;
-    anchor: AnchorPosition;
-  } | null>(null);
-  const [isDraggingConnector, setIsDraggingConnector] = useState(false);
-  const [hasMovedDuringDrag, setHasMovedDuringDrag] = useState(false);
-  const [connectorDragStart, setConnectorDragStart] = useState<{
-    shapeId: string;
-    anchor: AnchorPosition;
-    x: number;
-    y: number;
-  } | null>(null);
-  const [connectorDragEnd, setConnectorDragEnd] = useState<{ x: number; y: number } | null>(
-    null
-  );
-  // Pending connector creation state (when user drags to empty canvas)
-  const [pendingConnector, setPendingConnector] = useState<{
-    sourceShapeId: string;
-    sourceAnchor: AnchorPosition;
-  } | null>(null);
 
   // Use a ref to always have access to current transform without recreating handlers
   const transformRef = useRef(transform);
@@ -87,18 +61,28 @@ export function DiagramCanvas() {
   const shapesRef = useRef(shapes);
   shapesRef.current = shapes;
 
-  const isDraggingConnectorRef = useRef(isDraggingConnector);
-  isDraggingConnectorRef.current = isDraggingConnector;
-
   // Get toolset popover store
   const { open: openToolsetPopover, isOpen: isPopoverOpen } = useToolsetPopoverStore();
 
+  // Use connection point interaction hook
+  const {
+    state: connectionPointState,
+    handlers: connectionPointHandlers,
+    isHandlingConnectionPoint,
+  } = useConnectionPointInteraction({
+    canvasRef,
+    transform,
+    shapes,
+    addConnector,
+    openToolsetPopover,
+    isPopoverOpen,
+    createOrthogonalConnector,
+  });
+
   // Clear pending connector state when popover closes
   useEffect(() => {
-    if (!isPopoverOpen && pendingConnector) {
-      setPendingConnector(null);
-    }
-  }, [isPopoverOpen, pendingConnector]);
+    connectionPointHandlers.clearPendingConnector();
+  }, [isPopoverOpen, connectionPointHandlers]);
 
   // Setup mouse input handlers (only once)
   useEffect(() => {
@@ -159,7 +143,7 @@ export function DiagramCanvas() {
       isConnectionPointAt: (worldX, worldY) => {
         // Don't block native handlers if we're already dragging a connector
         // (we need mouseup to work)
-        if (isDraggingConnectorRef.current) {
+        if (connectionPointState.isDraggingConnector) {
           return false;
         }
         return ConnectionPointSystem.isHitByPoint(worldX, worldY, shapesRef.current, {
@@ -197,6 +181,8 @@ export function DiagramCanvas() {
     finalizeShapeMove,
     openToolsetPopover,
     setEditingShape,
+    connectionPointState.isDraggingConnector,
+    isHandlingConnectionPoint,
   ]);
 
   // Setup keyboard input handlers (only once)
@@ -217,276 +203,21 @@ export function DiagramCanvas() {
     return cleanup;
   }, [getAllSelectedEntities, deleteSelectedEntities, undo, redo, canUndo, canRedo]);
 
-  // Handle mouse move for connection point hover detection
-  const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const screenX = event.clientX - rect.left;
-    const screenY = event.clientY - rect.top;
-
-    const worldPos = transformRef.current.screenToWorld(screenX, screenY);
-
-    // If dragging a connector, update the drag end position
-    if (isDraggingConnector && connectorDragStart) {
-      setConnectorDragEnd({ x: worldPos.x, y: worldPos.y });
-
-      // Check if we've moved enough to consider this a real drag
-      if (!hasMovedDuringDrag) {
-        const distance = Math.hypot(
-          worldPos.x - connectorDragStart.x,
-          worldPos.y - connectorDragStart.y
-        );
-        if (distance > CONNECTION_POINT_CONFIG.dragThreshold / transformRef.current.scale) {
-          setHasMovedDuringDrag(true);
-        }
-      }
-
-      // Show connection points on nearby shapes while dragging
-      const nearbyShapes = ConnectionPointSystem.getShapesNearPosition(
-        worldPos.x,
-        worldPos.y,
-        shapes,
-        SHAPE_PROXIMITY_CONFIG.defaultDistance
-      );
-      setHoveredShapeIds(nearbyShapes.map((s) => s.id));
-
-      // Check if hovering over a specific connection point
-      const connectionPoint = ConnectionPointSystem.findAtPosition(
-        worldPos.x,
-        worldPos.y,
-        shapes,
-        { scale: transformRef.current.scale }
-      );
-
-      if (connectionPoint) {
-        setHoveredConnectionPoint({
-          shapeId: connectionPoint.shapeId,
-          anchor: connectionPoint.anchor,
-        });
-      } else {
-        setHoveredConnectionPoint(null);
-      }
-      return;
-    }
-
-    // Check if hovering near any shapes
-    const nearbyShapes = ConnectionPointSystem.getShapesNearPosition(
-      worldPos.x,
-      worldPos.y,
-      shapes,
-      SHAPE_PROXIMITY_CONFIG.defaultDistance
-    );
-
-    if (nearbyShapes.length > 0) {
-      setHoveredShapeIds(nearbyShapes.map((s) => s.id));
-
-      // Check if hovering over a specific connection point
-      const connectionPoint = ConnectionPointSystem.findAtPosition(
-        worldPos.x,
-        worldPos.y,
-        shapes,
-        { scale: transformRef.current.scale }
-      );
-
-      if (connectionPoint) {
-        setHoveredConnectionPoint({
-          shapeId: connectionPoint.shapeId,
-          anchor: connectionPoint.anchor,
-        });
-      } else {
-        setHoveredConnectionPoint(null);
-      }
-    } else {
-      setHoveredShapeIds([]);
-      setHoveredConnectionPoint(null);
-    }
-  };
-
-  // Store whether we're handling a connection point to prevent other handlers
-  const isHandlingConnectionPoint = useRef(false);
-
-  // Handle mouse down on connection points
-  const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    // Only handle left mouse button
-    if (event.button !== 0) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const screenX = event.clientX - rect.left;
-    const screenY = event.clientY - rect.top;
-
-    const worldPos = transformRef.current.screenToWorld(screenX, screenY);
-
-    // Check if clicking on a connection point
-    const connectionPoint = ConnectionPointSystem.findAtPosition(
-      worldPos.x,
-      worldPos.y,
-      shapes,
-      { scale: transformRef.current.scale }
-    );
-
-    if (connectionPoint) {
-      // Start dragging a connector
-      // IMPORTANT: Prevent native event AND stop React propagation
-      event.preventDefault();
-      event.stopPropagation();
-      event.nativeEvent.stopImmediatePropagation();
-
-      isHandlingConnectionPoint.current = true;
-
-      setIsDraggingConnector(true);
-      setHasMovedDuringDrag(false);
-      setConnectorDragStart({
-        shapeId: connectionPoint.shapeId,
-        anchor: connectionPoint.anchor,
-        x: connectionPoint.position.x,
-        y: connectionPoint.position.y,
-      });
-      setConnectorDragEnd({ x: worldPos.x, y: worldPos.y });
-    }
-  };
-
-  // Handle mouse up to complete connector creation
-  const handleMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDraggingConnector || !connectorDragStart) {
-      return;
-    }
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Only create connector if we actually dragged (not just a click)
-    if (!hasMovedDuringDrag) {
-      // Reset drag state without creating connector
-      setIsDraggingConnector(false);
-      setHasMovedDuringDrag(false);
-      setConnectorDragStart(null);
-      setConnectorDragEnd(null);
-      setHoveredConnectionPoint(null);
-
-      // Reset flag to allow normal mouse handlers again
-      setTimeout(() => {
-        isHandlingConnectionPoint.current = false;
-      }, 0);
-      return;
-    }
-
-    const rect = canvas.getBoundingClientRect();
-    const screenX = event.clientX - rect.left;
-    const screenY = event.clientY - rect.top;
-
-    const worldPos = transformRef.current.screenToWorld(screenX, screenY);
-
-    // Check if releasing on a connection point
-    const targetPoint = ConnectionPointSystem.findAtPosition(
-      worldPos.x,
-      worldPos.y,
-      shapes,
-      { scale: transformRef.current.scale }
-    );
-
-    if (targetPoint) {
-      // Prevent connecting to the same point
-      const isSamePoint =
-        targetPoint.shapeId === connectorDragStart.shapeId &&
-        targetPoint.anchor === connectorDragStart.anchor;
-
-      if (!isSamePoint) {
-        // Create the connector
-        const connectorResult = createOrthogonalConnector(
-          {
-            shapeId: connectorDragStart.shapeId,
-            anchor: connectorDragStart.anchor,
-          },
-          {
-            shapeId: targetPoint.shapeId,
-            anchor: targetPoint.anchor,
-          }
-        );
-
-        if (connectorResult.ok) {
-          addConnector(connectorResult.value);
-        } else {
-          console.error('Failed to create connector:', connectorResult.error);
-        }
-      }
-    } else {
-      // Released on empty canvas - open toolset popover for shape creation
-      const connector = {
-        sourceShapeId: connectorDragStart.shapeId,
-        sourceAnchor: connectorDragStart.anchor,
-      };
-
-      // Store pending connector state locally
-      setPendingConnector(connector);
-
-      // Open the toolset popover at the release position with pending connector
-      openToolsetPopover(screenX, screenY, worldPos.x, worldPos.y, connector);
-    }
-
-    // Reset drag state
-    setIsDraggingConnector(false);
-    setHasMovedDuringDrag(false);
-    setConnectorDragStart(null);
-    setConnectorDragEnd(null);
-    setHoveredConnectionPoint(null);
-
-    // Reset flag after a short delay to ensure other handlers see it
-    setTimeout(() => {
-      isHandlingConnectionPoint.current = false;
-    }, 0);
-  };
-
-  // Render canvas when state changes
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const render = () => {
-      // Show connection points for hovered shapes or when dragging
-      const shapesToShowPoints = isDraggingConnector ? shapes : shapes.filter(s => hoveredShapeIds.includes(s.id));
-
-      renderCanvas({
-        canvas,
-        transform,
-        shapes,
-        connectors,
-        selectedEntityIds,
-        selectionBox,
-        isConnectorMode: shapesToShowPoints.length > 0,
-        connectorDragStart:
-          connectorDragStart && hasMovedDuringDrag
-            ? { x: connectorDragStart.x, y: connectorDragStart.y }
-            : null,
-        connectorDragEnd: hasMovedDuringDrag ? connectorDragEnd : null,
-        hoveredShapeIds,
-        hoveredConnectionPoint,
-      });
-    };
-
-    render();
-    window.addEventListener('resize', render);
-
-    return () => {
-      window.removeEventListener('resize', render);
-    };
-  }, [
+  // Use canvas rendering hook
+  useCanvasRendering({
+    canvasRef,
     transform,
     shapes,
     connectors,
     selectedEntityIds,
     selectionBox,
-    hoveredShapeIds,
-    hoveredConnectionPoint,
-    isDraggingConnector,
-    hasMovedDuringDrag,
-    connectorDragStart,
-    connectorDragEnd,
-  ]);
+    hoveredShapeIds: connectionPointState.hoveredShapeIds,
+    hoveredConnectionPoint: connectionPointState.hoveredConnectionPoint,
+    isDraggingConnector: connectionPointState.isDraggingConnector,
+    hasMovedDuringDrag: connectionPointState.hasMovedDuringDrag,
+    connectorDragStart: connectionPointState.connectorDragStart,
+    connectorDragEnd: connectionPointState.connectorDragEnd,
+  });
 
   // Handler to reset zoom to 100%
   const handleResetZoom = () => {
@@ -503,19 +234,15 @@ export function DiagramCanvas() {
     >
       <canvas
         ref={canvasRef}
-        onMouseMove={handleMouseMove}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
+        onMouseMove={connectionPointHandlers.handleMouseMove}
+        onMouseDown={connectionPointHandlers.handleMouseDown}
+        onMouseUp={connectionPointHandlers.handleMouseUp}
         onContextMenu={(e) => e.preventDefault()}
         style={{
           width: '100%',
           height: '100%',
           display: 'block',
-          cursor: hoveredConnectionPoint
-            ? 'crosshair'
-            : isDraggingConnector
-            ? 'crosshair'
-            : 'default',
+          cursor: connectionPointHandlers.getCursorStyle(),
         }}
       />
       <CanvasControls />

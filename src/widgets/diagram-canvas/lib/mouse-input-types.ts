@@ -123,3 +123,37 @@ export interface EntityInteractionCallbacks
     EntityCreationCallbacks,
     CanvasSettingsCallbacks,
     TextEditingCallbacks {}
+
+/**
+ * Connection point interaction types
+ * Used for connector creation via drag-and-drop from connection points
+ */
+export interface ConnectionPointDragState {
+  /** Whether user is currently dragging a connector */
+  isDraggingConnector: boolean;
+  /** Whether the drag has moved enough to be considered a real drag (not just a click) */
+  hasMovedDuringDrag: boolean;
+  /** Start point of connector drag */
+  connectorDragStart: {
+    shapeId: string;
+    anchor: string;
+    x: number;
+    y: number;
+  } | null;
+  /** Current end point of connector drag */
+  connectorDragEnd: { x: number; y: number } | null;
+}
+
+/**
+ * Connection point hover state
+ * Used for showing visual feedback when hovering near connection points
+ */
+export interface ConnectionPointHoverState {
+  /** IDs of shapes that should show connection points (nearby or being dragged to) */
+  hoveredShapeIds: string[];
+  /** Specific connection point being hovered */
+  hoveredConnectionPoint: {
+    shapeId: string;
+    anchor: string;
+  } | null;
+}
