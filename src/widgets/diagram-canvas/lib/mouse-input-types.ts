@@ -103,6 +103,16 @@ export interface CanvasSettingsCallbacks {
 }
 
 /**
+ * Text editing callbacks
+ */
+export interface TextEditingCallbacks {
+  /** Start editing text on a shape */
+  startEditingText: (shapeId: string) => void;
+  /** Get all shapes for entity lookup */
+  getAllShapes?: () => DiagramEntity[];
+}
+
+/**
  * Complete entity interaction callbacks
  * Combines all callback groups for mouse input handling
  */
@@ -111,4 +121,5 @@ export interface EntityInteractionCallbacks
     EntitySelectionCallbacks,
     EntityDragCallbacks,
     EntityCreationCallbacks,
-    CanvasSettingsCallbacks {}
+    CanvasSettingsCallbacks,
+    TextEditingCallbacks {}

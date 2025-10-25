@@ -7,9 +7,10 @@ import { renderCanvas } from '../lib/canvas-renderer';
 import { SelectionBox } from '../lib/selection-box-renderer';
 import { useCanvasStore } from '../model/canvas-store';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
-import { createStraightConnector, type AnchorPosition } from '@/entities/connector';
+import { createOrthogonalConnector, type AnchorPosition } from '@/entities/connector';
 import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
 import { ToolsetPopover, useToolsetPopoverStore } from '@/widgets/toolset-popover';
+import { TextEditOverlay } from '@/widgets/text-edit-overlay';
 import { CanvasTransform } from '@/shared/lib/canvas-transform';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
 import {
@@ -39,6 +40,11 @@ export function DiagramCanvas() {
   const [connectorDragEnd, setConnectorDragEnd] = useState<{ x: number; y: number } | null>(
     null
   );
+  // Pending connector creation state (when user drags to empty canvas)
+  const [pendingConnector, setPendingConnector] = useState<{
+    sourceShapeId: string;
+    sourceAnchor: AnchorPosition;
+  } | null>(null);
 
   // Use a ref to always have access to current transform without recreating handlers
   const transformRef = useRef(transform);
@@ -50,6 +56,7 @@ export function DiagramCanvas() {
     connectors,
     selectedEntityIds,
     snapMode,
+    editingShapeId,
     addShape,
     addConnector,
     deleteSelectedEntities,
@@ -65,6 +72,8 @@ export function DiagramCanvas() {
     clearDraggingEntities,
     updateShapePositionInternal,
     finalizeShapeMove,
+    setEditingShape,
+    updateShapeText,
     undo,
     redo,
     canUndo,
@@ -82,7 +91,14 @@ export function DiagramCanvas() {
   isDraggingConnectorRef.current = isDraggingConnector;
 
   // Get toolset popover store
-  const { open: openToolsetPopover } = useToolsetPopoverStore();
+  const { open: openToolsetPopover, isOpen: isPopoverOpen } = useToolsetPopoverStore();
+
+  // Clear pending connector state when popover closes
+  useEffect(() => {
+    if (!isPopoverOpen && pendingConnector) {
+      setPendingConnector(null);
+    }
+  }, [isPopoverOpen, pendingConnector]);
 
   // Setup mouse input handlers (only once)
   useEffect(() => {
@@ -150,6 +166,10 @@ export function DiagramCanvas() {
           scale: transformRef.current.scale,
         });
       },
+      startEditingText: (shapeId) => {
+        setEditingShape(shapeId);
+      },
+      getAllShapes: () => shapesRef.current,
     };
 
     // Pass getter function that always returns current transform
@@ -176,6 +196,7 @@ export function DiagramCanvas() {
     updateShapePositionInternal,
     finalizeShapeMove,
     openToolsetPopover,
+    setEditingShape,
   ]);
 
   // Setup keyboard input handlers (only once)
@@ -376,7 +397,7 @@ export function DiagramCanvas() {
 
       if (!isSamePoint) {
         // Create the connector
-        const connectorResult = createStraightConnector(
+        const connectorResult = createOrthogonalConnector(
           {
             shapeId: connectorDragStart.shapeId,
             anchor: connectorDragStart.anchor,
@@ -393,6 +414,18 @@ export function DiagramCanvas() {
           console.error('Failed to create connector:', connectorResult.error);
         }
       }
+    } else {
+      // Released on empty canvas - open toolset popover for shape creation
+      const connector = {
+        sourceShapeId: connectorDragStart.shapeId,
+        sourceAnchor: connectorDragStart.anchor,
+      };
+
+      // Store pending connector state locally
+      setPendingConnector(connector);
+
+      // Open the toolset popover at the release position with pending connector
+      openToolsetPopover(screenX, screenY, worldPos.x, worldPos.y, connector);
     }
 
     // Reset drag state
@@ -460,6 +493,9 @@ export function DiagramCanvas() {
     setTransform(CanvasTransform.identity());
   };
 
+  // Get the shape being edited
+  const editingShape = editingShapeId ? shapes.find((s) => s.id === editingShapeId) || null : null;
+
   return (
     <div
       style={{ position: 'relative', width: '100%', height: '100%' }}
@@ -485,6 +521,15 @@ export function DiagramCanvas() {
       <CanvasControls />
       <ZoomControl zoom={transform.scale} onReset={handleResetZoom} />
       <ToolsetPopover />
+      <TextEditOverlay
+        entity={editingShape}
+        transform={transform}
+        onCommit={(entityId, text) => {
+          updateShapeText(entityId, text);
+          setEditingShape(null);
+        }}
+        onCancel={() => setEditingShape(null)}
+      />
     </div>
   );
 }

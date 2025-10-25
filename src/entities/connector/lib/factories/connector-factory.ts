@@ -43,6 +43,8 @@ export interface ConnectorCreationOptions {
   arrowStart?: boolean;
   /** Curvature for curved connectors */
   curvature?: number;
+  /** Automatically update connection points to nearest anchors when shapes move */
+  autoUpdate?: boolean;
 }
 
 /**
@@ -71,12 +73,13 @@ export function createConnector(options: ConnectorCreationOptions): Result<Conne
   const {
     source,
     target,
-    connectorType = ConnectorType.Straight,
+    connectorType = ConnectorType.Orthogonal,
     strokeColor = CANVAS_COLORS.connectorStroke,
     strokeWidth = STROKE_WIDTHS.connector,
     arrowEnd = true,
     arrowStart = false,
     curvature = 1.0,
+    autoUpdate = true,
   } = options;
 
   // Generate unique ID
@@ -92,6 +95,7 @@ export function createConnector(options: ConnectorCreationOptions): Result<Conne
     strokeWidth,
     arrowEnd,
     arrowStart,
+    autoUpdate,
     // Position and dimensions will be calculated when rendering
     // based on connected shapes
     position: { x: 0, y: 0 },

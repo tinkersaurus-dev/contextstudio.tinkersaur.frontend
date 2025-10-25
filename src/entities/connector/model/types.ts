@@ -63,6 +63,8 @@ export interface BaseConnector extends DiagramEntity {
   arrowEnd?: boolean;
   /** Show arrowhead at source end */
   arrowStart?: boolean;
+  /** Automatically update connection points to nearest anchors when shapes move */
+  autoUpdate?: boolean;
 }
 
 /**

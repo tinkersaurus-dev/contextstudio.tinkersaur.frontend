@@ -14,6 +14,7 @@ import type {
   PanState,
   DragState,
   SelectionBoxState,
+  DoubleClickState,
   MouseHandlerContext,
 } from './mouse-handlers';
 import * as handlers from './mouse-handlers';
@@ -57,7 +58,13 @@ function createMouseStates() {
     currentY: 0,
   };
 
-  return { panState, dragState, selectionBoxState };
+  const doubleClickState: DoubleClickState = {
+    lastClickTime: 0,
+    lastClickedEntityId: null,
+    doubleClickThreshold: 300, // 300ms
+  };
+
+  return { panState, dragState, selectionBoxState, doubleClickState };
 }
 
 /**
@@ -292,7 +299,7 @@ export function setupMouseInput(
   entityCallbacks?: EntityInteractionCallbacks
 ): () => void {
   // Create state objects
-  const { panState, dragState, selectionBoxState } = createMouseStates();
+  const { panState, dragState, selectionBoxState, doubleClickState } = createMouseStates();
 
   // Build handler context
   const context: MouseHandlerContext = {
@@ -303,6 +310,7 @@ export function setupMouseInput(
     panState,
     dragState,
     selectionBoxState,
+    doubleClickState,
   };
 
   // Build event handlers

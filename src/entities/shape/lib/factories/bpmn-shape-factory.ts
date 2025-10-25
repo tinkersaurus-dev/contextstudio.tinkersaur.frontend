@@ -72,6 +72,7 @@ export function createTask(
     fillColor,
     strokeColor,
     strokeWidth,
+    text: '',
   };
 
   const validationResult = validateShape(shape);
@@ -123,6 +124,7 @@ export function createStartEvent(
     fillColor,
     strokeColor,
     strokeWidth,
+    text: '',
   };
 
   const validationResult = validateShape(shape);
@@ -170,6 +172,7 @@ export function createEndEvent(
     fillColor,
     strokeColor,
     strokeWidth,
+    text: '',
   };
 
   const validationResult = validateShape(shape);
@@ -221,6 +224,7 @@ export function createGateway(
     fillColor,
     strokeColor,
     strokeWidth,
+    text: '',
   };
 
   const validationResult = validateShape(shape);
@@ -273,6 +277,7 @@ export function createPool(
     fillColor,
     strokeColor,
     strokeWidth,
+    text: '',
   };
 
   const validationResult = validateShape(shape);

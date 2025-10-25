@@ -3,6 +3,7 @@ import { Shape } from '@/entities/shape';
 import { Connector } from '@/entities/connector';
 import { DiagramEntity } from '@/entities/diagram-entity';
 import { updateConnectorForShapeMove } from '@/entities/connector';
+import { updateConnectorAnchors } from '@/entities/connector/lib/connector-auto-update';
 import type { SnapMode } from '@/shared/lib/grid-system';
 import { EntitySystem } from '@/shared/lib/entity-system';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
@@ -31,6 +32,9 @@ interface CanvasState {
   // Connector creation mode
   isConnectorMode: boolean;
   connectorSourceShapeId: string | null;
+
+  // Text editing mode
+  editingShapeId: string | null;
 
   // Command history for undo/redo
   commandHistory: CommandHistory;
@@ -97,6 +101,10 @@ interface CanvasState {
   setConnectorSource: (shapeId: string | null) => void;
   resetConnectorCreation: () => void;
 
+  // Text editing actions
+  setEditingShape: (shapeId: string | null) => void;
+  updateShapeText: (shapeId: string, text: string) => void;
+
   // Hit detection
   findEntityAtPoint: (x: number, y: number) => DiagramEntity | null;
   getAllEntities: () => DiagramEntity[];
@@ -110,6 +118,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   snapMode: 'none',
   isConnectorMode: false,
   connectorSourceShapeId: null,
+  editingShapeId: null,
   commandHistory: new CommandHistory({ maxHistorySize: 50 }),
 
   // Undo/Redo actions
@@ -490,11 +499,24 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         connector.source.shapeId === shapeId || connector.target.shapeId === shapeId
     );
 
-    // Update each affected connector's bounding box
+    // Update each affected connector's bounding box and anchors (if auto-update enabled)
     // Use internal method to avoid creating separate undo commands
     // (connector updates are part of the shape move command)
     affectedConnectors.forEach((connector) => {
-      const updates = updateConnectorForShapeMove(connector, shapesMap);
+      let updates = updateConnectorForShapeMove(connector, shapesMap);
+
+      // If auto-update is enabled, recalculate optimal connection points
+      if (connector.autoUpdate !== false && updates) {
+        const updatedAnchors = updateConnectorAnchors(connector, shapesMap);
+        if (updatedAnchors) {
+          updates = {
+            ...updates,
+            source: updatedAnchors.source,
+            target: updatedAnchors.target,
+          };
+        }
+      }
+
       if (updates) {
         get()._internalUpdateConnector(connector.id, updates);
       }
@@ -595,6 +617,21 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     isConnectorMode: false,
     connectorSourceShapeId: null,
   }),
+
+  // Text editing actions
+  setEditingShape: (shapeId) => set({
+    editingShapeId: shapeId,
+  }),
+
+  updateShapeText: (shapeId, text) => {
+    const currentShape = get().shapes.find((s) => s.id === shapeId);
+    if (!currentShape) {
+      return;
+    }
+
+    // Update shape text using the command system for undo/redo
+    get().updateShape(shapeId, { text });
+  },
 
   // Hit detection
   findEntityAtPoint: (x, y) => {

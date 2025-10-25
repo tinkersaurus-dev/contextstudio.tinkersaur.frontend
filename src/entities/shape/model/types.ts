@@ -20,6 +20,9 @@ export interface BaseShape extends DiagramEntity {
   fillColor?: string;
   strokeColor?: string;
   strokeWidth?: number;
+  text?: string;
+  fontSize?: number;
+  textColor?: string;
 }
 
 export interface RectangleShape extends BaseShape {

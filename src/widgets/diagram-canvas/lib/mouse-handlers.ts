@@ -41,6 +41,12 @@ export interface SelectionBoxState {
   currentY: number;
 }
 
+export interface DoubleClickState {
+  lastClickTime: number;
+  lastClickedEntityId: string | null;
+  doubleClickThreshold: number; // milliseconds
+}
+
 // Handler context
 export interface MouseHandlerContext {
   canvas: HTMLCanvasElement;
@@ -50,6 +56,7 @@ export interface MouseHandlerContext {
   panState: PanState;
   dragState: DragState;
   selectionBoxState: SelectionBoxState;
+  doubleClickState: DoubleClickState;
 }
 
 /**
@@ -128,9 +135,31 @@ export function handleEntityMouseDown(
   modifiers: { shift: boolean; ctrl: boolean },
   context: MouseHandlerContext
 ): void {
-  const { canvas, entityCallbacks, dragState } = context;
+  const { canvas, entityCallbacks, dragState, doubleClickState } = context;
 
   if (!entityCallbacks) return;
+
+  // Check for double-click
+  const currentTime = Date.now();
+  const timeSinceLastClick = currentTime - doubleClickState.lastClickTime;
+  const isDoubleClick =
+    timeSinceLastClick < doubleClickState.doubleClickThreshold &&
+    doubleClickState.lastClickedEntityId === entityId;
+
+  if (isDoubleClick) {
+    // Handle double-click - trigger text editing
+    handleEntityDoubleClick(entityId, context);
+    // Reset double-click state
+    doubleClickState.lastClickTime = 0;
+    doubleClickState.lastClickedEntityId = null;
+    // Prevent any drag state from being set
+    dragState.isDragging = false;
+    return;
+  }
+
+  // Update double-click tracking
+  doubleClickState.lastClickTime = currentTime;
+  doubleClickState.lastClickedEntityId = entityId;
 
   // Handle selection based on modifiers
   if (modifiers.shift) {
@@ -158,6 +187,36 @@ export function handleEntityMouseDown(
   // Set dragging state for visual feedback (can include connectors for selection highlight)
   entityCallbacks.setDraggingEntities(selectedEntities.map((e) => e.id));
   canvas.style.cursor = 'move';
+}
+
+/**
+ * Handle double-click on entity - start text editing
+ */
+export function handleEntityDoubleClick(
+  entityId: string,
+  context: MouseHandlerContext
+): void {
+  const { entityCallbacks } = context;
+
+  if (!entityCallbacks?.startEditingText) return;
+
+  // Check if entity is a shape (only shapes support text editing)
+  // First try to find in selected entities
+  let entity = entityCallbacks.getAllSelectedEntities().find((e) => e.id === entityId);
+
+  // If not in selection, try to find in all shapes
+  if (!entity && entityCallbacks.getAllShapes) {
+    const allShapes = entityCallbacks.getAllShapes();
+    entity = allShapes.find((e) => e.id === entityId);
+  }
+
+  // Only proceed if we found a shape entity
+  if (!entity || entity.type !== 'shape') {
+    return;
+  }
+
+  // Start text editing mode
+  entityCallbacks.startEditingText(entityId);
 }
 
 /**

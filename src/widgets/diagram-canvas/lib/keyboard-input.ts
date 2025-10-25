@@ -17,6 +17,12 @@ export type { KeyboardInteractionCallbacks } from './keyboard-input-types';
  */
 function buildKeyDownHandler(context: KeyboardHandlerContext) {
   return (event: KeyboardEvent) => {
+    // Don't handle keyboard shortcuts if user is typing in an input/textarea
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+      return;
+    }
+
     // Check for platform-specific modifier key
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;

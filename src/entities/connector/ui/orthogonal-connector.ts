@@ -53,7 +53,13 @@ export function renderOrthogonalConnector(
   if (orthogonalConnector.waypoints && orthogonalConnector.waypoints.length > 0) {
     path = [start, ...orthogonalConnector.waypoints, end];
   } else {
-    path = generateOrthogonalPath(start, end);
+    // Pass anchor information for intelligent routing
+    path = generateOrthogonalPath(
+      start,
+      end,
+      orthogonalConnector.source.anchor,
+      orthogonalConnector.target.anchor
+    );
   }
 
   // Determine stroke color and width

@@ -91,20 +91,42 @@ export function calculateConnectorBounds(
  *
  * @param start - Start position
  * @param end - End position
+ * @param startAnchor - Optional anchor position at start (for anchor-aware routing)
+ * @param endAnchor - Optional anchor position at end (for anchor-aware routing)
  * @returns Array of positions representing the path
  */
-export function generateOrthogonalPath(start: Position, end: Position): Position[] {
+export function generateOrthogonalPath(
+  start: Position,
+  end: Position,
+  startAnchor?: AnchorPosition,
+  endAnchor?: AnchorPosition
+): Position[] {
   const path: Position[] = [start];
 
-  // Simple orthogonal routing: go horizontal halfway, then vertical
-  // More sophisticated routing could avoid obstacles
-  const midX = (start.x + end.x) / 2;
+  // Determine if we should route vertically first or horizontally first
+  // based on the anchor positions
+  const isStartVertical = startAnchor === 'n' || startAnchor === 's';
+  const isEndVertical = endAnchor === 'n' || endAnchor === 's';
 
-  // Add intermediate points
-  path.push({ x: midX, y: start.y });
-  path.push({ x: midX, y: end.y });
+  if (isStartVertical && isEndVertical) {
+    // Both anchors are vertical (N/S): go vertical, then horizontal, then vertical
+    const midY = (start.y + end.y) / 2;
+    path.push({ x: start.x, y: midY });
+    path.push({ x: end.x, y: midY });
+  } else if (!isStartVertical && !isEndVertical) {
+    // Both anchors are horizontal (E/W): go horizontal, then vertical, then horizontal
+    const midX = (start.x + end.x) / 2;
+    path.push({ x: midX, y: start.y });
+    path.push({ x: midX, y: end.y });
+  } else if (isStartVertical && !isEndVertical) {
+    // Start is vertical, end is horizontal: go vertical then horizontal
+    path.push({ x: start.x, y: end.y });
+  } else {
+    // Start is horizontal, end is vertical: go horizontal then vertical
+    path.push({ x: end.x, y: start.y });
+  }
+
   path.push(end);
-
   return path;
 }
 

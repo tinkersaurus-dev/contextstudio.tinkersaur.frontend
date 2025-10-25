@@ -47,6 +47,9 @@ export {
   getAnchorDirection,
 } from './lib/connector-geometry';
 
+// Auto-update utilities
+export { updateConnectorAnchors } from './lib/connector-auto-update';
+
 // Factory functions
 export {
   createConnector,

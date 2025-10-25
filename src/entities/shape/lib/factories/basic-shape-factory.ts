@@ -81,6 +81,7 @@ export function createRectangle(
     fillColor,
     strokeColor,
     strokeWidth,
+    text: '',
   };
 
   // Validate the created shape
