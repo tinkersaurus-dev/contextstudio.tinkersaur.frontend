@@ -22,3 +22,5 @@ export { ActionBar, ActionBarRoot, ActionBarPositioner, ActionBarContent, Action
 export type { ActionBarRootProps, ActionBarPositionerProps, ActionBarContentProps, ActionBarSelectionTriggerProps, ActionBarSeparatorProps, ActionBarCloseTriggerProps } from "./action-bar";
 export { PopoverRoot, PopoverTrigger, PopoverAnchor, PopoverPositioner, PopoverContent, PopoverArrow, PopoverArrowTip, PopoverBody, PopoverHeader, PopoverFooter, PopoverTitle, PopoverDescription, PopoverCloseTrigger } from "./popover";
 export type { PopoverRootProps, PopoverContentProps } from "./popover";
+export { TreeView, TreeViewRoot, createTreeCollection } from "./tree-view";
+export type { TreeViewRootProps } from "./tree-view";

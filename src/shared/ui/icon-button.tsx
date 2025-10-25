@@ -21,7 +21,7 @@ import { forwardRef } from "react";
 export type IconButtonProps = ChakraIconButtonProps;
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  function IconButton(props, ref) {
-    return <ChakraIconButton ref={ref} {...props} borderRadius="0px" size="2xs"/>;
+  function IconButton({ size = "2xs", ...props }, ref) {
+    return <ChakraIconButton ref={ref} borderRadius="0px" size={size} {...props} />;
   }
 );
