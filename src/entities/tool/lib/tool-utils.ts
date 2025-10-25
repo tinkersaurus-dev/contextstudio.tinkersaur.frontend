@@ -14,6 +14,7 @@ import {
   createGateway,
   createPool,
 } from '@/entities/shape/lib/shape-factory';
+import { unwrap } from '@/shared/lib/result';
 
 /**
  * Create a shape from a simple tool configuration
@@ -36,19 +37,22 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
   } = shapeConfig;
 
   // Create shape based on type
+  // All factory functions now return Result<Shape>, so we unwrap them
+  // If validation fails, unwrap will throw, which is appropriate for this use case
+  // since invalid tool configurations should be caught during development
   switch (shapeType) {
     case ShapeType.Rectangle:
-      return createRectangle(x, y, {
+      return unwrap(createRectangle(x, y, {
         width,
         height,
         fillColor,
         strokeColor,
         strokeWidth,
         reference: 'center',
-      });
+      }));
 
     case ShapeType.Task:
-      return createTask(x, y, {
+      return unwrap(createTask(x, y, {
         width,
         height,
         cornerRadius: properties.cornerRadius as number | undefined,
@@ -56,56 +60,56 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         strokeColor,
         strokeWidth,
         reference: 'center',
-      });
+      }));
 
     case ShapeType.StartEvent:
-      return createStartEvent(x, y, {
+      return unwrap(createStartEvent(x, y, {
         diameter: width,
         fillColor,
         strokeColor,
         strokeWidth,
         reference: 'center',
-      });
+      }));
 
     case ShapeType.EndEvent:
-      return createEndEvent(x, y, {
+      return unwrap(createEndEvent(x, y, {
         diameter: width,
         fillColor,
         strokeColor,
         strokeWidth,
         reference: 'center',
-      });
+      }));
 
     case ShapeType.Gateway:
-      return createGateway(x, y, {
+      return unwrap(createGateway(x, y, {
         size: width,
         fillColor,
         strokeColor,
         strokeWidth,
         reference: 'center',
-      });
+      }));
 
     case ShapeType.Pool:
-      return createPool(x, y, {
+      return unwrap(createPool(x, y, {
         width,
         height,
         fillColor,
         strokeColor,
         strokeWidth,
         reference: 'center',
-      });
+      }));
 
     default:
       // Fallback to rectangle if unknown type
       console.warn(`Unknown shape type: ${shapeType}, falling back to rectangle`);
-      return createRectangle(x, y, {
+      return unwrap(createRectangle(x, y, {
         width: width || 120,
         height: height || 80,
         fillColor,
         strokeColor,
         strokeWidth,
         reference: 'center',
-      });
+      }));
   }
 }
 

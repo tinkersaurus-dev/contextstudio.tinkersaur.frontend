@@ -19,36 +19,39 @@ export interface KeyboardHandlerContext {
  *
  * Deletes all currently selected entities (shapes and connectors).
  * Shapes will automatically cascade delete their attached connectors.
+ *
+ * This now uses the bulk delete operation which creates a single
+ * composite command for undo/redo.
  */
 export function handleDeleteKey(context: KeyboardHandlerContext): void {
   const { callbacks } = context;
 
-  // Get all selected entities
-  const selectedEntities = callbacks.getAllSelectedEntities();
+  // Use bulk delete operation (creates single undo/redo command)
+  callbacks.deleteSelectedEntities();
+}
 
-  if (selectedEntities.length === 0) {
-    return; // Nothing to delete
+/**
+ * Handle Undo key press (Ctrl+Z / Cmd+Z)
+ *
+ * Undoes the most recent command in the history.
+ */
+export function handleUndoKey(context: KeyboardHandlerContext): void {
+  const { callbacks } = context;
+
+  if (callbacks.canUndo()) {
+    callbacks.undo();
   }
+}
 
-  // Separate shapes and connectors
-  const shapeIds: string[] = [];
-  const connectorIds: string[] = [];
+/**
+ * Handle Redo key press (Ctrl+Shift+Z / Cmd+Shift+Z / Ctrl+Y)
+ *
+ * Redoes the most recently undone command.
+ */
+export function handleRedoKey(context: KeyboardHandlerContext): void {
+  const { callbacks } = context;
 
-  selectedEntities.forEach((entity) => {
-    if (entity.type === 'shape') {
-      shapeIds.push(entity.id);
-    } else if (entity.type === 'connector') {
-      connectorIds.push(entity.id);
-    }
-  });
-
-  // Delete shapes first (this will cascade delete attached connectors)
-  shapeIds.forEach((id) => {
-    callbacks.deleteShape(id);
-  });
-
-  // Delete standalone connectors (ones not attached to deleted shapes)
-  connectorIds.forEach((id) => {
-    callbacks.deleteConnector(id);
-  });
+  if (callbacks.canRedo()) {
+    callbacks.redo();
+  }
 }

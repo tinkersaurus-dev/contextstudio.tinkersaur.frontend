@@ -50,10 +50,8 @@ export function DiagramCanvas() {
     selectedEntityIds,
     snapMode,
     addShape,
-    updateShape,
     addConnector,
-    deleteShape,
-    deleteConnector,
+    deleteSelectedEntities,
     findEntityAtPoint,
     isSelected,
     getAllSelectedEntities,
@@ -64,6 +62,12 @@ export function DiagramCanvas() {
     selectEntitiesInBox,
     setDraggingEntities,
     clearDraggingEntities,
+    updateShapePositionInternal,
+    finalizeShapeMove,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useCanvasStore();
 
   // Use refs to always have access to current values without recreating handlers
@@ -96,12 +100,27 @@ export function DiagramCanvas() {
       selectEntitiesInBox,
       setDraggingEntities,
       clearDraggingEntities,
-      updateEntityPosition: (id, x, y) => {
-        updateShape(id, { position: { x, y } });
+      updateEntityPositionInternal: (id, x, y) => {
+        updateShapePositionInternal(id, x, y);
+      },
+      finalizeEntityMove: (moves) => {
+        // Convert entity IDs to shape IDs for the store
+        const shapeMoves = moves.map((move) => ({
+          shapeId: move.entityId,
+          fromX: move.fromX,
+          fromY: move.fromY,
+          toX: move.toX,
+          toY: move.toY,
+        }));
+        finalizeShapeMove(shapeMoves);
       },
       createRectangleAtPoint: (x, y) => {
-        const newShape = createRectangleAtPoint(x, y);
-        addShape(newShape);
+        const newShapeResult = createRectangleAtPoint(x, y);
+        if (newShapeResult.ok) {
+          addShape(newShapeResult.value);
+        } else {
+          console.error('Failed to create rectangle:', newShapeResult.error);
+        }
       },
       openToolsetPopover: (screenX, screenY, worldX, worldY) => {
         openToolsetPopover(screenX, screenY, worldX, worldY);
@@ -143,7 +162,6 @@ export function DiagramCanvas() {
     return cleanup;
   }, [
     addShape,
-    updateShape,
     findEntityAtPoint,
     isSelected,
     getAllSelectedEntities,
@@ -154,6 +172,8 @@ export function DiagramCanvas() {
     selectEntitiesInBox,
     setDraggingEntities,
     clearDraggingEntities,
+    updateShapePositionInternal,
+    finalizeShapeMove,
     openToolsetPopover,
   ]);
 
@@ -162,15 +182,18 @@ export function DiagramCanvas() {
     // Keyboard interaction callbacks
     const keyboardCallbacks: KeyboardInteractionCallbacks = {
       getAllSelectedEntities,
-      deleteShape,
-      deleteConnector,
+      deleteSelectedEntities,
+      undo,
+      redo,
+      canUndo,
+      canRedo,
     };
 
     // Setup keyboard input
     const cleanup = setupKeyboardInput(keyboardCallbacks);
 
     return cleanup;
-  }, [getAllSelectedEntities, deleteShape, deleteConnector]);
+  }, [getAllSelectedEntities, deleteSelectedEntities, undo, redo, canUndo, canRedo]);
 
   // Handle mouse move for connection point hover detection
   const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {

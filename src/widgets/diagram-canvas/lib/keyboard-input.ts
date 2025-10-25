@@ -17,12 +17,33 @@ export type { KeyboardInteractionCallbacks } from './keyboard-input-types';
  */
 function buildKeyDownHandler(context: KeyboardHandlerContext) {
   return (event: KeyboardEvent) => {
+    // Check for platform-specific modifier key
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const modifierKey = isMac ? event.metaKey : event.ctrlKey;
+
+    // Handle Undo: Ctrl+Z / Cmd+Z (without Shift)
+    if (modifierKey && !event.shiftKey && event.key.toLowerCase() === 'z') {
+      event.preventDefault();
+      handlers.handleUndoKey(context);
+      return;
+    }
+
+    // Handle Redo: Ctrl+Shift+Z / Cmd+Shift+Z or Ctrl+Y (Windows)
+    if (
+      (modifierKey && event.shiftKey && event.key.toLowerCase() === 'z') ||
+      (!isMac && event.ctrlKey && event.key.toLowerCase() === 'y')
+    ) {
+      event.preventDefault();
+      handlers.handleRedoKey(context);
+      return;
+    }
+
     // Handle Delete or Backspace key
     if (event.key === 'Delete' || event.key === 'Backspace') {
       // Prevent default behavior (e.g., browser back navigation on Backspace)
       event.preventDefault();
-
       handlers.handleDeleteKey(context);
+      return;
     }
   };
 }

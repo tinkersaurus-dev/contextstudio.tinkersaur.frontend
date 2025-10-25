@@ -22,6 +22,8 @@ import type {
   CircularShapeOptions,
   SquareShapeOptions,
 } from './base-factory-types';
+import { Result, ok, err } from '@/shared/lib/result';
+import { validateShape } from '@/shared/lib/entity-validation';
 
 // ============================================================================
 // BPMN Task Shape
@@ -41,13 +43,13 @@ export interface CreateTaskOptions extends RectangularShapeOptions {
  * @param x - X coordinate
  * @param y - Y coordinate
  * @param options - Optional configuration for the task
- * @returns A new task shape entity
+ * @returns A Result containing the new task shape or an error message
  */
 export function createTask(
   x: number,
   y: number,
   options: CreateTaskOptions = {}
-): TaskShape {
+): Result<TaskShape> {
   const {
     width = 120,
     height = 80,
@@ -60,7 +62,7 @@ export function createTask(
 
   const position = calculatePosition(x, y, width, height, { reference });
 
-  return {
+  const shape: TaskShape = {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.Task,
@@ -71,6 +73,13 @@ export function createTask(
     strokeColor,
     strokeWidth,
   };
+
+  const validationResult = validateShape(shape);
+  if (!validationResult.valid) {
+    return err(`Task shape validation failed: ${validationResult.errors.join(', ')}`);
+  }
+
+  return ok(shape);
 }
 
 // ============================================================================
@@ -88,13 +97,13 @@ export type CreateStartEventOptions = CircularShapeOptions;
  * @param x - X coordinate
  * @param y - Y coordinate
  * @param options - Optional configuration for the start event
- * @returns A new start event shape entity
+ * @returns A Result containing the new start event shape or an error message
  */
 export function createStartEvent(
   x: number,
   y: number,
   options: CreateStartEventOptions = {}
-): StartEventShape {
+): Result<StartEventShape> {
   const {
     diameter = 40,
     fillColor = CANVAS_COLORS.defaultShapeFill,
@@ -105,7 +114,7 @@ export function createStartEvent(
 
   const position = calculatePosition(x, y, diameter, diameter, { reference });
 
-  return {
+  const shape: StartEventShape = {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.StartEvent,
@@ -115,6 +124,13 @@ export function createStartEvent(
     strokeColor,
     strokeWidth,
   };
+
+  const validationResult = validateShape(shape);
+  if (!validationResult.valid) {
+    return err(`Start event shape validation failed: ${validationResult.errors.join(', ')}`);
+  }
+
+  return ok(shape);
 }
 
 /**
@@ -128,13 +144,13 @@ export type CreateEndEventOptions = CircularShapeOptions;
  * @param x - X coordinate
  * @param y - Y coordinate
  * @param options - Optional configuration for the end event
- * @returns A new end event shape entity
+ * @returns A Result containing the new end event shape or an error message
  */
 export function createEndEvent(
   x: number,
   y: number,
   options: CreateEndEventOptions = {}
-): EndEventShape {
+): Result<EndEventShape> {
   const {
     diameter = 40,
     fillColor = CANVAS_COLORS.defaultShapeFill,
@@ -145,7 +161,7 @@ export function createEndEvent(
 
   const position = calculatePosition(x, y, diameter, diameter, { reference });
 
-  return {
+  const shape: EndEventShape = {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.EndEvent,
@@ -155,6 +171,13 @@ export function createEndEvent(
     strokeColor,
     strokeWidth,
   };
+
+  const validationResult = validateShape(shape);
+  if (!validationResult.valid) {
+    return err(`End event shape validation failed: ${validationResult.errors.join(', ')}`);
+  }
+
+  return ok(shape);
 }
 
 // ============================================================================
@@ -172,13 +195,13 @@ export type CreateGatewayOptions = SquareShapeOptions;
  * @param x - X coordinate
  * @param y - Y coordinate
  * @param options - Optional configuration for the gateway
- * @returns A new gateway shape entity
+ * @returns A Result containing the new gateway shape or an error message
  */
 export function createGateway(
   x: number,
   y: number,
   options: CreateGatewayOptions = {}
-): GatewayShape {
+): Result<GatewayShape> {
   const {
     size = 50,
     fillColor = CANVAS_COLORS.defaultShapeFill,
@@ -189,7 +212,7 @@ export function createGateway(
 
   const position = calculatePosition(x, y, size, size, { reference });
 
-  return {
+  const shape: GatewayShape = {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.Gateway,
@@ -199,6 +222,13 @@ export function createGateway(
     strokeColor,
     strokeWidth,
   };
+
+  const validationResult = validateShape(shape);
+  if (!validationResult.valid) {
+    return err(`Gateway shape validation failed: ${validationResult.errors.join(', ')}`);
+  }
+
+  return ok(shape);
 }
 
 // ============================================================================
@@ -216,13 +246,13 @@ export type CreatePoolOptions = RectangularShapeOptions;
  * @param x - X coordinate
  * @param y - Y coordinate
  * @param options - Optional configuration for the pool
- * @returns A new pool shape entity
+ * @returns A Result containing the new pool shape or an error message
  */
 export function createPool(
   x: number,
   y: number,
   options: CreatePoolOptions = {}
-): PoolShape {
+): Result<PoolShape> {
   const {
     width = 600,
     height = 200,
@@ -234,7 +264,7 @@ export function createPool(
 
   const position = calculatePosition(x, y, width, height, { reference });
 
-  return {
+  const shape: PoolShape = {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
     shapeType: ShapeType.Pool,
@@ -244,4 +274,11 @@ export function createPool(
     strokeColor,
     strokeWidth,
   };
+
+  const validationResult = validateShape(shape);
+  if (!validationResult.valid) {
+    return err(`Pool shape validation failed: ${validationResult.errors.join(', ')}`);
+  }
+
+  return ok(shape);
 }

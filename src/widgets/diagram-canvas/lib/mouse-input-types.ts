@@ -61,8 +61,23 @@ export interface EntityDragCallbacks {
   setDraggingEntities: (ids: string[]) => void;
   /** Clear all dragging states */
   clearDraggingEntities: () => void;
-  /** Update an entity's position */
-  updateEntityPosition: (id: string, x: number, y: number) => void;
+  /**
+   * Update an entity's position during drag (internal, no command created)
+   * This is called many times per second during drag operations
+   */
+  updateEntityPositionInternal: (id: string, x: number, y: number) => void;
+  /**
+   * Finalize entity move and create undo/redo command
+   * This is called once when drag completes
+   * @param moves - Array of {entityId, fromX, fromY, toX, toY} for all moved entities
+   */
+  finalizeEntityMove: (moves: Array<{
+    entityId: string;
+    fromX: number;
+    fromY: number;
+    toX: number;
+    toY: number;
+  }>) => void;
 }
 
 /**

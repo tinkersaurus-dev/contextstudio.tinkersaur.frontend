@@ -143,16 +143,20 @@ export function handleEntityMouseDown(
     }
   }
 
-  // Start dragging all selected entities
+  // Start dragging all selected SHAPES (not connectors - they auto-update)
   const selectedEntities = entityCallbacks.getAllSelectedEntities();
+  const selectedShapes = selectedEntities.filter((e) => e.type === 'shape');
+
   dragState.isDragging = true;
-  dragState.draggedEntityIds = selectedEntities.map((e) => e.id);
+  dragState.draggedEntityIds = selectedShapes.map((e) => e.id);
   dragState.startX = screenX;
   dragState.startY = screenY;
   dragState.initialPositions = new Map(
-    selectedEntities.map((e) => [e.id, { x: e.position.x, y: e.position.y }])
+    selectedShapes.map((e) => [e.id, { x: e.position.x, y: e.position.y }])
   );
-  entityCallbacks.setDraggingEntities(dragState.draggedEntityIds);
+
+  // Set dragging state for visual feedback (can include connectors for selection highlight)
+  entityCallbacks.setDraggingEntities(selectedEntities.map((e) => e.id));
   canvas.style.cursor = 'move';
 }
 
@@ -212,7 +216,8 @@ export function handleEntityDrag(
         newY = snapped.y;
       }
 
-      entityCallbacks.updateEntityPosition(id, newX, newY);
+      // Use internal update during drag (no command created)
+      entityCallbacks.updateEntityPositionInternal(id, newX, newY);
     }
   });
 }
@@ -263,6 +268,51 @@ export function handleDragComplete(context: MouseHandlerContext): void {
 
   if (!entityCallbacks) return;
 
+  // Finalize move by creating a single undo command
+  // Collect all moved entities with their before/after positions
+  const moves: Array<{
+    entityId: string;
+    fromX: number;
+    fromY: number;
+    toX: number;
+    toY: number;
+  }> = [];
+
+  // Get all entities to find current positions
+  const allEntities = entityCallbacks.getAllSelectedEntities();
+
+  dragState.draggedEntityIds.forEach((id) => {
+    const initialPos = dragState.initialPositions.get(id);
+    if (!initialPos) return;
+
+    // Find the entity in the list to get its final position
+    const entity = allEntities.find((e) => e.id === id);
+
+    // For shapes, we can get the final position from the entity
+    // (Note: This assumes entities have been updated via internal update during drag)
+    if (entity && entity.type === 'shape') {
+      const shape = entity as { id: string; position: { x: number; y: number } };
+      const finalPos = shape.position;
+
+      // Only create move if position actually changed
+      if (initialPos.x !== finalPos.x || initialPos.y !== finalPos.y) {
+        moves.push({
+          entityId: id,
+          fromX: initialPos.x,
+          fromY: initialPos.y,
+          toX: finalPos.x,
+          toY: finalPos.y,
+        });
+      }
+    }
+  });
+
+  // Finalize all moves with a single command
+  if (moves.length > 0) {
+    entityCallbacks.finalizeEntityMove(moves);
+  }
+
+  // Clean up drag state
   dragState.isDragging = false;
   entityCallbacks.clearDraggingEntities();
   dragState.draggedEntityIds = [];

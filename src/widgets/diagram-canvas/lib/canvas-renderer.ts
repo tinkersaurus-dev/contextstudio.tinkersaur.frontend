@@ -14,6 +14,7 @@ import type { SelectionBox } from './selection-box-renderer';
 import type { Shape } from '@/entities/shape';
 import type { Connector, AnchorPosition } from '@/entities/connector';
 import { CANVAS_COLORS } from '@/shared/config/canvas-config';
+import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
 
 export interface CanvasRenderContext {
   /** Canvas element to render to */
@@ -86,7 +87,12 @@ export function renderCanvas(context: CanvasRenderContext): void {
     // Ensure canvas matches parent size
     const parent = canvas.parentElement;
     if (!parent) {
-      console.warn('Canvas has no parent element, skipping render');
+      const error = createError(
+        'Canvas has no parent element',
+        ErrorSeverity.Warning,
+        { code: 'CANVAS_NO_PARENT' }
+      );
+      logError(error);
       return;
     }
 
@@ -96,7 +102,12 @@ export function renderCanvas(context: CanvasRenderContext): void {
     // Get rendering context
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      console.error('Failed to get 2D rendering context');
+      const error = createError(
+        'Failed to get 2D rendering context',
+        ErrorSeverity.Error,
+        { code: 'CANVAS_CONTEXT_FAILED' }
+      );
+      logError(error);
       return;
     }
 
@@ -119,24 +130,50 @@ export function renderCanvas(context: CanvasRenderContext): void {
         panY: transform.panY,
         config: gridConfig,
       });
-    } catch (error) {
-      console.error('Error rendering grid:', error);
+    } catch (err) {
+      const error = createError(
+        'Error rendering grid',
+        ErrorSeverity.Error,
+        {
+          code: 'GRID_RENDER_ERROR',
+          cause: err instanceof Error ? err : undefined,
+        }
+      );
+      logError(error);
       // Continue rendering despite grid error
     }
 
     try {
       // Render all shapes with selection and selection box
       renderShapes(ctx, shapes, selectedEntityIds, transform.scale, selectionBox);
-    } catch (error) {
-      console.error('Error rendering shapes:', error);
+    } catch (err) {
+      const error = createError(
+        'Error rendering shapes',
+        ErrorSeverity.Error,
+        {
+          code: 'SHAPES_RENDER_ERROR',
+          context: { shapeCount: shapes.length },
+          cause: err instanceof Error ? err : undefined,
+        }
+      );
+      logError(error);
       // Continue rendering despite error
     }
 
     try {
       // Render all connectors
       renderConnectors(ctx, connectors, shapes, selectedEntityIds, transform.scale);
-    } catch (error) {
-      console.error('Error rendering connectors:', error);
+    } catch (err) {
+      const error = createError(
+        'Error rendering connectors',
+        ErrorSeverity.Error,
+        {
+          code: 'CONNECTORS_RENDER_ERROR',
+          context: { connectorCount: connectors.length },
+          cause: err instanceof Error ? err : undefined,
+        }
+      );
+      logError(error);
       // Continue rendering despite error
     }
 
@@ -168,15 +205,31 @@ export function renderCanvas(context: CanvasRenderContext): void {
           transform.scale
         );
       }
-    } catch (error) {
-      console.error('Error rendering connection points:', error);
+    } catch (err) {
+      const error = createError(
+        'Error rendering connection points',
+        ErrorSeverity.Error,
+        {
+          code: 'CONNECTION_POINTS_RENDER_ERROR',
+          cause: err instanceof Error ? err : undefined,
+        }
+      );
+      logError(error);
       // Continue to restore context despite error
     }
 
     // Restore context
     ctx.restore();
-  } catch (error) {
-    console.error('Critical error in canvas rendering:', error);
+  } catch (err) {
+    const error = createError(
+      'Critical error in canvas rendering',
+      ErrorSeverity.Critical,
+      {
+        code: 'CANVAS_RENDER_CRITICAL',
+        cause: err instanceof Error ? err : undefined,
+      }
+    );
+    logError(error);
     // Try to restore a basic canvas state
     try {
       const ctx = canvas.getContext('2d');

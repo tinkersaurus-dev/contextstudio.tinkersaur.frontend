@@ -18,16 +18,29 @@ export interface EntityQueryCallbacks {
  * Entity deletion callbacks
  */
 export interface EntityDeletionCallbacks {
-  /** Delete a shape by ID */
-  deleteShape: (id: string) => void;
-  /** Delete a connector by ID */
-  deleteConnector: (id: string) => void;
+  /** Delete all currently selected entities (uses bulk delete command) */
+  deleteSelectedEntities: () => void;
+}
+
+/**
+ * Undo/Redo callbacks
+ */
+export interface UndoRedoCallbacks {
+  /** Undo the most recent command */
+  undo: () => void;
+  /** Redo the most recently undone command */
+  redo: () => void;
+  /** Check if undo is available */
+  canUndo: () => boolean;
+  /** Check if redo is available */
+  canRedo: () => boolean;
 }
 
 /**
  * Complete keyboard interaction callbacks
- * Combines query and deletion callbacks for keyboard input handling
+ * Combines query, deletion, and undo/redo callbacks for keyboard input handling
  */
 export interface KeyboardInteractionCallbacks
   extends EntityQueryCallbacks,
-    EntityDeletionCallbacks {}
+    EntityDeletionCallbacks,
+    UndoRedoCallbacks {}

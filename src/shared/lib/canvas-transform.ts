@@ -27,6 +27,20 @@ export interface Bounds {
 }
 
 /**
+ * Optional pan limits to restrict how far the user can pan
+ */
+export interface PanLimits {
+  /** Minimum horizontal pan offset (most negative value) */
+  minPanX?: number;
+  /** Maximum horizontal pan offset (most positive value) */
+  maxPanX?: number;
+  /** Minimum vertical pan offset (most negative value) */
+  minPanY?: number;
+  /** Maximum vertical pan offset (most positive value) */
+  maxPanY?: number;
+}
+
+/**
  * Immutable canvas transform system
  *
  * Represents the current view transformation state (zoom and pan).
@@ -39,25 +53,60 @@ export class CanvasTransform {
    * @param scale - Zoom level (1.0 = 100%, 2.0 = 200%, 0.5 = 50%)
    * @param panX - Horizontal pan offset in screen pixels
    * @param panY - Vertical pan offset in screen pixels
+   * @param panLimits - Optional limits to restrict panning
    */
   constructor(
     public readonly scale: number,
     public readonly panX: number,
-    public readonly panY: number
+    public readonly panY: number,
+    public readonly panLimits?: PanLimits
   ) {}
 
   /**
    * Create a default transform with no zoom or pan
+   *
+   * @param panLimits - Optional pan limits
    */
-  static identity(): CanvasTransform {
-    return new CanvasTransform(1.0, 0, 0);
+  static identity(panLimits?: PanLimits): CanvasTransform {
+    return new CanvasTransform(1.0, 0, 0, panLimits);
   }
 
   /**
    * Create a transform from a plain object
+   *
+   * @param data - Transform data
+   * @param panLimits - Optional pan limits
    */
-  static from(data: { scale: number; panX: number; panY: number }): CanvasTransform {
-    return new CanvasTransform(data.scale, data.panX, data.panY);
+  static from(
+    data: { scale: number; panX: number; panY: number },
+    panLimits?: PanLimits
+  ): CanvasTransform {
+    return new CanvasTransform(data.scale, data.panX, data.panY, panLimits);
+  }
+
+  /**
+   * Clamp pan values to limits
+   *
+   * @param panX - Horizontal pan offset
+   * @param panY - Vertical pan offset
+   * @returns Clamped pan values
+   */
+  private clampPan(panX: number, panY: number): Point {
+    const limits = this.panLimits;
+    if (!limits) {
+      return { x: panX, y: panY };
+    }
+
+    return {
+      x: Math.max(
+        limits.minPanX ?? -Infinity,
+        Math.min(limits.maxPanX ?? Infinity, panX)
+      ),
+      y: Math.max(
+        limits.minPanY ?? -Infinity,
+        Math.min(limits.maxPanY ?? Infinity, panY)
+      ),
+    };
   }
 
   /**
@@ -139,7 +188,10 @@ export class CanvasTransform {
     const newPanX = mousePos.x - worldX * newScale;
     const newPanY = mousePos.y - worldY * newScale;
 
-    return new CanvasTransform(newScale, newPanX, newPanY);
+    // Apply pan limits
+    const clampedPan = this.clampPan(newPanX, newPanY);
+
+    return new CanvasTransform(newScale, clampedPan.x, clampedPan.y, this.panLimits);
   }
 
   /**
@@ -165,10 +217,17 @@ export class CanvasTransform {
     const deltaX = currentPos.x - panStart.x;
     const deltaY = currentPos.y - panStart.y;
 
+    const newPanX = initialPan.x + deltaX;
+    const newPanY = initialPan.y + deltaY;
+
+    // Apply pan limits
+    const clampedPan = this.clampPan(newPanX, newPanY);
+
     return new CanvasTransform(
       this.scale,
-      initialPan.x + deltaX,
-      initialPan.y + deltaY
+      clampedPan.x,
+      clampedPan.y,
+      this.panLimits
     );
   }
 
@@ -177,10 +236,11 @@ export class CanvasTransform {
    *
    * @param panX - New horizontal pan offset
    * @param panY - New vertical pan offset
-   * @returns New transform with updated pan
+   * @returns New transform with updated pan (clamped to limits if set)
    */
   withPan(panX: number, panY: number): CanvasTransform {
-    return new CanvasTransform(this.scale, panX, panY);
+    const clampedPan = this.clampPan(panX, panY);
+    return new CanvasTransform(this.scale, clampedPan.x, clampedPan.y, this.panLimits);
   }
 
   /**
@@ -190,7 +250,7 @@ export class CanvasTransform {
    * @returns New transform with updated scale
    */
   withScale(scale: number): CanvasTransform {
-    return new CanvasTransform(scale, this.panX, this.panY);
+    return new CanvasTransform(scale, this.panX, this.panY, this.panLimits);
   }
 
   /**
@@ -301,7 +361,7 @@ export class CanvasTransform {
    * Create a copy of this transform
    */
   clone(): CanvasTransform {
-    return new CanvasTransform(this.scale, this.panX, this.panY);
+    return new CanvasTransform(this.scale, this.panX, this.panY, this.panLimits);
   }
 }
 
