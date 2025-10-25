@@ -12,6 +12,10 @@ import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
 import { ToolsetPopover, useToolsetPopoverStore } from '@/widgets/toolset-popover';
 import { CanvasTransform } from '@/shared/lib/canvas-transform';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
+import {
+  CONNECTION_POINT_CONFIG,
+  SHAPE_PROXIMITY_CONFIG,
+} from '@/shared/config/canvas-config';
 
 export function DiagramCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -35,9 +39,6 @@ export function DiagramCanvas() {
   const [connectorDragEnd, setConnectorDragEnd] = useState<{ x: number; y: number } | null>(
     null
   );
-
-  // Minimum drag distance in pixels before considering it a real drag
-  const MIN_DRAG_DISTANCE = 5;
 
   // Use a ref to always have access to current transform without recreating handlers
   const transformRef = useRef(transform);
@@ -216,7 +217,7 @@ export function DiagramCanvas() {
           worldPos.x - connectorDragStart.x,
           worldPos.y - connectorDragStart.y
         );
-        if (distance > MIN_DRAG_DISTANCE / transformRef.current.scale) {
+        if (distance > CONNECTION_POINT_CONFIG.dragThreshold / transformRef.current.scale) {
           setHasMovedDuringDrag(true);
         }
       }
@@ -226,7 +227,7 @@ export function DiagramCanvas() {
         worldPos.x,
         worldPos.y,
         shapes,
-        50
+        SHAPE_PROXIMITY_CONFIG.defaultDistance
       );
       setHoveredShapeIds(nearbyShapes.map((s) => s.id));
 
@@ -254,7 +255,7 @@ export function DiagramCanvas() {
       worldPos.x,
       worldPos.y,
       shapes,
-      50
+      SHAPE_PROXIMITY_CONFIG.defaultDistance
     );
 
     if (nearbyShapes.length > 0) {

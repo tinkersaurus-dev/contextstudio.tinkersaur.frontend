@@ -156,6 +156,7 @@ export const CONNECTION_POINT_CONFIG = {
   radius: 4, // Radius of connection point circles
   hoverRadius: 6, // Radius when hovering
   hitTolerance: 10, // Hit detection tolerance in pixels
+  dragThreshold: 5, // Minimum drag distance before considering it a real drag (pixels)
 } as const;
 
 /**
@@ -164,6 +165,13 @@ export const CONNECTION_POINT_CONFIG = {
 export const CONNECTOR_HIT_CONFIG = {
   tolerance: 8, // Distance tolerance for clicking on connectors (pixels)
   hoverTolerance: 10, // Distance tolerance for hovering (pixels)
+} as const;
+
+/**
+ * Shape proximity detection configuration
+ */
+export const SHAPE_PROXIMITY_CONFIG = {
+  defaultDistance: 50, // Default distance to consider shapes "near" in world units
 } as const;
 
 // ============================================================================
