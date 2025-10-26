@@ -34,7 +34,7 @@ export function DesignSidebar({ title }: DesignSidebarProps) {
       direction="column"
       width={`${SIDEBAR_CONFIG.width}px`}
       height="100%"
-      bg="panel.bg"
+      bg="white"
       borderRightWidth="1px"
       borderRightColor="border.muted"
     >

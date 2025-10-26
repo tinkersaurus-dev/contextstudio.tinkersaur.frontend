@@ -158,7 +158,7 @@ function buildMouseDownHandler(context: MouseHandlerContext) {
     // Right click - open toolset popover (or create rectangle)
     if (event.button === MOUSE_BUTTONS.RIGHT && entityCallbacks) {
       event.preventDefault();
-      handlers.handleRightMouseDown(screenPos.x, screenPos.y, context);
+      handlers.handleRightMouseDown(screenPos.x, screenPos.y, event.clientX, event.clientY, context);
       return;
     }
 

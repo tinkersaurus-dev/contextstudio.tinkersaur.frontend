@@ -8,8 +8,9 @@
 
 "use client";
 
-import { Box, Flex } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 import { DesignSidebar } from "@/widgets/design-sidebar";
+import { DesignStudioContentArea } from "./ui/design-studio-content-area";
 import { HEADER_HEIGHT } from "@/shared/config/canvas-config";
 
 /**
@@ -25,14 +26,8 @@ export function DesignStudioView() {
       {/* Sidebar */}
       <DesignSidebar />
 
-      {/* Main Content Area */}
-      <Box
-        flex="1"
-        bg="gray.50"
-        overflow="auto"
-      >
-        {/* Content will be added later */}
-      </Box>
+      {/* Main Content Area with Tabs */}
+      <DesignStudioContentArea />
     </Flex>
   );
 }

@@ -371,7 +371,8 @@ export function useConnectionPointInteraction(
         setPendingConnector(connector);
 
         // Open the toolset popover at the release position with pending connector
-        openToolsetPopover(screenX, screenY, worldPos.x, worldPos.y, connector);
+        // Use viewport coordinates (event.clientX/Y) for UI positioning
+        openToolsetPopover(event.clientX, event.clientY, worldPos.x, worldPos.y, connector);
       }
 
       // Reset drag state

@@ -25,11 +25,13 @@ export function DesignSidebarToolbar({
   return (
     <HStack
       px={2}
-      py={1}
+      py={0}
       borderBottomWidth="1px"
       borderBottomColor="border.muted"
       gap={1}
       minHeight="auto"
+      justify="right"
+      bg="#99caff"
     >
       <IconButton
         aria-label="Create new folder"

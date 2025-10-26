@@ -9,6 +9,7 @@ import { EntitySystem } from '@/shared/lib/entity-system';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
 import { createShapeMap } from '@/shared/lib/map-utils';
 import { CommandHistory, type Command } from '@/shared/lib/command-system';
+import type { Diagram } from '@/shared/types/content-data';
 import {
   AddShapeCommand,
   DeleteShapeCommand,
@@ -22,6 +23,9 @@ import {
 } from '@/shared/lib/commands';
 
 interface CanvasState {
+  // Diagram identification
+  diagramId: string | null;
+
   // Store all shapes and connectors (DiagramEntities)
   shapes: Shape[];
   connectors: Connector[];
@@ -38,6 +42,9 @@ interface CanvasState {
 
   // Command history for undo/redo
   commandHistory: CommandHistory;
+
+  // Diagram snapshot
+  getDiagramSnapshot: () => { shapes: Shape[]; connectors: Connector[] };
 
   // Undo/Redo actions
   undo: () => void;
@@ -110,16 +117,22 @@ interface CanvasState {
   getAllEntities: () => DiagramEntity[];
 }
 
-export const useCanvasStore = create<CanvasState>((set, get) => ({
-  shapes: [],
-  connectors: [],
-  selectedEntityIds: new Set<string>(),
-  draggingEntityIds: new Set<string>(),
-  snapMode: 'none',
-  isConnectorMode: false,
-  connectorSourceShapeId: null,
-  editingShapeId: null,
-  commandHistory: new CommandHistory({ maxHistorySize: 50 }),
+/**
+ * Create a new canvas store instance for a specific diagram.
+ * This factory pattern ensures each diagram has isolated state.
+ */
+export function createCanvasStore(diagram: Diagram) {
+  return create<CanvasState>((set, get) => ({
+    diagramId: diagram.id,
+    shapes: [...diagram.shapes],
+    connectors: [...diagram.connectors],
+    selectedEntityIds: new Set<string>(),
+    draggingEntityIds: new Set<string>(),
+    snapMode: 'none',
+    isConnectorMode: false,
+    connectorSourceShapeId: null,
+    editingShapeId: null,
+    commandHistory: new CommandHistory({ maxHistorySize: 50 }),
 
   // Undo/Redo actions
   undo: () => {
@@ -646,4 +659,23 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     // Return all entities: shapes and connectors
     return [...shapes, ...connectors];
   },
+
+  // ============================================================================
+  // DIAGRAM SNAPSHOT
+  // ============================================================================
+
+  // Get current diagram state as a snapshot
+  getDiagramSnapshot: () => {
+    const { shapes, connectors } = get();
+    return {
+      shapes: [...shapes],
+      connectors: [...connectors],
+    };
+  },
 }));
+}
+
+/**
+ * Type for the canvas store returned by createCanvasStore
+ */
+export type CanvasStore = ReturnType<typeof createCanvasStore>;

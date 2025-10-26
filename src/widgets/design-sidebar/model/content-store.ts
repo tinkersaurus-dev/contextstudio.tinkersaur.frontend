@@ -1,10 +1,23 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import type { ContentNode, ContentType } from '@/shared/types/design-studio';
+import {
+  type Diagram,
+  type Document,
+  type OpenTab,
+  DiagramType,
+  createHomeTab,
+  createDiagramTab,
+  createDocumentTab,
+  createEmptyDiagram,
+  createEmptyDocument,
+} from '@/shared/types/content-data';
+import { MAX_OPEN_TABS } from '@/shared/config/workspace-config';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
+import { removeCanvasStore } from '@/widgets/diagram-canvas/model/canvas-store-cache';
 
 interface ContentState {
-  // State
+  // Tree State
   rootContent: ContentNode;
   selectedNodeId: string | null;
 
@@ -14,12 +27,33 @@ interface ContentState {
   documentCount: number;
   imageCount: number;
 
-  // Actions
+  // Content Data (diagrams and documents)
+  diagrams: Map<string, Diagram>;
+  documents: Map<string, Document>;
+
+  // Tab Management
+  openTabs: OpenTab[];
+  activeTabId: string | null;
+  errorMessage: string | null;
+
+  // Tree Actions
   createFolder: () => void;
-  addContentToFolder: (folderId: string, contentType: Exclude<ContentType, 'folder'>) => void;
+  addContentToFolder: (folderId: string, contentType: Exclude<ContentType, 'folder'>, name?: string, diagramType?: DiagramType) => void;
   deleteNode: (nodeId: string) => void;
   renameNode: (nodeId: string, newName: string) => void;
   selectNode: (nodeId: string) => void;
+
+  // Tab Actions
+  openContent: (contentId: string) => void;
+  closeTab: (tabId: string) => void;
+  setActiveTab: (tabId: string) => void;
+  setErrorMessage: (message: string | null) => void;
+
+  // Content Data Actions
+  getDiagram: (id: string) => Diagram | null;
+  getDocument: (id: string) => Document | null;
+  updateDiagram: (id: string, updates: Partial<Diagram>) => void;
+  updateDocument: (id: string, updates: Partial<Document>) => void;
 
   // Internal helpers (not in public API)
   _findNode: (nodeId: string, node?: ContentNode) => ContentNode | null;
@@ -27,7 +61,7 @@ interface ContentState {
 }
 
 export const useContentStore = create<ContentState>((set, get) => ({
-  // Initial state
+  // Tree Initial state
   rootContent: {
     id: 'ROOT',
     name: '',
@@ -39,6 +73,15 @@ export const useContentStore = create<ContentState>((set, get) => ({
   diagramCount: 0,
   documentCount: 0,
   imageCount: 0,
+
+  // Content Data Initial state
+  diagrams: new Map<string, Diagram>(),
+  documents: new Map<string, Document>(),
+
+  // Tab Management Initial state
+  openTabs: [createHomeTab()],
+  activeTabId: 'home',
+  errorMessage: null,
 
   // Internal helper: Find a node by ID recursively
   _findNode: (nodeId, node) => {
@@ -103,7 +146,7 @@ export const useContentStore = create<ContentState>((set, get) => ({
   },
 
   // Add content to a specific folder
-  addContentToFolder: (folderId, contentType) => {
+  addContentToFolder: (folderId, contentType, name, diagramType) => {
     const folder = get()._findNode(folderId);
 
     if (!folder) {
@@ -127,33 +170,51 @@ export const useContentStore = create<ContentState>((set, get) => ({
     }
 
     // Generate name and increment appropriate counter
-    let name: string;
+    let contentName: string;
     let counterUpdate: Partial<ContentState>;
+
+    const contentId = uuidv4();
 
     switch (contentType) {
       case 'diagram': {
         const count = get().diagramCount + 1;
-        name = `Diagram ${count}`;
+        contentName = name || `Diagram ${count}`;
         counterUpdate = { diagramCount: count };
+
+        // Create empty diagram data with the specified type (or default to BPMN)
+        const newDiagram = createEmptyDiagram(
+          contentId,
+          contentName,
+          diagramType || DiagramType.BPMN
+        );
+        const diagrams = new Map(get().diagrams);
+        diagrams.set(contentId, newDiagram);
+        counterUpdate.diagrams = diagrams;
         break;
       }
       case 'document': {
         const count = get().documentCount + 1;
-        name = `Document ${count}`;
+        contentName = name || `Document ${count}`;
         counterUpdate = { documentCount: count };
+
+        // Create empty document data
+        const newDocument = createEmptyDocument(contentId, contentName);
+        const documents = new Map(get().documents);
+        documents.set(contentId, newDocument);
+        counterUpdate.documents = documents;
         break;
       }
       case 'image': {
         const count = get().imageCount + 1;
-        name = `Image ${count}`;
+        contentName = name || `Image ${count}`;
         counterUpdate = { imageCount: count };
         break;
       }
     }
 
     const newContent: ContentNode = {
-      id: uuidv4(),
-      name,
+      id: contentId,
+      name: contentName,
       type: contentType,
     };
 
@@ -220,6 +281,11 @@ export const useContentStore = create<ContentState>((set, get) => ({
 
     const updatedRoot = removeFromChildren(get().rootContent);
 
+    // Clean up canvas store cache if deleting a diagram
+    if (node.type === 'diagram') {
+      removeCanvasStore(nodeId);
+    }
+
     set((state) => ({
       rootContent: updatedRoot,
       selectedNodeId: state.selectedNodeId === nodeId ? null : state.selectedNodeId,
@@ -252,5 +318,197 @@ export const useContentStore = create<ContentState>((set, get) => ({
   // Select a node
   selectNode: (nodeId) => {
     set({ selectedNodeId: nodeId });
+  },
+
+  // ============================================================================
+  // TAB MANAGEMENT ACTIONS
+  // ============================================================================
+
+  // Open content in a tab (or switch to existing tab)
+  openContent: (contentId) => {
+    const { openTabs, diagrams, documents, _findNode } = get();
+
+    // Check if tab is already open
+    const existingTab = openTabs.find(tab => tab.id === contentId);
+    if (existingTab) {
+      // Tab already open, just switch to it
+      set({ activeTabId: contentId, errorMessage: null });
+      return;
+    }
+
+    // Check if we're at the max tab limit (excluding home tab)
+    const contentTabsCount = openTabs.filter(tab => tab.id !== 'home').length;
+    if (contentTabsCount >= MAX_OPEN_TABS) {
+      set({ errorMessage: `Cannot open more than ${MAX_OPEN_TABS} files at once` });
+      return;
+    }
+
+    // Find the content node to get its name and type
+    const node = _findNode(contentId);
+    if (!node) {
+      const error = createError(
+        `Cannot open content: node with id ${contentId} not found`,
+        ErrorSeverity.Error,
+        { code: 'NODE_NOT_FOUND', context: { contentId } }
+      );
+      logError(error);
+      set({ errorMessage: 'Content not found' });
+      return;
+    }
+
+    // Create appropriate tab based on content type
+    let newTab: OpenTab | null = null;
+
+    if (node.type === 'diagram') {
+      // Verify diagram data exists
+      if (!diagrams.has(contentId)) {
+        const error = createError(
+          `Cannot open diagram: diagram data for id ${contentId} not found`,
+          ErrorSeverity.Error,
+          { code: 'DIAGRAM_DATA_NOT_FOUND', context: { contentId } }
+        );
+        logError(error);
+        set({ errorMessage: 'Diagram data not found' });
+        return;
+      }
+      newTab = createDiagramTab(contentId, node.name);
+    } else if (node.type === 'document') {
+      // Verify document data exists
+      if (!documents.has(contentId)) {
+        const error = createError(
+          `Cannot open document: document data for id ${contentId} not found`,
+          ErrorSeverity.Error,
+          { code: 'DOCUMENT_DATA_NOT_FOUND', context: { contentId } }
+        );
+        logError(error);
+        set({ errorMessage: 'Document data not found' });
+        return;
+      }
+      newTab = createDocumentTab(contentId, node.name);
+    } else {
+      // Images or other types not yet supported
+      set({ errorMessage: `Cannot open ${node.type} files yet` });
+      return;
+    }
+
+    if (newTab) {
+      set({
+        openTabs: [...openTabs, newTab],
+        activeTabId: contentId,
+        errorMessage: null,
+      });
+    }
+  },
+
+  // Close a tab
+  closeTab: (tabId) => {
+    const { openTabs, activeTabId } = get();
+
+    // Cannot close home tab
+    if (tabId === 'home') {
+      return;
+    }
+
+    const newTabs = openTabs.filter(tab => tab.id !== tabId);
+
+    // If we're closing the active tab, switch to home
+    const newActiveTabId = activeTabId === tabId ? 'home' : activeTabId;
+
+    set({
+      openTabs: newTabs,
+      activeTabId: newActiveTabId,
+    });
+  },
+
+  // Set active tab
+  setActiveTab: (tabId) => {
+    const { openTabs } = get();
+
+    // Verify tab exists
+    const tab = openTabs.find(t => t.id === tabId);
+    if (!tab) {
+      return;
+    }
+
+    set({ activeTabId: tabId });
+  },
+
+  // Set error message
+  setErrorMessage: (message) => {
+    set({ errorMessage: message });
+  },
+
+  // ============================================================================
+  // CONTENT DATA ACTIONS
+  // ============================================================================
+
+  // Get diagram by ID
+  getDiagram: (id) => {
+    return get().diagrams.get(id) ?? null;
+  },
+
+  // Get document by ID
+  getDocument: (id) => {
+    return get().documents.get(id) ?? null;
+  },
+
+  // Update diagram
+  updateDiagram: (id, updates) => {
+    const { diagrams } = get();
+    const diagram = diagrams.get(id);
+
+    if (!diagram) {
+      const error = createError(
+        `Cannot update diagram: diagram with id ${id} not found`,
+        ErrorSeverity.Error,
+        { code: 'DIAGRAM_NOT_FOUND', context: { diagramId: id } }
+      );
+      logError(error);
+      return;
+    }
+
+    const updatedDiagram: Diagram = {
+      ...diagram,
+      ...updates,
+      metadata: {
+        ...diagram.metadata,
+        modifiedAt: new Date(),
+      },
+    };
+
+    const newDiagrams = new Map(diagrams);
+    newDiagrams.set(id, updatedDiagram);
+
+    set({ diagrams: newDiagrams });
+  },
+
+  // Update document
+  updateDocument: (id, updates) => {
+    const { documents } = get();
+    const document = documents.get(id);
+
+    if (!document) {
+      const error = createError(
+        `Cannot update document: document with id ${id} not found`,
+        ErrorSeverity.Error,
+        { code: 'DOCUMENT_NOT_FOUND', context: { documentId: id } }
+      );
+      logError(error);
+      return;
+    }
+
+    const updatedDocument: Document = {
+      ...document,
+      ...updates,
+      metadata: {
+        ...document.metadata,
+        modifiedAt: new Date(),
+      },
+    };
+
+    const newDocuments = new Map(documents);
+    newDocuments.set(id, updatedDocument);
+
+    set({ documents: newDocuments });
   },
 }));

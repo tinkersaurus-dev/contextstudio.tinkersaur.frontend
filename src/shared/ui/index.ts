@@ -4,6 +4,9 @@
  */
 
 export { Provider } from "./provider";
+export { ColorModeProvider, useColorMode, useColorModeValue } from "./color-mode";
+export { Switch } from "./switch";
+export type { SwitchProps } from "./switch";
 export { Badge } from "./badge";
 export type { BadgeProps } from "./badge";
 export { Button } from "./button";

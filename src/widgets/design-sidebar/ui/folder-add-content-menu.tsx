@@ -10,17 +10,18 @@
 import { IconButton as ChakraIconButton, Portal } from "@chakra-ui/react";
 import { Menu } from "@/shared/ui";
 import { LuPlus, LuFile, LuFileText } from "react-icons/lu";
-import type { ContentType } from "@/shared/types/design-studio";
 
 export interface FolderAddContentMenuProps {
-  /** Callback when a content type is selected */
-  onAddContent: (type: Exclude<ContentType, "folder">) => void;
+  /** Callback when "Diagram" is selected (triggers the dialog) */
+  onAddDiagram: () => void;
+  /** Callback when "Document" is selected */
+  onAddDocument: () => void;
 }
 
 /**
  * Menu for adding content to a folder
  */
-export function FolderAddContentMenu({ onAddContent }: FolderAddContentMenuProps) {
+export function FolderAddContentMenu({ onAddDiagram, onAddDocument }: FolderAddContentMenuProps) {
   return (
     <Menu.Root positioning={{ placement: "right-start" }}>
       <Menu.Trigger asChild>
@@ -42,14 +43,14 @@ export function FolderAddContentMenu({ onAddContent }: FolderAddContentMenuProps
         <Menu.Content minWidth="140px">
           <Menu.Item
             value="diagram"
-            onClick={() => onAddContent("diagram")}
+            onClick={onAddDiagram}
           >
             <LuFile />
             Diagram
           </Menu.Item>
           <Menu.Item
             value="document"
-            onClick={() => onAddContent("document")}
+            onClick={onAddDocument}
           >
             <LuFileText />
             Document

@@ -8,12 +8,14 @@
 
 "use client";
 
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { TreeView, createTreeCollection } from "@/shared/ui";
 import type { ContentNode } from "@/shared/types/design-studio";
 import { LuFile, LuFolder, LuImage, LuFileText } from "react-icons/lu";
 import { FolderAddContentMenu } from "./folder-add-content-menu";
+import { CreateDiagramDialog } from "./create-diagram-dialog";
 import { useContentStore } from "../model/content-store";
+import type { DiagramType } from "@/shared/types/content-data";
 
 /**
  * Empty root node structure reference
@@ -74,6 +76,11 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
     const deleteNode = useContentStore((state) => state.deleteNode);
     const renameNode = useContentStore((state) => state.renameNode);
     const selectNode = useContentStore((state) => state.selectNode);
+    const openContent = useContentStore((state) => state.openContent);
+
+    // Dialog state
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 
     // Create tree collection from store data
     const collection = createTreeCollection<ContentNode>({
@@ -91,41 +98,84 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
       selectNode,
     }));
 
+    // Handle double-click on tree items to open diagrams and documents
+    const handleDoubleClick = (node: ContentNode) => {
+      if (node.type === 'diagram' || node.type === 'document') {
+        openContent(node.id);
+      }
+    };
+
+    // Handle opening the diagram dialog
+    const handleOpenDiagramDialog = (folderId: string) => {
+      setSelectedFolderId(folderId);
+      setIsDialogOpen(true);
+    };
+
+    // Handle creating a diagram from the dialog
+    const handleCreateDiagram = (name: string, diagramType: DiagramType) => {
+      if (selectedFolderId) {
+        addContentToFolder(selectedFolderId, 'diagram', name, diagramType);
+      }
+      setIsDialogOpen(false);
+      setSelectedFolderId(null);
+    };
+
+    // Handle closing the dialog
+    const handleCloseDialog = () => {
+      setIsDialogOpen(false);
+      setSelectedFolderId(null);
+    };
+
     return (
-      <TreeView.Root
-        collection={collection}
-        size="xs"
-        color="brand.950"
-      >
-        <TreeView.Label srOnly>Project Navigation</TreeView.Label>
-        <TreeView.Tree gap="0">
-          <TreeView.Node
-            render={({ node, nodeState }) =>
-              nodeState.isBranch ? (
-                <TreeView.BranchControl py="0" my="0">
-                  {getContentIcon(node.type)}
-                  <TreeView.BranchText display="flex" alignItems="center" justifyContent="space-between" flex="1">
-                    <span>{node.name}</span>
-                    <FolderAddContentMenu
-                      onAddContent={(contentType) => addContentToFolder(node.id, contentType)}
-                    />
-                  </TreeView.BranchText>
-                </TreeView.BranchControl>
-              ) : (
-                <TreeView.Item py="0" my="0">
-                  {getContentIcon(node.type)}
-                  <TreeView.ItemText display="flex" alignItems="center" justifyContent="space-between" flex="1">
-                    <span>{node.name}</span>
-                    <FolderAddContentMenu
-                      onAddContent={(contentType) => addContentToFolder(node.id, contentType)}
-                    />
-                  </TreeView.ItemText>
-                </TreeView.Item>
-              )
-            }
-          />
-        </TreeView.Tree>
-      </TreeView.Root>
+      <>
+        <TreeView.Root
+          collection={collection}
+          size="xs"
+          color="brand.950"
+        >
+          <TreeView.Label srOnly>Project Navigation</TreeView.Label>
+          <TreeView.Tree gap="0">
+            <TreeView.Node
+              render={({ node, nodeState }) =>
+                nodeState.isBranch ? (
+                  <TreeView.BranchControl py="0" my="0">
+                    {getContentIcon(node.type)}
+                    <TreeView.BranchText display="flex" alignItems="center" justifyContent="space-between" flex="1">
+                      <span>{node.name}</span>
+                      <FolderAddContentMenu
+                        onAddDiagram={() => handleOpenDiagramDialog(node.id)}
+                        onAddDocument={() => addContentToFolder(node.id, 'document')}
+                      />
+                    </TreeView.BranchText>
+                  </TreeView.BranchControl>
+                ) : (
+                  <TreeView.Item
+                    py="0"
+                    my="0"
+                    onDoubleClick={() => handleDoubleClick(node)}
+                    cursor={node.type === 'diagram' || node.type === 'document' ? 'pointer' : 'default'}
+                  >
+                    {getContentIcon(node.type)}
+                    <TreeView.ItemText display="flex" alignItems="center" justifyContent="space-between" flex="1">
+                      <span>{node.name}</span>
+                      <FolderAddContentMenu
+                        onAddDiagram={() => handleOpenDiagramDialog(node.id)}
+                        onAddDocument={() => addContentToFolder(node.id, 'document')}
+                      />
+                    </TreeView.ItemText>
+                  </TreeView.Item>
+                )
+              }
+            />
+          </TreeView.Tree>
+        </TreeView.Root>
+
+        <CreateDiagramDialog
+          isOpen={isDialogOpen}
+          onClose={handleCloseDialog}
+          onCreate={handleCreateDiagram}
+        />
+      </>
     );
   }
 );

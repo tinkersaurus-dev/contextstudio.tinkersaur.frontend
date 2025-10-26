@@ -78,30 +78,37 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn('[useCanvasRendering] No canvas ref available');
+      return;
+    }
 
     const render = () => {
-      // Show connection points for hovered shapes or when dragging
-      const shapesToShowPoints = isDraggingConnector
-        ? shapes
-        : shapes.filter((s) => hoveredShapeIds.includes(s.id));
+      try {
+        // Show connection points for hovered shapes or when dragging
+        const shapesToShowPoints = isDraggingConnector
+          ? shapes
+          : shapes.filter((s) => hoveredShapeIds.includes(s.id));
 
-      renderCanvas({
-        canvas,
-        transform,
-        shapes,
-        connectors,
-        selectedEntityIds,
-        selectionBox,
-        isConnectorMode: shapesToShowPoints.length > 0,
-        connectorDragStart:
-          connectorDragStart && hasMovedDuringDrag
-            ? { x: connectorDragStart.x, y: connectorDragStart.y }
-            : null,
-        connectorDragEnd: hasMovedDuringDrag ? connectorDragEnd : null,
-        hoveredShapeIds,
-        hoveredConnectionPoint,
-      });
+        renderCanvas({
+          canvas,
+          transform,
+          shapes,
+          connectors,
+          selectedEntityIds,
+          selectionBox,
+          isConnectorMode: shapesToShowPoints.length > 0,
+          connectorDragStart:
+            connectorDragStart && hasMovedDuringDrag
+              ? { x: connectorDragStart.x, y: connectorDragStart.y }
+              : null,
+          connectorDragEnd: hasMovedDuringDrag ? connectorDragEnd : null,
+          hoveredShapeIds,
+          hoveredConnectionPoint,
+        });
+      } catch (error) {
+        console.error('[useCanvasRendering] Render error:', error);
+      }
     };
 
     render();

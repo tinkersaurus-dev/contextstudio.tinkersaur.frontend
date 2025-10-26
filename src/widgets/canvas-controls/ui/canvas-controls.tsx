@@ -2,7 +2,7 @@
 
 import { LuGrid2X2, LuFocus } from 'react-icons/lu';
 import { IconButton, ButtonGroup, ActionBar, Tooltip } from '@/shared/ui';
-import { useCanvasStore } from '@/widgets/diagram-canvas/model/canvas-store';
+import { useCanvasStore } from '@/widgets/diagram-canvas/model/canvas-store-provider';
 import { CANVAS_CONTROLS_POSITION } from '@/shared/config/canvas-config';
 import { SNAP_MODE_OPTIONS } from '../config/snap-mode-config';
 import { useCanvasControlsState } from '../hooks/use-canvas-controls-state';
@@ -20,7 +20,8 @@ export function CanvasControls() {
     openInteractionsPanel,
     closeAllPanels,
   } = useCanvasControlsState();
-  const { snapMode, setSnapMode } = useCanvasStore();
+  const snapMode = useCanvasStore((state) => state.snapMode);
+  const setSnapMode = useCanvasStore((state) => state.setSnapMode);
 
   return (
     <>

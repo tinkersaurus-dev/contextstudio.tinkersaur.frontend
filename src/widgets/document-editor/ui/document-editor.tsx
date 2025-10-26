@@ -7,14 +7,13 @@
 
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Box, Flex } from '@chakra-ui/react';
 import { IconButton, ButtonGroup } from '@/shared/ui';
 import { LuEye, LuPencil, LuColumns2 } from 'react-icons/lu';
-import { useDocumentEditorStore } from '../model/document-store';
-import type { DocumentEditorProps } from '../model/types';
+import type { DocumentEditorProps, DocumentViewMode } from '../model/types';
 
 /**
  * Calculate line numbers for the editor
@@ -36,17 +35,14 @@ export function DocumentEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
 
-  // Get store state and actions
-  const content = useDocumentEditorStore((state) => state.content);
-  const viewMode = useDocumentEditorStore((state) => state.viewMode);
-  const setContent = useDocumentEditorStore((state) => state.setContent);
-  const setViewMode = useDocumentEditorStore((state) => state.setViewMode);
-  const reset = useDocumentEditorStore((state) => state.reset);
+  // Use local state instead of global store
+  const [content, setContentState] = useState(initialContent);
+  const [viewMode, setViewMode] = useState<DocumentViewMode>('split');
 
-  // Initialize content on mount
+  // Update content when initialContent prop changes
   useEffect(() => {
-    reset(initialContent);
-  }, [initialContent, reset]);
+    setContentState(initialContent);
+  }, [initialContent]);
 
   // Sync scroll between line numbers and textarea
   const handleScroll = () => {
@@ -57,7 +53,7 @@ export function DocumentEditor({
 
   // Handle content change
   const handleContentChange = (newContent: string) => {
-    setContent(newContent);
+    setContentState(newContent);
     onContentChange?.(newContent);
   };
 

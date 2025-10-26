@@ -7,7 +7,6 @@
 
 'use client';
 
-import { useRef, useEffect } from 'react';
 import { Grid } from '@chakra-ui/react';
 import {
   PopoverRoot,
@@ -17,33 +16,34 @@ import {
   Tooltip,
 } from '@/shared/ui';
 import { useToolsetPopoverStore } from '../model/toolset-popover-store';
-import { useCanvasStore } from '@/widgets/diagram-canvas/model/canvas-store';
-import { bpmnToolset } from '@/shared/config/toolsets/bpmn-toolset';
+import { useCanvasStore } from '@/widgets/diagram-canvas/model/canvas-store-provider';
+import { getToolsetForDiagramType } from '@/shared/config/toolsets';
 import { createShapeFromTool, isSimpleTool } from '@/entities/tool/lib';
 import type { SimpleTool } from '@/entities/tool';
 import { getOppositeAnchor } from '@/shared/lib/connection-points';
 import { calculateShapeCenterForAnchorPosition } from '@/shared/lib/shape-positioning';
 import { createOrthogonalConnector } from '@/entities/connector';
+import type { DiagramType } from '@/shared/types/content-data';
+
+export interface ToolsetPopoverProps {
+  /** The diagram type to determine which toolset to display */
+  diagramType: DiagramType;
+}
 
 /**
  * Toolset Popover Component
  *
- * Renders a context menu-style popover with tools from the BPMN toolset.
+ * Renders a context menu-style popover with tools based on the diagram type.
  * Opens on right-click at the cursor position.
  */
-export function ToolsetPopover() {
+export function ToolsetPopover({ diagramType }: ToolsetPopoverProps) {
   const { isOpen, screenPosition, worldPosition, pendingConnector, close } =
     useToolsetPopoverStore();
-  const { addShape, addConnector } = useCanvasStore();
-  const anchorRef = useRef<HTMLDivElement>(null);
+  const addShape = useCanvasStore((state) => state.addShape);
+  const addConnector = useCanvasStore((state) => state.addConnector);
 
-  // Update anchor position when screen position changes
-  useEffect(() => {
-    if (screenPosition && anchorRef.current) {
-      anchorRef.current.style.left = `${screenPosition.x}px`;
-      anchorRef.current.style.top = `${screenPosition.y}px`;
-    }
-  }, [screenPosition]);
+  // Get the appropriate toolset based on diagram type
+  const toolset = getToolsetForDiagramType(diagramType);
 
   /**
    * Handle tool selection
@@ -107,17 +107,6 @@ export function ToolsetPopover() {
 
   return (
     <>
-      {/* Invisible anchor element positioned at cursor */}
-      <div
-        ref={anchorRef}
-        style={{
-          position: 'fixed',
-          width: 0,
-          height: 0,
-          pointerEvents: 'none',
-        }}
-      />
-
       <PopoverRoot
         open={isOpen}
         onOpenChange={(details) => {
@@ -125,15 +114,10 @@ export function ToolsetPopover() {
             close();
           }
         }}
-        positioning={{
-          placement: 'bottom-start',
-          offset: { mainAxis: 4, crossAxis: 0 },
-        }}
         closeOnInteractOutside
         closeOnEscape
       >
-        {/* Use the anchor div as the trigger */}
-        {anchorRef.current && (
+        {isOpen && screenPosition && (
           <PopoverContent
             portalled
             onContextMenu={(e) => e.preventDefault()}
@@ -141,8 +125,9 @@ export function ToolsetPopover() {
             bg="panel.bg"
             style={{
               position: 'fixed',
-              left: screenPosition?.x ?? 0,
-              top: screenPosition?.y ?? 0,
+              left: `${screenPosition.x}px`,
+              top: `${screenPosition.y}px`,
+              zIndex: 1000,
             }}
           >
             <PopoverBody p={2} onContextMenu={(e) => e.preventDefault()}>
@@ -151,7 +136,7 @@ export function ToolsetPopover() {
                 gridTemplateRows="repeat(5, 1fr)"
                 gap={1}
               >
-                {bpmnToolset.tools.map((tool) => {
+                {toolset.tools.map((tool) => {
                   if (!isSimpleTool(tool)) return null;
 
                   const Icon = tool.icon;

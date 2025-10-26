@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { setupMouseInput, EntityInteractionCallbacks } from '../lib/mouse-input';
 import { setupKeyboardInput, KeyboardInteractionCallbacks } from '../lib/keyboard-input';
 import { SelectionBox } from '../lib/selection-box-renderer';
-import { useCanvasStore } from '../model/canvas-store';
+import { useCanvasStore } from '../model/canvas-store-provider';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
 import { createOrthogonalConnector } from '@/entities/connector';
 import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
@@ -14,8 +14,14 @@ import { CanvasTransform } from '@/shared/lib/canvas-transform';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
 import { useConnectionPointInteraction } from '../hooks/use-connection-point-interaction';
 import { useCanvasRendering } from '../hooks/use-canvas-rendering';
+import type { DiagramType } from '@/shared/types/content-data';
 
-export function DiagramCanvas() {
+export interface DiagramCanvasProps {
+  /** The diagram type to determine which toolset to display */
+  diagramType: DiagramType;
+}
+
+export function DiagramCanvas({ diagramType }: DiagramCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [transform, setTransform] = useState<CanvasTransform>(CanvasTransform.identity());
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
@@ -24,35 +30,42 @@ export function DiagramCanvas() {
   const transformRef = useRef(transform);
   transformRef.current = transform;
 
-  // Get Zustand store
-  const {
-    shapes,
-    connectors,
-    selectedEntityIds,
-    snapMode,
-    editingShapeId,
-    addShape,
-    addConnector,
-    deleteSelectedEntities,
-    findEntityAtPoint,
-    isSelected,
-    getAllSelectedEntities,
-    setSelectedEntities,
-    addToSelection,
-    toggleSelection,
-    clearSelection,
-    selectEntitiesInBox,
-    setDraggingEntities,
-    clearDraggingEntities,
-    updateShapePositionInternal,
-    finalizeShapeMove,
-    setEditingShape,
-    updateShapeText,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-  } = useCanvasStore();
+  // Get values from canvas store using selectors
+  const shapes = useCanvasStore((state) => state.shapes);
+  const connectors = useCanvasStore((state) => state.connectors);
+  const diagramId = useCanvasStore((state) => state.diagramId);
+
+  // Log component lifecycle
+  useEffect(() => {
+    console.log(`[DiagramCanvas] Mounted for diagram ${diagramId} with ${shapes.length} shapes, ${connectors.length} connectors`);
+    return () => {
+      console.log(`[DiagramCanvas] Unmounting for diagram ${diagramId}`);
+    };
+  }, [diagramId, shapes.length, connectors.length]);
+  const selectedEntityIds = useCanvasStore((state) => state.selectedEntityIds);
+  const snapMode = useCanvasStore((state) => state.snapMode);
+  const editingShapeId = useCanvasStore((state) => state.editingShapeId);
+  const addShape = useCanvasStore((state) => state.addShape);
+  const addConnector = useCanvasStore((state) => state.addConnector);
+  const deleteSelectedEntities = useCanvasStore((state) => state.deleteSelectedEntities);
+  const findEntityAtPoint = useCanvasStore((state) => state.findEntityAtPoint);
+  const isSelected = useCanvasStore((state) => state.isSelected);
+  const getAllSelectedEntities = useCanvasStore((state) => state.getAllSelectedEntities);
+  const setSelectedEntities = useCanvasStore((state) => state.setSelectedEntities);
+  const addToSelection = useCanvasStore((state) => state.addToSelection);
+  const toggleSelection = useCanvasStore((state) => state.toggleSelection);
+  const clearSelection = useCanvasStore((state) => state.clearSelection);
+  const selectEntitiesInBox = useCanvasStore((state) => state.selectEntitiesInBox);
+  const setDraggingEntities = useCanvasStore((state) => state.setDraggingEntities);
+  const clearDraggingEntities = useCanvasStore((state) => state.clearDraggingEntities);
+  const updateShapePositionInternal = useCanvasStore((state) => state.updateShapePositionInternal);
+  const finalizeShapeMove = useCanvasStore((state) => state.finalizeShapeMove);
+  const setEditingShape = useCanvasStore((state) => state.setEditingShape);
+  const updateShapeText = useCanvasStore((state) => state.updateShapeText);
+  const undo = useCanvasStore((state) => state.undo);
+  const redo = useCanvasStore((state) => state.redo);
+  const canUndo = useCanvasStore((state) => state.canUndo);
+  const canRedo = useCanvasStore((state) => state.canRedo);
 
   // Use refs to always have access to current values without recreating handlers
   const snapModeRef = useRef(snapMode);
@@ -247,7 +260,7 @@ export function DiagramCanvas() {
       />
       <CanvasControls />
       <ZoomControl zoom={transform.scale} onReset={handleResetZoom} />
-      <ToolsetPopover />
+      <ToolsetPopover diagramType={diagramType} />
       <TextEditOverlay
         entity={editingShape}
         transform={transform}

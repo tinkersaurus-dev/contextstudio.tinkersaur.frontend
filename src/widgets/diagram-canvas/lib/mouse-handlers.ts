@@ -89,8 +89,10 @@ export function handleWheel(
  * Handle right mouse button down - create shape or open toolset
  */
 export function handleRightMouseDown(
-  screenX: number,
-  screenY: number,
+  canvasX: number,
+  canvasY: number,
+  viewportX: number,
+  viewportY: number,
   context: MouseHandlerContext
 ): void {
   const { getCurrentTransform, entityCallbacks } = context;
@@ -98,10 +100,11 @@ export function handleRightMouseDown(
   if (!entityCallbacks) return;
 
   const currentTransform = getCurrentTransform();
-  const worldPos = currentTransform.screenToWorld(screenX, screenY);
+  const worldPos = currentTransform.screenToWorld(canvasX, canvasY);
 
   if (entityCallbacks.openToolsetPopover) {
-    entityCallbacks.openToolsetPopover(screenX, screenY, worldPos.x, worldPos.y);
+    // Pass viewport coordinates for UI positioning, world coordinates for shape creation
+    entityCallbacks.openToolsetPopover(viewportX, viewportY, worldPos.x, worldPos.y);
   } else {
     entityCallbacks.createRectangleAtPoint(worldPos.x, worldPos.y);
   }
