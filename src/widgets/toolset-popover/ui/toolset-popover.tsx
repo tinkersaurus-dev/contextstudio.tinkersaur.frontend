@@ -16,7 +16,6 @@ import {
   Tooltip,
 } from '@/shared/ui';
 import { useToolsetPopoverStore } from '../model/toolset-popover-store';
-import { useCanvasStore } from '@/widgets/diagram-canvas/model/canvas-store-provider';
 import { getToolsetForDiagramType } from '@/shared/config/toolsets';
 import { createShapeFromTool, isSimpleTool } from '@/entities/tool/lib';
 import type { SimpleTool } from '@/entities/tool';
@@ -24,10 +23,16 @@ import { getOppositeAnchor } from '@/shared/lib/connection-points';
 import { calculateShapeCenterForAnchorPosition } from '@/shared/lib/shape-positioning';
 import { createOrthogonalConnector } from '@/entities/connector';
 import type { DiagramType } from '@/shared/types/content-data';
+import type { Shape } from '@/entities/shape';
+import type { Connector } from '@/entities/connector';
 
 export interface ToolsetPopoverProps {
   /** The diagram type to determine which toolset to display */
   diagramType: DiagramType;
+  /** Callback to add a shape to the canvas */
+  addShape: (shape: Shape) => void;
+  /** Callback to add a connector to the canvas */
+  addConnector: (connector: Connector) => void;
 }
 
 /**
@@ -36,11 +41,9 @@ export interface ToolsetPopoverProps {
  * Renders a context menu-style popover with tools based on the diagram type.
  * Opens on right-click at the cursor position.
  */
-export function ToolsetPopover({ diagramType }: ToolsetPopoverProps) {
+export function ToolsetPopover({ diagramType, addShape, addConnector }: ToolsetPopoverProps) {
   const { isOpen, screenPosition, worldPosition, pendingConnector, close } =
     useToolsetPopoverStore();
-  const addShape = useCanvasStore((state) => state.addShape);
-  const addConnector = useCanvasStore((state) => state.addConnector);
 
   // Get the appropriate toolset based on diagram type
   const toolset = getToolsetForDiagramType(diagramType);
@@ -156,7 +159,7 @@ export function ToolsetPopover({ diagramType }: ToolsetPopoverProps) {
                         color='white'
                         _hover={{
                           bg: 'white',
-                          color: 'brand.900',
+                          color: 'primary.900',
                         }}
                       >
                         <Icon />

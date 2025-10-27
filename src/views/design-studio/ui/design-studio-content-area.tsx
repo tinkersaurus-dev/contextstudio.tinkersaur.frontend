@@ -73,27 +73,45 @@ export function DesignStudioContentArea() {
       </Tabs.List>
 
       <Tabs.ContentGroup flex="1" pt={1}>
-        {openTabs.map((tab) => (
-          <Tabs.Content value={tab.id} key={tab.id} height="100%" pt={0} position="relative">
-            {tab.id === 'home' ? (
-              <Box height="100%" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-                <Box textAlign="center">
-                  <LuHouse size={48} style={{ margin: '0 auto', opacity: 0.3 }} />
-                  <Box mt={4} fontSize="lg" color="gray.600">
-                    Welcome to Design Studio
-                  </Box>
-                  <Box mt={2} fontSize="sm" color="gray.500">
-                    Double-click a diagram or document in the sidebar to start editing
-                  </Box>
-                </Box>
-              </Box>
-            ) : isDiagramTab(tab) ? (
-              <TabContentWrapper type="diagram" contentId={tab.id} />
-            ) : isDocumentTab(tab) ? (
-              <TabContentWrapper type="document" contentId={tab.id} />
-            ) : null}
-          </Tabs.Content>
-        ))}
+        {openTabs.map((tab) => {
+          const isActive = activeTabId === tab.id;
+          return (
+            <Tabs.Content
+              value={tab.id}
+              key={tab.id}
+              height="100%"
+              pt={0}
+              position="relative"
+              style={{
+                pointerEvents: isActive ? 'auto' : 'none',
+                visibility: isActive ? 'visible' : 'hidden'
+              }}
+              aria-hidden={!isActive}
+            >
+              {isActive && (
+                <>
+                  {tab.id === 'home' ? (
+                    <Box height="100%" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
+                      <Box textAlign="center">
+                        <LuHouse size={48} style={{ margin: '0 auto', opacity: 0.3 }} />
+                        <Box mt={4} fontSize="lg" color="gray.600">
+                          Welcome to Design Studio
+                        </Box>
+                        <Box mt={2} fontSize="sm" color="gray.500">
+                          Double-click a diagram or document in the sidebar to start editing
+                        </Box>
+                      </Box>
+                    </Box>
+                  ) : isDiagramTab(tab) ? (
+                    <TabContentWrapper type="diagram" contentId={tab.id} />
+                  ) : isDocumentTab(tab) ? (
+                    <TabContentWrapper type="document" contentId={tab.id} />
+                  ) : null}
+                </>
+              )}
+            </Tabs.Content>
+          );
+        })}
       </Tabs.ContentGroup>
     </Tabs.Root>
   );

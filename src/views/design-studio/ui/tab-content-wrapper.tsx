@@ -7,12 +7,11 @@
 
 "use client";
 
-import { useEffect, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { Box } from "@chakra-ui/react";
 import { DiagramCanvas } from "@/widgets/diagram-canvas";
 import { DocumentEditor } from "@/widgets/document-editor";
 import { useContentStore } from "@/widgets/design-sidebar/model/content-store";
-import { CanvasStoreProvider, useCanvasStore } from "@/widgets/diagram-canvas/model/canvas-store-provider";
 import { AUTO_SAVE_DEBOUNCE_MS } from "@/shared/config/workspace-config";
 import type { Shape } from "@/entities/shape";
 import type { Connector } from "@/entities/connector";
@@ -43,16 +42,12 @@ function debounce<TArgs extends unknown[]>(
 }
 
 /**
- * Inner Diagram Content (has access to canvas store via context)
+ * Diagram Content Wrapper (props-based, matches DocumentContentWrapper pattern)
  */
-function DiagramContentInner({ contentId }: { contentId: string }) {
-  const updateDiagram = useContentStore((state) => state.updateDiagram);
-  const getDiagramSnapshot = useCanvasStore((state) => state.getDiagramSnapshot);
-  const shapes = useCanvasStore((state) => state.shapes);
-  const connectors = useCanvasStore((state) => state.connectors);
+function DiagramContentWrapper({ contentId }: { contentId: string }) {
   const getDiagram = useContentStore((state) => state.getDiagram);
+  const updateDiagram = useContentStore((state) => state.updateDiagram);
 
-  // Get the diagram to access its type (for rendering)
   const diagram = getDiagram(contentId);
 
   // Auto-save debounced function
@@ -65,14 +60,9 @@ function DiagramContentInner({ contentId }: { contentId: string }) {
     }, AUTO_SAVE_DEBOUNCE_MS)
   ).current;
 
-  // Auto-save when shapes or connectors change
-  useEffect(() => {
-    // Auto-save whenever shapes or connectors change
-    if (shapes.length > 0 || connectors.length > 0) {
-      const snapshot = getDiagramSnapshot();
-      debouncedSave(contentId, snapshot);
-    }
-  }, [shapes, connectors, contentId, debouncedSave, getDiagramSnapshot]);
+  const handleDiagramChange = useCallback((snapshot: { shapes: Shape[]; connectors: Connector[] }) => {
+    debouncedSave(contentId, snapshot);
+  }, [contentId, debouncedSave]);
 
   if (!diagram) {
     return (
@@ -84,32 +74,14 @@ function DiagramContentInner({ contentId }: { contentId: string }) {
 
   return (
     <Box height="100%" width="100%">
-      <DiagramCanvas diagramType={diagram.diagramType} />
+      <DiagramCanvas
+        diagramId={diagram.id}
+        initialShapes={diagram.shapes}
+        initialConnectors={diagram.connectors}
+        diagramType={diagram.diagramType}
+        onDiagramChange={handleDiagramChange}
+      />
     </Box>
-  );
-}
-
-/**
- * Diagram Content Wrapper (creates store and provides it)
- */
-function DiagramContentWrapper({ contentId }: { contentId: string }) {
-  const getDiagram = useContentStore((state) => state.getDiagram);
-  const diagram = getDiagram(contentId);
-
-  console.log(`[DiagramContentWrapper] Rendering wrapper for diagram ${contentId}, found: ${!!diagram}`);
-
-  if (!diagram) {
-    return (
-      <Box height="100%" display="flex" alignItems="center" justifyContent="center">
-        <p>Diagram not found</p>
-      </Box>
-    );
-  }
-
-  return (
-    <CanvasStoreProvider diagram={diagram}>
-      <DiagramContentInner contentId={contentId} />
-    </CanvasStoreProvider>
   );
 }
 

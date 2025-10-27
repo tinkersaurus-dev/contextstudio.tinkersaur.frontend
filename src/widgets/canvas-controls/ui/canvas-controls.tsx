@@ -2,16 +2,21 @@
 
 import { LuGrid2X2, LuFocus } from 'react-icons/lu';
 import { IconButton, ButtonGroup, ActionBar, Tooltip } from '@/shared/ui';
-import { useCanvasStore } from '@/widgets/diagram-canvas/model/canvas-store-provider';
 import { CANVAS_CONTROLS_POSITION } from '@/shared/config/canvas-config';
 import { SNAP_MODE_OPTIONS } from '../config/snap-mode-config';
 import { useCanvasControlsState } from '../hooks/use-canvas-controls-state';
+import type { SnapMode } from '@/shared/lib/grid-system';
+
+export interface CanvasControlsProps {
+  snapMode: SnapMode;
+  setSnapMode: (mode: SnapMode) => void;
+}
 
 /**
  * Canvas control buttons that trigger action bars for various settings.
  * Positioned at the bottom center of the canvas.
  */
-export function CanvasControls() {
+export function CanvasControls({ snapMode, setSnapMode }: CanvasControlsProps) {
   const {
     isBackgroundOpen,
     isInteractionsOpen,
@@ -20,8 +25,6 @@ export function CanvasControls() {
     openInteractionsPanel,
     closeAllPanels,
   } = useCanvasControlsState();
-  const snapMode = useCanvasStore((state) => state.snapMode);
-  const setSnapMode = useCanvasStore((state) => state.setSnapMode);
 
   return (
     <>

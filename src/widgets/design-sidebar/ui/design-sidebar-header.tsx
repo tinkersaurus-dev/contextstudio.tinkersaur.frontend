@@ -26,7 +26,7 @@ export function DesignSidebarHeader({
       py={3}
       borderBottomWidth="1px"
       borderBottomColor="border.muted"
-      color="brand.950"
+      color="sidebar.text"
     >
       <Heading size="md" fontWeight="semibold">
         {title}

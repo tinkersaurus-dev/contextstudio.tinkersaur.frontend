@@ -131,7 +131,7 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
         <TreeView.Root
           collection={collection}
           size="xs"
-          color="brand.950"
+          color="sidebar.text"
         >
           <TreeView.Label srOnly>Project Navigation</TreeView.Label>
           <TreeView.Tree gap="0">

@@ -14,7 +14,6 @@ import {
 } from '@/shared/types/content-data';
 import { MAX_OPEN_TABS } from '@/shared/config/workspace-config';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
-import { removeCanvasStore } from '@/widgets/diagram-canvas/model/canvas-store-cache';
 
 interface ContentState {
   // Tree State
@@ -281,10 +280,8 @@ export const useContentStore = create<ContentState>((set, get) => ({
 
     const updatedRoot = removeFromChildren(get().rootContent);
 
-    // Clean up canvas store cache if deleting a diagram
-    if (node.type === 'diagram') {
-      removeCanvasStore(nodeId);
-    }
+    // Note: Canvas stores are now managed internally by DiagramCanvas components
+    // No need to manually clean up cache
 
     set((state) => ({
       rootContent: updatedRoot,

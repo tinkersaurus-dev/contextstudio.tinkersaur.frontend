@@ -1,8 +1,12 @@
+import { activeTheme } from "@/app/theme";
+
 /**
  * Canvas Configuration
  *
  * Centralized configuration for all canvas-related settings including zoom, grid, colors, and defaults.
  * This provides a single source of truth for canvas behavior and theming.
+ *
+ * Colors are now loaded from the active theme system.
  */
 
 // ============================================================================
@@ -65,7 +69,7 @@ export interface GridConfig {
 export const DEFAULT_GRID_CONFIG: GridConfig = {
   minorGridSize: 20,
   majorGridSize: 100,
-  gridColor: '#CED8F7',
+  gridColor: activeTheme.canvas.grid.minor,
   minorLineWidth: 0.5,
   majorLineWidth: 1,
 } as const;
@@ -86,35 +90,36 @@ export const GRID_EPSILON = 0.01;
 
 /**
  * Canvas color palette for consistent theming
+ * All colors are now loaded from the active theme system.
  */
 export const CANVAS_COLORS = {
   // Background
-  background: '#f7f7f7ff',
+  background: activeTheme.canvas.background,
 
   // Grid
-  gridMinor: '#CED8F7',
-  gridMajor: '#CED8F7',
+  gridMinor: activeTheme.canvas.grid.minor,
+  gridMajor: activeTheme.canvas.grid.major,
 
   // Selection
-  selectionBorder: '#ff6b35', // Bright orange
-  selectionFill: 'rgba(255, 107, 53, 0.1)', // Semi-transparent orange
+  selectionBorder: activeTheme.canvas.selection.border,
+  selectionFill: activeTheme.canvas.selection.fill,
 
   // Selection Box (multi-select)
-  selectionBoxBorder: '#3b82f6', // Blue
-  selectionBoxFill: 'rgba(59, 130, 246, 0.1)', // Semi-transparent blue
+  selectionBoxBorder: activeTheme.canvas.selectionBox.border,
+  selectionBoxFill: activeTheme.canvas.selectionBox.fill,
 
   // Default Shape Colors
-  defaultShapeFill: '#ffffff',
-  defaultShapeStroke: '#000000',
+  defaultShapeFill: activeTheme.canvas.shapes.fill,
+  defaultShapeStroke: activeTheme.canvas.shapes.stroke,
 
   // Connector Colors
-  connectorStroke: '#000000',
-  connectorStrokeSelected: '#ff6b35', // Bright orange (matches selection)
-  connectorStrokeHover: '#3b82f6', // Blue
+  connectorStroke: activeTheme.canvas.connectors.default,
+  connectorStrokeSelected: activeTheme.canvas.connectors.selected,
+  connectorStrokeHover: activeTheme.canvas.connectors.hover,
 
   // Connection Point Colors
-  connectionPoint: '#3b82f6', // Blue
-  connectionPointHover: '#ff6b35', // Orange
+  connectionPoint: activeTheme.canvas.connectionPoints.default,
+  connectionPointHover: activeTheme.canvas.connectionPoints.hover,
 } as const;
 
 // ============================================================================

@@ -3,11 +3,14 @@
  *
  * Defines the toolset for data flow diagrams showing how data
  * moves through a system.
+ *
+ * Colors are loaded from the active theme system.
  */
 
 import { LuCircle, LuSquare, LuDatabase, LuArrowRight } from 'react-icons/lu';
 import { ToolType, type Toolset } from '@/entities/tool';
 import { ShapeType } from '@/entities/shape/model/types';
+import { activeTheme } from '@/app/theme';
 
 /**
  * Data Flow Diagram Toolset
@@ -33,8 +36,8 @@ export const dataFlowToolset: Toolset = {
         shapeType: ShapeType.StartEvent,
         width: 100,
         height: 100,
-        fillColor: '#ffffff',
-        strokeColor: '#000000',
+        fillColor: activeTheme.diagrams.dataFlow.process.fill,
+        strokeColor: activeTheme.diagrams.dataFlow.process.stroke,
         strokeWidth: 0.5,
       },
     },
@@ -48,8 +51,8 @@ export const dataFlowToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 140,
         height: 60,
-        fillColor: '#ffffff',
-        strokeColor: '#000000',
+        fillColor: activeTheme.diagrams.dataFlow.dataStore.fill,
+        strokeColor: activeTheme.diagrams.dataFlow.dataStore.stroke,
         strokeWidth: 0.5,
         properties: {
           cornerRadius: 4,
@@ -66,8 +69,8 @@ export const dataFlowToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 100,
         height: 80,
-        fillColor: '#ffffff',
-        strokeColor: '#000000',
+        fillColor: activeTheme.diagrams.dataFlow.entity.fill,
+        strokeColor: activeTheme.diagrams.dataFlow.entity.stroke,
         strokeWidth: 0.5,
         properties: {
           cornerRadius: 2,
@@ -84,8 +87,8 @@ export const dataFlowToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 120,
         height: 80,
-        fillColor: '#f5f5f5',
-        strokeColor: '#000000',
+        fillColor: activeTheme.diagrams.dataFlow.subprocess.fill,
+        strokeColor: activeTheme.diagrams.dataFlow.subprocess.stroke,
         strokeWidth: 0.5,
         properties: {
           cornerRadius: 8,

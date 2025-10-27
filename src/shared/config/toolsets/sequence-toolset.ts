@@ -3,11 +3,14 @@
  *
  * Defines the toolset for sequence diagrams showing interactions
  * between entities over time.
+ *
+ * Colors are loaded from the active theme system.
  */
 
 import { LuUser, LuBox, LuArrowRight, LuRectangleVertical } from 'react-icons/lu';
 import { ToolType, type Toolset } from '@/entities/tool';
 import { ShapeType } from '@/entities/shape/model/types';
+import { activeTheme } from '@/app/theme';
 
 /**
  * Sequence Diagram Toolset
@@ -33,8 +36,8 @@ export const sequenceToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 80,
         height: 80,
-        fillColor: '#ffffff',
-        strokeColor: '#000000',
+        fillColor: activeTheme.diagrams.sequence.actor.fill,
+        strokeColor: activeTheme.diagrams.sequence.actor.stroke,
         strokeWidth: 0.5,
         properties: {
           cornerRadius: 40,
@@ -51,8 +54,8 @@ export const sequenceToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 80,
         height: 100,
-        fillColor: '#ffffff',
-        strokeColor: '#000000',
+        fillColor: activeTheme.diagrams.sequence.lifeline.fill,
+        strokeColor: activeTheme.diagrams.sequence.lifeline.stroke,
         strokeWidth: 0.5,
         properties: {
           cornerRadius: 4,
@@ -69,8 +72,8 @@ export const sequenceToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 20,
         height: 60,
-        fillColor: '#e3f2fd',
-        strokeColor: '#000000',
+        fillColor: activeTheme.diagrams.sequence.activation.fill,
+        strokeColor: activeTheme.diagrams.sequence.activation.stroke,
         strokeWidth: 0.5,
         properties: {
           cornerRadius: 2,
@@ -87,8 +90,8 @@ export const sequenceToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 120,
         height: 60,
-        fillColor: '#fffde7',
-        strokeColor: '#000000',
+        fillColor: activeTheme.diagrams.sequence.note.fill,
+        strokeColor: activeTheme.diagrams.sequence.note.stroke,
         strokeWidth: 0.5,
         properties: {
           cornerRadius: 4,

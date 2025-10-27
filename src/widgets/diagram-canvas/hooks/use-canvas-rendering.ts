@@ -111,7 +111,11 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
       }
     };
 
-    render();
+    // Initial render - use requestAnimationFrame to ensure layout is complete
+    requestAnimationFrame(() => {
+      render();
+    });
+
     window.addEventListener('resize', render);
 
     return () => {

@@ -19,6 +19,7 @@ import {
   angleFromPoints,
 } from './connection-points';
 import { CANVAS_COLORS, CONNECTION_POINT_CONFIG } from '@/shared/config/canvas-config';
+import { activeTheme } from '@/app/theme';
 
 /**
  * Represents a connection point on a shape
@@ -208,8 +209,8 @@ export class ConnectionPointSystem {
         : CANVAS_COLORS.connectionPoint;
       ctx.fill();
 
-      // Stroke (white border for visibility)
-      ctx.strokeStyle = '#ffffff';
+      // Stroke (border for visibility)
+      ctx.strokeStyle = activeTheme.canvas.connectionPoints.border;
       ctx.lineWidth = strokeWidth;
       ctx.stroke();
     });

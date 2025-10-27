@@ -31,7 +31,7 @@ export function DesignSidebarToolbar({
       gap={1}
       minHeight="auto"
       justify="right"
-      bg="#99caff"
+      bg="sidebar.toolbar"
     >
       <IconButton
         aria-label="Create new folder"

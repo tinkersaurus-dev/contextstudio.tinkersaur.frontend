@@ -13,13 +13,13 @@ import { SolutionTable } from "@/widgets/solution-management/ui/solution-table";
 
 export function SolutionManagementView() {
   return (
-    <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }} py={8}>
+    <Box minH="100vh" bg="panel.bg" py={8}>
       <Container maxW="container.xl">
         <Box mb={8}>
-          <Heading size="2xl" mb={2}>
+          <Heading size="2xl" mb={2} color="panel.text">
             Solution Management
           </Heading>
-          <Text color="gray.600" _dark={{ color: "gray.400" }}>
+          <Text color="panel.text">
             Manage solutions, components, and changes for your products, services, and processes.
           </Text>
         </Box>
