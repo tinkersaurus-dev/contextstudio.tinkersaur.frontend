@@ -29,6 +29,11 @@ const activeTheme = getActiveTheme();
 const config = defineConfig({
   theme: {
     tokens: {
+      fonts: {
+        body: { value: '"Nunito Sans Variable", var(--font-nunito-sans), system-ui, sans-serif' },
+        heading: { value: '"Nunito Sans Variable", var(--font-nunito-sans), system-ui, sans-serif' },
+        mono: { value: "var(--font-geist-mono), monospace" },
+      },
       colors: {
         // Primary color palette (renamed from "brand")
         primary: {
