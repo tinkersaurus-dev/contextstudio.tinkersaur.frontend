@@ -8,7 +8,7 @@
  * between shapes by dragging from connection points.
  */
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useReducer } from 'react';
 import type { AnchorPosition, Connector } from '@/entities/connector';
 import type { Shape } from '@/entities/shape';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
@@ -86,6 +86,164 @@ export interface UseConnectionPointInteractionOptions {
 }
 
 /**
+ * Consolidated connection state managed by reducer
+ */
+interface ConnectionDragState {
+  /** Whether user is currently dragging a connector */
+  isDraggingConnector: boolean;
+  /** Whether the drag has moved enough to be considered a real drag (not just a click) */
+  hasMovedDuringDrag: boolean;
+  /** Start point of connector drag */
+  connectorDragStart: {
+    shapeId: string;
+    anchor: AnchorPosition;
+    x: number;
+    y: number;
+  } | null;
+  /** Current end point of connector drag */
+  connectorDragEnd: { x: number; y: number } | null;
+  /** Specific connection point being hovered */
+  hoveredConnectionPoint: {
+    shapeId: string;
+    anchor: AnchorPosition;
+  } | null;
+  /** Pending connector info when dragging to empty canvas (for toolset popover) */
+  pendingConnector: {
+    sourceShapeId: string;
+    sourceAnchor: AnchorPosition;
+  } | null;
+  /**
+   * Whether we're currently handling a connection point interaction
+   * Used to prevent other mouse handlers from interfering with connection point logic
+   */
+  isHandlingConnectionPoint: boolean;
+}
+
+/**
+ * Actions for the connection state reducer
+ */
+type ConnectionAction =
+  | {
+      type: 'START_DRAG';
+      payload: {
+        start: {
+          shapeId: string;
+          anchor: AnchorPosition;
+          x: number;
+          y: number;
+        };
+        end: { x: number; y: number };
+      };
+    }
+  | {
+      type: 'UPDATE_DRAG_POSITION';
+      payload: {
+        end: { x: number; y: number };
+        hasMovedDuringDrag: boolean;
+      };
+    }
+  | {
+      type: 'SET_HOVERED_CONNECTION_POINT';
+      payload: {
+        shapeId: string;
+        anchor: AnchorPosition;
+      } | null;
+    }
+  | {
+      type: 'CANCEL_DRAG';
+    }
+  | {
+      type: 'COMPLETE_DRAG';
+      payload: {
+        sourceShapeId: string;
+        sourceAnchor: AnchorPosition;
+      } | null;
+    }
+  | {
+      type: 'CLEAR_PENDING_CONNECTOR';
+    };
+
+/**
+ * Initial state for connection drag
+ */
+const initialConnectionDragState: ConnectionDragState = {
+  isDraggingConnector: false,
+  hasMovedDuringDrag: false,
+  connectorDragStart: null,
+  connectorDragEnd: null,
+  hoveredConnectionPoint: null,
+  pendingConnector: null,
+  isHandlingConnectionPoint: false,
+};
+
+/**
+ * Reducer for managing connection drag state
+ * Consolidates multiple setState calls into single atomic updates
+ */
+function connectionDragReducer(
+  state: ConnectionDragState,
+  action: ConnectionAction
+): ConnectionDragState {
+  switch (action.type) {
+    case 'START_DRAG':
+      return {
+        ...state,
+        isDraggingConnector: true,
+        hasMovedDuringDrag: false,
+        connectorDragStart: action.payload.start,
+        connectorDragEnd: action.payload.end,
+        hoveredConnectionPoint: null,
+        isHandlingConnectionPoint: true, // Set flag when starting drag
+      };
+
+    case 'UPDATE_DRAG_POSITION':
+      return {
+        ...state,
+        connectorDragEnd: action.payload.end,
+        hasMovedDuringDrag: action.payload.hasMovedDuringDrag,
+      };
+
+    case 'SET_HOVERED_CONNECTION_POINT':
+      return {
+        ...state,
+        hoveredConnectionPoint: action.payload,
+      };
+
+    case 'CANCEL_DRAG':
+      return {
+        ...state,
+        isDraggingConnector: false,
+        hasMovedDuringDrag: false,
+        connectorDragStart: null,
+        connectorDragEnd: null,
+        hoveredConnectionPoint: null,
+        isHandlingConnectionPoint: false, // Clear flag when cancelling
+      };
+
+    case 'COMPLETE_DRAG':
+      return {
+        ...state,
+        isDraggingConnector: false,
+        hasMovedDuringDrag: false,
+        connectorDragStart: null,
+        connectorDragEnd: null,
+        hoveredConnectionPoint: null,
+        pendingConnector: action.payload,
+        isHandlingConnectionPoint: false, // Clear flag when completing
+      };
+
+    case 'CLEAR_PENDING_CONNECTOR':
+      return {
+        ...state,
+        pendingConnector: null,
+      };
+
+    default:
+      return state;
+  }
+}
+
+/**
  * Custom hook to manage connection point interaction state and handlers
  *
  * Handles:
@@ -114,30 +272,38 @@ export function useConnectionPointInteraction(
     createOrthogonalConnector,
   } = options;
 
-  // Connection point hover and drag state
-  const [hoveredShapeIds, setHoveredShapeIds] = useState<string[]>([]);
-  const [hoveredConnectionPoint, setHoveredConnectionPoint] = useState<{
-    shapeId: string;
-    anchor: AnchorPosition;
-  } | null>(null);
-  const [isDraggingConnector, setIsDraggingConnector] = useState(false);
-  const [hasMovedDuringDrag, setHasMovedDuringDrag] = useState(false);
-  const [connectorDragStart, setConnectorDragStart] = useState<{
-    shapeId: string;
-    anchor: AnchorPosition;
-    x: number;
-    y: number;
-  } | null>(null);
-  const [connectorDragEnd, setConnectorDragEnd] = useState<{ x: number; y: number } | null>(
-    null
+  // Connection point hover and drag state (consolidated with useReducer)
+  const [connectionState, dispatch] = useReducer(
+    connectionDragReducer,
+    initialConnectionDragState
   );
-  const [pendingConnector, setPendingConnector] = useState<{
-    sourceShapeId: string;
-    sourceAnchor: AnchorPosition;
-  } | null>(null);
 
-  // Store whether we're handling a connection point to prevent other handlers
-  const isHandlingConnectionPoint = useRef(false);
+  // Destructure for easier access
+  const {
+    isDraggingConnector,
+    hasMovedDuringDrag,
+    connectorDragStart,
+    connectorDragEnd,
+    hoveredConnectionPoint,
+    pendingConnector,
+    isHandlingConnectionPoint,
+  } = connectionState;
+
+  // Hover state still uses useState as it's managed separately
+  const [hoveredShapeIds, setHoveredShapeIds] = useState<string[]>([]);
+
+  /**
+   * Create a stable ref-like object that always returns the current state value.
+   * This maintains the external interface for consumers that expect a ref with .current property.
+   * The object reference stays stable across renders while .current always returns latest state.
+   */
+  const isHandlingConnectionPointRef = useRef({ current: isHandlingConnectionPoint });
+
+  // Update the ref's current value to always reflect latest state
+  // This ensures external consumers reading .current always get the up-to-date value
+  useEffect(() => {
+    isHandlingConnectionPointRef.current.current = isHandlingConnectionPoint;
+  }, [isHandlingConnectionPoint]);
 
   // Use refs to always have access to current values without recreating handlers
   const transformRef = useRef(transform);
@@ -152,7 +318,7 @@ export function useConnectionPointInteraction(
   // Clear pending connector state when popover closes
   const clearPendingConnector = useCallback(() => {
     if (!isPopoverOpen && pendingConnector) {
-      setPendingConnector(null);
+      dispatch({ type: 'CLEAR_PENDING_CONNECTOR' });
     }
   }, [isPopoverOpen, pendingConnector]);
 
@@ -170,18 +336,28 @@ export function useConnectionPointInteraction(
 
       // If dragging a connector, update the drag end position
       if (isDraggingConnector && connectorDragStart) {
-        setConnectorDragEnd({ x: worldPos.x, y: worldPos.y });
+        const endPoint = { x: worldPos.x, y: worldPos.y };
 
         // Check if we've moved enough to consider this a real drag
+        let shouldMarkAsMoved = hasMovedDuringDrag;
         if (!hasMovedDuringDrag) {
           const distance = Math.hypot(
             worldPos.x - connectorDragStart.x,
             worldPos.y - connectorDragStart.y
           );
           if (distance > CONNECTION_POINT_CONFIG.dragThreshold / transformRef.current.scale) {
-            setHasMovedDuringDrag(true);
+            shouldMarkAsMoved = true;
           }
         }
+
+        // Update drag position (single state update)
+        dispatch({
+          type: 'UPDATE_DRAG_POSITION',
+          payload: {
+            end: endPoint,
+            hasMovedDuringDrag: shouldMarkAsMoved,
+          },
+        });
 
         // Show connection points on nearby shapes while dragging
         const nearbyShapes = ConnectionPointSystem.getShapesNearPosition(
@@ -200,14 +376,15 @@ export function useConnectionPointInteraction(
           { scale: transformRef.current.scale }
         );
 
-        if (connectionPoint) {
-          setHoveredConnectionPoint({
-            shapeId: connectionPoint.shapeId,
-            anchor: connectionPoint.anchor,
-          });
-        } else {
-          setHoveredConnectionPoint(null);
-        }
+        dispatch({
+          type: 'SET_HOVERED_CONNECTION_POINT',
+          payload: connectionPoint
+            ? {
+                shapeId: connectionPoint.shapeId,
+                anchor: connectionPoint.anchor,
+              }
+            : null,
+        });
         return;
       }
 
@@ -230,17 +407,21 @@ export function useConnectionPointInteraction(
           { scale: transformRef.current.scale }
         );
 
-        if (connectionPoint) {
-          setHoveredConnectionPoint({
-            shapeId: connectionPoint.shapeId,
-            anchor: connectionPoint.anchor,
-          });
-        } else {
-          setHoveredConnectionPoint(null);
-        }
+        dispatch({
+          type: 'SET_HOVERED_CONNECTION_POINT',
+          payload: connectionPoint
+            ? {
+                shapeId: connectionPoint.shapeId,
+                anchor: connectionPoint.anchor,
+              }
+            : null,
+        });
       } else {
         setHoveredShapeIds([]);
-        setHoveredConnectionPoint(null);
+        dispatch({
+          type: 'SET_HOVERED_CONNECTION_POINT',
+          payload: null,
+        });
       }
     },
     [
@@ -282,17 +463,19 @@ export function useConnectionPointInteraction(
         event.stopPropagation();
         event.nativeEvent.stopImmediatePropagation();
 
-        isHandlingConnectionPoint.current = true;
-
-        setIsDraggingConnector(true);
-        setHasMovedDuringDrag(false);
-        setConnectorDragStart({
-          shapeId: connectionPoint.shapeId,
-          anchor: connectionPoint.anchor,
-          x: connectionPoint.position.x,
-          y: connectionPoint.position.y,
+        // Single dispatch replaces 4 setState calls AND sets the handling flag atomically
+        dispatch({
+          type: 'START_DRAG',
+          payload: {
+            start: {
+              shapeId: connectionPoint.shapeId,
+              anchor: connectionPoint.anchor,
+              x: connectionPoint.position.x,
+              y: connectionPoint.position.y,
+            },
+            end: { x: worldPos.x, y: worldPos.y },
+          },
         });
-        setConnectorDragEnd({ x: worldPos.x, y: worldPos.y });
       }
     },
     [canvasRef, shapes]
@@ -311,16 +494,8 @@ export function useConnectionPointInteraction(
       // Only create connector if we actually dragged (not just a click)
       if (!hasMovedDuringDrag) {
         // Reset drag state without creating connector
-        setIsDraggingConnector(false);
-        setHasMovedDuringDrag(false);
-        setConnectorDragStart(null);
-        setConnectorDragEnd(null);
-        setHoveredConnectionPoint(null);
-
-        // Reset flag to allow normal mouse handlers again
-        setTimeout(() => {
-          isHandlingConnectionPoint.current = false;
-        }, 0);
+        // Single dispatch atomically resets all state including the handling flag
+        dispatch({ type: 'CANCEL_DRAG' });
         return;
       }
 
@@ -363,6 +538,10 @@ export function useConnectionPointInteraction(
             console.error('Failed to create connector:', connectorResult.error);
           }
         }
+
+        // Reset drag state after connecting to target
+        // Single dispatch atomically resets all state including the handling flag
+        dispatch({ type: 'COMPLETE_DRAG', payload: null });
       } else {
         // Released on empty canvas - open toolset popover for shape creation
         const connector = {
@@ -370,25 +549,17 @@ export function useConnectionPointInteraction(
           sourceAnchor: connectorDragStart.anchor,
         };
 
-        // Store pending connector state locally
-        setPendingConnector(connector);
+        // Complete drag with pending connector
+        // Single dispatch atomically resets all state including the handling flag
+        dispatch({
+          type: 'COMPLETE_DRAG',
+          payload: connector,
+        });
 
         // Open the toolset popover at the release position with pending connector
         // Use viewport coordinates (event.clientX/Y) for UI positioning
         openToolsetPopover(event.clientX, event.clientY, worldPos.x, worldPos.y, connector);
       }
-
-      // Reset drag state
-      setIsDraggingConnector(false);
-      setHasMovedDuringDrag(false);
-      setConnectorDragStart(null);
-      setConnectorDragEnd(null);
-      setHoveredConnectionPoint(null);
-
-      // Reset flag after a short delay to ensure other handlers see it
-      setTimeout(() => {
-        isHandlingConnectionPoint.current = false;
-      }, 0);
     },
     [
       isDraggingConnector,
@@ -430,6 +601,6 @@ export function useConnectionPointInteraction(
   return {
     state,
     handlers,
-    isHandlingConnectionPoint,
+    isHandlingConnectionPoint: isHandlingConnectionPointRef.current,
   };
 }
