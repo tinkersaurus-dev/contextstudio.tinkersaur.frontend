@@ -8,7 +8,7 @@
  * between shapes by dragging from connection points.
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import type { AnchorPosition, Connector } from '@/entities/connector';
 import type { Shape } from '@/entities/shape';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
@@ -139,12 +139,15 @@ export function useConnectionPointInteraction(
   // Store whether we're handling a connection point to prevent other handlers
   const isHandlingConnectionPoint = useRef(false);
 
-  // Use a ref to always have access to current transform without recreating handlers
+  // Use refs to always have access to current values without recreating handlers
   const transformRef = useRef(transform);
-  transformRef.current = transform;
-
   const isDraggingConnectorRef = useRef(isDraggingConnector);
-  isDraggingConnectorRef.current = isDraggingConnector;
+
+  // Update refs after render to follow React rules (no synchronous updates during render)
+  useEffect(() => {
+    transformRef.current = transform;
+    isDraggingConnectorRef.current = isDraggingConnector;
+  }, [transform, isDraggingConnector]);
 
   // Clear pending connector state when popover closes
   const clearPendingConnector = useCallback(() => {

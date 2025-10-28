@@ -45,7 +45,9 @@ export function DiagramCanvas({
 
   // Use a ref to always have access to current transform without recreating handlers
   const transformRef = useRef(transform);
-  transformRef.current = transform;
+  useEffect(() => {
+    transformRef.current = transform;
+  }, [transform]);
 
   // Create internal store instance for this diagram (isolated per diagram ID)
   const store = useMemo(() => {
@@ -120,59 +122,67 @@ export function DiagramCanvas({
 
   // Use refs to always have access to current values without recreating handlers
   const snapModeRef = useRef(snapMode);
-  snapModeRef.current = snapMode;
-
   const shapesRef = useRef(shapes);
-  shapesRef.current = shapes;
 
   // Use refs for store methods to avoid recreating effect on every store change
   const addShapeRef = useRef(addShape);
-  addShapeRef.current = addShape;
-
   const findEntityAtPointRef = useRef(findEntityAtPoint);
-  findEntityAtPointRef.current = findEntityAtPoint;
-
   const isSelectedRef = useRef(isSelected);
-  isSelectedRef.current = isSelected;
-
   const getAllSelectedEntitiesRef = useRef(getAllSelectedEntities);
-  getAllSelectedEntitiesRef.current = getAllSelectedEntities;
-
   const setSelectedEntitiesRef = useRef(setSelectedEntities);
-  setSelectedEntitiesRef.current = setSelectedEntities;
-
   const addToSelectionRef = useRef(addToSelection);
-  addToSelectionRef.current = addToSelection;
-
   const toggleSelectionRef = useRef(toggleSelection);
-  toggleSelectionRef.current = toggleSelection;
-
   const clearSelectionRef = useRef(clearSelection);
-  clearSelectionRef.current = clearSelection;
-
   const selectEntitiesInBoxRef = useRef(selectEntitiesInBox);
-  selectEntitiesInBoxRef.current = selectEntitiesInBox;
-
   const setDraggingEntitiesRef = useRef(setDraggingEntities);
-  setDraggingEntitiesRef.current = setDraggingEntities;
-
   const clearDraggingEntitiesRef = useRef(clearDraggingEntities);
-  clearDraggingEntitiesRef.current = clearDraggingEntities;
-
   const updateShapePositionInternalRef = useRef(updateShapePositionInternal);
-  updateShapePositionInternalRef.current = updateShapePositionInternal;
-
   const finalizeShapeMoveRef = useRef(finalizeShapeMove);
-  finalizeShapeMoveRef.current = finalizeShapeMove;
-
   const setEditingShapeRef = useRef(setEditingShape);
-  setEditingShapeRef.current = setEditingShape;
 
   // Get toolset popover store
   const { open: openToolsetPopover, isOpen: isPopoverOpen } = useToolsetPopoverStore();
 
   const openToolsetPopoverRef = useRef(openToolsetPopover);
-  openToolsetPopoverRef.current = openToolsetPopover;
+
+  // Update all refs after render to follow React rules (no synchronous updates during render)
+  useEffect(() => {
+    snapModeRef.current = snapMode;
+    shapesRef.current = shapes;
+    addShapeRef.current = addShape;
+    findEntityAtPointRef.current = findEntityAtPoint;
+    isSelectedRef.current = isSelected;
+    getAllSelectedEntitiesRef.current = getAllSelectedEntities;
+    setSelectedEntitiesRef.current = setSelectedEntities;
+    addToSelectionRef.current = addToSelection;
+    toggleSelectionRef.current = toggleSelection;
+    clearSelectionRef.current = clearSelection;
+    selectEntitiesInBoxRef.current = selectEntitiesInBox;
+    setDraggingEntitiesRef.current = setDraggingEntities;
+    clearDraggingEntitiesRef.current = clearDraggingEntities;
+    updateShapePositionInternalRef.current = updateShapePositionInternal;
+    finalizeShapeMoveRef.current = finalizeShapeMove;
+    setEditingShapeRef.current = setEditingShape;
+    openToolsetPopoverRef.current = openToolsetPopover;
+  }, [
+    snapMode,
+    shapes,
+    addShape,
+    findEntityAtPoint,
+    isSelected,
+    getAllSelectedEntities,
+    setSelectedEntities,
+    addToSelection,
+    toggleSelection,
+    clearSelection,
+    selectEntitiesInBox,
+    setDraggingEntities,
+    clearDraggingEntities,
+    updateShapePositionInternal,
+    finalizeShapeMove,
+    setEditingShape,
+    openToolsetPopover,
+  ]);
 
   // Use connection point interaction hook
   const {
