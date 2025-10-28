@@ -7,6 +7,7 @@
 
 "use client";
 
+import React, { useCallback } from "react";
 import { Box, Tabs, CloseButton } from "@chakra-ui/react";
 import { LuFileText, LuFile, LuHouse } from "react-icons/lu";
 import { useContentStore } from "@/widgets/design-sidebar/model/content-store";
@@ -38,10 +39,23 @@ export function DesignStudioContentArea() {
   const setActiveTab = useContentStore((state) => state.setActiveTab);
   const closeTab = useContentStore((state) => state.closeTab);
 
+  // Memoize tab change handler
+  const handleTabChange = useCallback((e: { value: string | null }) => {
+    if (e.value) {
+      setActiveTab(e.value);
+    }
+  }, [setActiveTab]);
+
+  // Memoize close handler factory to avoid creating new functions in render
+  const handleCloseTab = useCallback((tabId: string) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    closeTab(tabId);
+  }, [closeTab]);
+
   return (
     <Tabs.Root
       value={activeTabId ?? 'home'}
-      onValueChange={(e) => e.value && setActiveTab(e.value)}
+      onValueChange={handleTabChange}
       variant="outline"
       size="sm"
       height="100%"
@@ -62,10 +76,7 @@ export function DesignStudioContentArea() {
                 role="button"
                 size="2xs"
                 me="-2"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  closeTab(tab.id);
-                }}
+                onClick={handleCloseTab(tab.id)}
               />
             )}
           </Tabs.Trigger>

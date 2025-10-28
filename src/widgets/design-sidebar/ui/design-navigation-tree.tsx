@@ -8,7 +8,7 @@
 
 "use client";
 
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useImperativeHandle, useState, useCallback, useMemo } from "react";
 import { TreeView, createTreeCollection } from "@/shared/ui";
 import type { ContentNode } from "@/shared/types/design-studio";
 import { LuFile, LuFolder, LuImage, LuFileText } from "react-icons/lu";
@@ -82,13 +82,13 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 
-    // Create tree collection from store data
-    const collection = createTreeCollection<ContentNode>({
+    // Create tree collection from store data (memoize to prevent recreation)
+    const collection = useMemo(() => createTreeCollection<ContentNode>({
       nodeToValue: (node) => node.id,
       nodeToString: (node) => node.name,
       nodeToChildren: (node) => node.children ?? [],
       rootNode: rootContent,
-    });
+    }), [rootContent]);
 
     // Expose methods via ref
     useImperativeHandle(ref, () => ({
@@ -96,27 +96,27 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
       deleteNode,
       renameNode,
       selectNode,
-    }));
+    }), [createFolder, deleteNode, renameNode, selectNode]);
 
     // Handle double-click on tree items to open diagrams and documents
-    const handleDoubleClick = (node: ContentNode) => {
+    const handleDoubleClick = useCallback((node: ContentNode) => {
       if (node.type === 'diagram' || node.type === 'document') {
         openContent(node.id);
       }
-    };
+    }, [openContent]);
 
     // Handle opening the diagram dialog
-    const handleOpenDiagramDialog = (folderId: string) => {
+    const handleOpenDiagramDialog = useCallback((folderId: string) => {
       console.log('[DesignNavigationTree] Opening diagram dialog for folder:', {
         folderId,
         timestamp: new Date().toISOString()
       });
       setSelectedFolderId(folderId);
       setIsDialogOpen(true);
-    };
+    }, []);
 
     // Handle creating a diagram from the dialog
-    const handleCreateDiagram = (name: string, diagramType: DiagramType) => {
+    const handleCreateDiagram = useCallback((name: string, diagramType: DiagramType) => {
       if (!selectedFolderId) {
         console.error('[DesignNavigationTree] handleCreateDiagram called with null selectedFolderId', {
           name,
@@ -131,13 +131,23 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
       addContentToFolder(selectedFolderId, 'diagram', name, diagramType);
       setIsDialogOpen(false);
       setSelectedFolderId(null);
-    };
+    }, [selectedFolderId, addContentToFolder]);
 
     // Handle closing the dialog
-    const handleCloseDialog = () => {
+    const handleCloseDialog = useCallback(() => {
       setIsDialogOpen(false);
       setSelectedFolderId(null);
-    };
+    }, []);
+
+    // Memoize handler factory for adding diagram to folder
+    const handleAddDiagram = useCallback((nodeId: string) => () => {
+      handleOpenDiagramDialog(nodeId);
+    }, [handleOpenDiagramDialog]);
+
+    // Memoize handler factory for adding document to folder
+    const handleAddDocument = useCallback((nodeId: string) => () => {
+      addContentToFolder(nodeId, 'document');
+    }, [addContentToFolder]);
 
     return (
       <>
@@ -162,8 +172,8 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
                       <span>{node.name}</span>
                       {node.type === 'folder' && (
                         <FolderAddContentMenu
-                          onAddDiagram={() => handleOpenDiagramDialog(node.id)}
-                          onAddDocument={() => addContentToFolder(node.id, 'document')}
+                          onAddDiagram={handleAddDiagram(node.id)}
+                          onAddDocument={handleAddDocument(node.id)}
                         />
                       )}
                     </TreeView.BranchText>
@@ -180,8 +190,8 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
                       <span>{node.name}</span>
                       {node.type === 'folder' && (
                         <FolderAddContentMenu
-                          onAddDiagram={() => handleOpenDiagramDialog(node.id)}
-                          onAddDocument={() => addContentToFolder(node.id, 'document')}
+                          onAddDiagram={handleAddDiagram(node.id)}
+                          onAddDocument={handleAddDocument(node.id)}
                         />
                       )}
                     </TreeView.ItemText>

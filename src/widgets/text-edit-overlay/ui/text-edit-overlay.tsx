@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import type { TextEditOverlayProps } from '../model/types';
 
 /**
@@ -20,7 +20,7 @@ import type { TextEditOverlayProps } from '../model/types';
  * />
  * ```
  */
-export function TextEditOverlay({
+export const TextEditOverlay = React.memo(function TextEditOverlay({
   entity,
   transform,
   onCommit,
@@ -43,6 +43,30 @@ export function TextEditOverlay({
       return () => clearTimeout(timer);
     }
   }, [entity]);
+
+  // Memoize handlers to prevent re-renders
+  const handleCommit = useCallback((text: string) => {
+    if (entity) {
+      onCommit(entity.id, text);
+    }
+  }, [entity, onCommit]);
+
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    handleCommit(e.target.value);
+  }, [handleCommit]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleCommit(e.currentTarget.value);
+    } else if (e.key === 'Escape') {
+      onCancel();
+    }
+  }, [handleCommit, onCancel]);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLInputElement>) => {
+    // Prevent event from bubbling to canvas handlers
+    e.stopPropagation();
+  }, []);
 
   // Don't render if no entity is being edited
   if (!entity) {
@@ -71,27 +95,6 @@ export function TextEditOverlay({
     ...style, // Allow custom style overrides
   };
 
-  const handleCommit = (text: string) => {
-    onCommit(entity.id, text);
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    handleCommit(e.target.value);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleCommit(e.currentTarget.value);
-    } else if (e.key === 'Escape') {
-      onCancel();
-    }
-  };
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLInputElement>) => {
-    // Prevent event from bubbling to canvas handlers
-    e.stopPropagation();
-  };
-
   return (
     <input
       ref={inputRef}
@@ -103,4 +106,4 @@ export function TextEditOverlay({
       onMouseDown={handleMouseDown}
     />
   );
-}
+});

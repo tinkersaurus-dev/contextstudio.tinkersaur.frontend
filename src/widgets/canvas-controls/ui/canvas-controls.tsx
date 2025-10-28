@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useCallback } from 'react';
 import { LuGrid2X2, LuFocus } from 'react-icons/lu';
 import { IconButton, ButtonGroup, ActionBar, Tooltip } from '@/shared/ui';
 import { CANVAS_CONTROLS_POSITION } from '@/shared/config/canvas-config';
@@ -16,7 +17,7 @@ export interface CanvasControlsProps {
  * Canvas control buttons that trigger action bars for various settings.
  * Positioned at the bottom center of the canvas.
  */
-export function CanvasControls({ snapMode, setSnapMode }: CanvasControlsProps) {
+export const CanvasControls = React.memo(function CanvasControls({ snapMode, setSnapMode }: CanvasControlsProps) {
   const {
     isBackgroundOpen,
     isInteractionsOpen,
@@ -25,6 +26,23 @@ export function CanvasControls({ snapMode, setSnapMode }: CanvasControlsProps) {
     openInteractionsPanel,
     closeAllPanels,
   } = useCanvasControlsState();
+
+  // Memoize handlers to prevent child re-renders
+  const handleBackgroundOpenChange = useCallback((e: { open: boolean }) => {
+    if (!e.open) {
+      closeAllPanels();
+    }
+  }, [closeAllPanels]);
+
+  const handleInteractionsOpenChange = useCallback((e: { open: boolean }) => {
+    if (!e.open) {
+      closeAllPanels();
+    }
+  }, [closeAllPanels]);
+
+  const handleSnapModeChange = useCallback((mode: SnapMode) => {
+    setSnapMode(mode);
+  }, [setSnapMode]);
 
   return (
     <>
@@ -62,7 +80,7 @@ export function CanvasControls({ snapMode, setSnapMode }: CanvasControlsProps) {
       {/* Background Settings Action Bar */}
       <ActionBar.Root
         open={isBackgroundOpen}
-        onOpenChange={(e) => !e.open && closeAllPanels()}
+        onOpenChange={handleBackgroundOpenChange}
         closeOnInteractOutside={true}
       >
         <ActionBar.Content backgroundColor="panel.bg">
@@ -77,7 +95,7 @@ export function CanvasControls({ snapMode, setSnapMode }: CanvasControlsProps) {
       {/* Interactions Settings Action Bar */}
       <ActionBar.Root
         open={isInteractionsOpen}
-        onOpenChange={(e) => !e.open && closeAllPanels()}
+        onOpenChange={handleInteractionsOpenChange}
         closeOnInteractOutside={true}
 
       >
@@ -89,7 +107,7 @@ export function CanvasControls({ snapMode, setSnapMode }: CanvasControlsProps) {
                 <IconButton
                   aria-label={label}
                   variant={snapMode === mode ? 'subtle' : 'solid'}
-                  onClick={() => setSnapMode(mode)}
+                  onClick={() => handleSnapModeChange(mode)}
                 >
                   <Icon />
                 </IconButton>
@@ -101,4 +119,4 @@ export function CanvasControls({ snapMode, setSnapMode }: CanvasControlsProps) {
       </ActionBar.Root>
     </>
   );
-}
+});

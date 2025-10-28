@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useStore } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import { setupMouseInput, EntityInteractionCallbacks } from '../lib/mouse-input';
@@ -388,12 +388,26 @@ export function DiagramCanvas({
   });
 
   // Handler to reset zoom to 100%
-  const handleResetZoom = () => {
+  const handleResetZoom = useCallback(() => {
     setTransform(CanvasTransform.identity());
-  };
+  }, []);
 
-  // Get the shape being edited
-  const editingShape = editingShapeId ? shapes.find((s) => s.id === editingShapeId) || null : null;
+  // Memoize the text edit commit handler
+  const handleTextCommit = useCallback((entityId: string, text: string) => {
+    updateShapeText(entityId, text);
+    setEditingShape(null);
+  }, [updateShapeText, setEditingShape]);
+
+  // Memoize the text edit cancel handler
+  const handleTextCancel = useCallback(() => {
+    setEditingShape(null);
+  }, [setEditingShape]);
+
+  // Get the shape being edited (memoize to prevent unnecessary lookups)
+  const editingShape = useMemo(
+    () => (editingShapeId ? shapes.find((s) => s.id === editingShapeId) || null : null),
+    [editingShapeId, shapes]
+  );
 
   return (
     <div
@@ -419,11 +433,8 @@ export function DiagramCanvas({
       <TextEditOverlay
         entity={editingShape}
         transform={transform}
-        onCommit={(entityId, text) => {
-          updateShapeText(entityId, text);
-          setEditingShape(null);
-        }}
-        onCancel={() => setEditingShape(null)}
+        onCommit={handleTextCommit}
+        onCancel={handleTextCancel}
       />
     </div>
   );

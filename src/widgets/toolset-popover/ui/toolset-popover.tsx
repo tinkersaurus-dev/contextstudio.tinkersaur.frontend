@@ -7,6 +7,7 @@
 
 'use client';
 
+import React, { useCallback, useMemo } from 'react';
 import { Grid } from '@chakra-ui/react';
 import {
   PopoverRoot,
@@ -41,17 +42,18 @@ export interface ToolsetPopoverProps {
  * Renders a context menu-style popover with tools based on the diagram type.
  * Opens on right-click at the cursor position.
  */
-export function ToolsetPopover({ diagramType, addShape, addConnector }: ToolsetPopoverProps) {
+export const ToolsetPopover = React.memo(function ToolsetPopover({ diagramType, addShape, addConnector }: ToolsetPopoverProps) {
   const { isOpen, screenPosition, worldPosition, pendingConnector, close } =
     useToolsetPopoverStore();
 
   // Get the appropriate toolset based on diagram type
-  const toolset = getToolsetForDiagramType(diagramType);
+  // Memoize toolset calculation based on diagram type
+  const toolset = useMemo(() => getToolsetForDiagramType(diagramType), [diagramType]);
 
   /**
    * Handle tool selection
    */
-  const handleToolSelect = (tool: SimpleTool) => {
+  const handleToolSelect = useCallback((tool: SimpleTool) => {
     if (!worldPosition) return;
 
     let shape;
@@ -106,17 +108,20 @@ export function ToolsetPopover({ diagramType, addShape, addConnector }: ToolsetP
 
     // Close popover
     close();
-  };
+  }, [worldPosition, pendingConnector, addShape, addConnector, close]);
+
+  // Memoize the popover open change handler
+  const handleOpenChange = useCallback((details: { open: boolean }) => {
+    if (!details.open) {
+      close();
+    }
+  }, [close]);
 
   return (
     <>
       <PopoverRoot
         open={isOpen}
-        onOpenChange={(details) => {
-          if (!details.open) {
-            close();
-          }
-        }}
+        onOpenChange={handleOpenChange}
         closeOnInteractOutside
         closeOnEscape
       >
@@ -174,4 +179,4 @@ export function ToolsetPopover({ diagramType, addShape, addConnector }: ToolsetP
       </PopoverRoot>
     </>
   );
-}
+});
