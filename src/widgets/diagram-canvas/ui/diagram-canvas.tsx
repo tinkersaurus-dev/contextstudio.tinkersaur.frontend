@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useStore } from 'zustand';
+import { useShallow } from 'zustand/shallow';
 import { setupMouseInput, EntityInteractionCallbacks } from '../lib/mouse-input';
 import { setupKeyboardInput, KeyboardInteractionCallbacks } from '../lib/keyboard-input';
 import { SelectionBox } from '../lib/selection-box-renderer';
-import { createCanvasStore } from '../model/canvas-store';
+import { createCanvasStore, type CanvasStore } from '../model/canvas-store';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
 import { createOrthogonalConnector } from '@/entities/connector';
 import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
@@ -18,6 +19,59 @@ import { useCanvasRendering } from '../hooks/use-canvas-rendering';
 import type { DiagramType } from '@/shared/types/content-data';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
+
+// ============================================================================
+// MEMOIZED SELECTORS - Created once, stable across renders
+// ============================================================================
+
+/**
+ * Select core canvas state (shapes, connectors, selection, editing)
+ * This groups the most frequently accessed state values together
+ */
+const selectCanvasState = (state: ReturnType<CanvasStore['getState']>) => ({
+  shapes: state.shapes,
+  connectors: state.connectors,
+  selectedEntityIds: state.selectedEntityIds,
+  snapMode: state.snapMode,
+  editingShapeId: state.editingShapeId,
+});
+
+/**
+ * Select all entity manipulation actions
+ * These are stable functions that don't change, but we group them
+ * for better organization and to avoid individual subscriptions
+ */
+const selectEntityActions = (state: ReturnType<CanvasStore['getState']>) => ({
+  addShape: state.addShape,
+  addConnector: state.addConnector,
+  deleteSelectedEntities: state.deleteSelectedEntities,
+  findEntityAtPoint: state.findEntityAtPoint,
+  isSelected: state.isSelected,
+  getAllSelectedEntities: state.getAllSelectedEntities,
+  setSelectedEntities: state.setSelectedEntities,
+  addToSelection: state.addToSelection,
+  toggleSelection: state.toggleSelection,
+  clearSelection: state.clearSelection,
+  selectEntitiesInBox: state.selectEntitiesInBox,
+  setDraggingEntities: state.setDraggingEntities,
+  clearDraggingEntities: state.clearDraggingEntities,
+  updateShapePositionInternal: state.updateShapePositionInternal,
+  finalizeShapeMove: state.finalizeShapeMove,
+  setEditingShape: state.setEditingShape,
+  updateShapeText: state.updateShapeText,
+  setSnapMode: state.setSnapMode,
+});
+
+/**
+ * Select undo/redo state and actions
+ * Grouped separately as they're used by keyboard handlers
+ */
+const selectUndoRedoActions = (state: ReturnType<CanvasStore['getState']>) => ({
+  undo: state.undo,
+  redo: state.redo,
+  canUndo: state.canUndo,
+  canRedo: state.canRedo,
+});
 
 export interface DiagramCanvasProps {
   /** Unique identifier for the diagram */
@@ -92,33 +146,43 @@ export function DiagramCanvas({
     return unsubscribe;
   }, [store, onDiagramChange]);
 
-  // Get values from canvas store using selectors
-  const shapes = useStore(store, (state) => state.shapes);
-  const connectors = useStore(store, (state) => state.connectors);
-  const selectedEntityIds = useStore(store, (state) => state.selectedEntityIds);
-  const snapMode = useStore(store, (state) => state.snapMode);
-  const editingShapeId = useStore(store, (state) => state.editingShapeId);
-  const addShape = useStore(store, (state) => state.addShape);
-  const addConnector = useStore(store, (state) => state.addConnector);
-  const deleteSelectedEntities = useStore(store, (state) => state.deleteSelectedEntities);
-  const findEntityAtPoint = useStore(store, (state) => state.findEntityAtPoint);
-  const isSelected = useStore(store, (state) => state.isSelected);
-  const getAllSelectedEntities = useStore(store, (state) => state.getAllSelectedEntities);
-  const setSelectedEntities = useStore(store, (state) => state.setSelectedEntities);
-  const addToSelection = useStore(store, (state) => state.addToSelection);
-  const toggleSelection = useStore(store, (state) => state.toggleSelection);
-  const clearSelection = useStore(store, (state) => state.clearSelection);
-  const selectEntitiesInBox = useStore(store, (state) => state.selectEntitiesInBox);
-  const setDraggingEntities = useStore(store, (state) => state.setDraggingEntities);
-  const clearDraggingEntities = useStore(store, (state) => state.clearDraggingEntities);
-  const updateShapePositionInternal = useStore(store, (state) => state.updateShapePositionInternal);
-  const finalizeShapeMove = useStore(store, (state) => state.finalizeShapeMove);
-  const setEditingShape = useStore(store, (state) => state.setEditingShape);
-  const updateShapeText = useStore(store, (state) => state.updateShapeText);
-  const undo = useStore(store, (state) => state.undo);
-  const redo = useStore(store, (state) => state.redo);
-  const canUndo = useStore(store, (state) => state.canUndo);
-  const canRedo = useStore(store, (state) => state.canRedo);
+  // ============================================================================
+  // OPTIMIZED STORE SUBSCRIPTIONS (3 grouped subscriptions instead of 27)
+  // ============================================================================
+
+  // Subscribe to core canvas state (shapes, connectors, selection, etc.)
+  // Using useShallow to prevent re-renders when object reference changes
+  // but contents are the same
+  const { shapes, connectors, selectedEntityIds, snapMode, editingShapeId } = useStore(
+    store,
+    useShallow(selectCanvasState)
+  );
+
+  // Subscribe to entity manipulation actions (stable functions)
+  // These rarely change, but we group them for organization
+  const {
+    addShape,
+    addConnector,
+    deleteSelectedEntities,
+    findEntityAtPoint,
+    isSelected,
+    getAllSelectedEntities,
+    setSelectedEntities,
+    addToSelection,
+    toggleSelection,
+    clearSelection,
+    selectEntitiesInBox,
+    setDraggingEntities,
+    clearDraggingEntities,
+    updateShapePositionInternal,
+    finalizeShapeMove,
+    setEditingShape,
+    updateShapeText,
+    setSnapMode,
+  } = useStore(store, useShallow(selectEntityActions));
+
+  // Subscribe to undo/redo actions (used by keyboard handlers)
+  const { undo, redo, canUndo, canRedo } = useStore(store, useShallow(selectUndoRedoActions));
 
   // Use refs to always have access to current values without recreating handlers
   const snapModeRef = useRef(snapMode);
@@ -349,7 +413,7 @@ export function DiagramCanvas({
           cursor: connectionPointHandlers.getCursorStyle(),
         }}
       />
-      <CanvasControls snapMode={snapMode} setSnapMode={useStore(store, (state) => state.setSnapMode)} />
+      <CanvasControls snapMode={snapMode} setSnapMode={setSnapMode} />
       <ZoomControl zoom={transform.scale} onReset={handleResetZoom} />
       <ToolsetPopover diagramType={diagramType} addShape={addShape} addConnector={addConnector} />
       <TextEditOverlay
