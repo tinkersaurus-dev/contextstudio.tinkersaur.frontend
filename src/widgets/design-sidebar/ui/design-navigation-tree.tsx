@@ -107,15 +107,28 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
 
     // Handle opening the diagram dialog
     const handleOpenDiagramDialog = (folderId: string) => {
+      console.log('[DesignNavigationTree] Opening diagram dialog for folder:', {
+        folderId,
+        timestamp: new Date().toISOString()
+      });
       setSelectedFolderId(folderId);
       setIsDialogOpen(true);
     };
 
     // Handle creating a diagram from the dialog
     const handleCreateDiagram = (name: string, diagramType: DiagramType) => {
-      if (selectedFolderId) {
-        addContentToFolder(selectedFolderId, 'diagram', name, diagramType);
+      if (!selectedFolderId) {
+        console.error('[DesignNavigationTree] handleCreateDiagram called with null selectedFolderId', {
+          name,
+          diagramType,
+          timestamp: new Date().toISOString(),
+        });
+        setIsDialogOpen(false);
+        setSelectedFolderId(null);
+        return;
       }
+
+      addContentToFolder(selectedFolderId, 'diagram', name, diagramType);
       setIsDialogOpen(false);
       setSelectedFolderId(null);
     };
@@ -132,36 +145,45 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
           collection={collection}
           size="xs"
           color="sidebar.text"
+          css={{
+            "& [data-part='branch-content']": {
+              marginTop: "0.125rem",
+            }
+          }}
         >
           <TreeView.Label srOnly>Project Navigation</TreeView.Label>
           <TreeView.Tree gap="0">
             <TreeView.Node
               render={({ node, nodeState }) =>
                 nodeState.isBranch ? (
-                  <TreeView.BranchControl py="0" my="0">
+                  <TreeView.BranchControl py="1" mb="0">
                     {getContentIcon(node.type)}
                     <TreeView.BranchText display="flex" alignItems="center" justifyContent="space-between" flex="1">
                       <span>{node.name}</span>
-                      <FolderAddContentMenu
-                        onAddDiagram={() => handleOpenDiagramDialog(node.id)}
-                        onAddDocument={() => addContentToFolder(node.id, 'document')}
-                      />
+                      {node.type === 'folder' && (
+                        <FolderAddContentMenu
+                          onAddDiagram={() => handleOpenDiagramDialog(node.id)}
+                          onAddDocument={() => addContentToFolder(node.id, 'document')}
+                        />
+                      )}
                     </TreeView.BranchText>
                   </TreeView.BranchControl>
                 ) : (
                   <TreeView.Item
-                    py="0"
-                    my="0"
+                    py="1"
+                    mb="1"
                     onDoubleClick={() => handleDoubleClick(node)}
                     cursor={node.type === 'diagram' || node.type === 'document' ? 'pointer' : 'default'}
                   >
                     {getContentIcon(node.type)}
                     <TreeView.ItemText display="flex" alignItems="center" justifyContent="space-between" flex="1">
                       <span>{node.name}</span>
-                      <FolderAddContentMenu
-                        onAddDiagram={() => handleOpenDiagramDialog(node.id)}
-                        onAddDocument={() => addContentToFolder(node.id, 'document')}
-                      />
+                      {node.type === 'folder' && (
+                        <FolderAddContentMenu
+                          onAddDiagram={() => handleOpenDiagramDialog(node.id)}
+                          onAddDocument={() => addContentToFolder(node.id, 'document')}
+                        />
+                      )}
                     </TreeView.ItemText>
                   </TreeView.Item>
                 )

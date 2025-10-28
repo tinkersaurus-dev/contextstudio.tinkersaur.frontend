@@ -125,8 +125,54 @@ export function DiagramCanvas({
   const shapesRef = useRef(shapes);
   shapesRef.current = shapes;
 
+  // Use refs for store methods to avoid recreating effect on every store change
+  const addShapeRef = useRef(addShape);
+  addShapeRef.current = addShape;
+
+  const findEntityAtPointRef = useRef(findEntityAtPoint);
+  findEntityAtPointRef.current = findEntityAtPoint;
+
+  const isSelectedRef = useRef(isSelected);
+  isSelectedRef.current = isSelected;
+
+  const getAllSelectedEntitiesRef = useRef(getAllSelectedEntities);
+  getAllSelectedEntitiesRef.current = getAllSelectedEntities;
+
+  const setSelectedEntitiesRef = useRef(setSelectedEntities);
+  setSelectedEntitiesRef.current = setSelectedEntities;
+
+  const addToSelectionRef = useRef(addToSelection);
+  addToSelectionRef.current = addToSelection;
+
+  const toggleSelectionRef = useRef(toggleSelection);
+  toggleSelectionRef.current = toggleSelection;
+
+  const clearSelectionRef = useRef(clearSelection);
+  clearSelectionRef.current = clearSelection;
+
+  const selectEntitiesInBoxRef = useRef(selectEntitiesInBox);
+  selectEntitiesInBoxRef.current = selectEntitiesInBox;
+
+  const setDraggingEntitiesRef = useRef(setDraggingEntities);
+  setDraggingEntitiesRef.current = setDraggingEntities;
+
+  const clearDraggingEntitiesRef = useRef(clearDraggingEntities);
+  clearDraggingEntitiesRef.current = clearDraggingEntities;
+
+  const updateShapePositionInternalRef = useRef(updateShapePositionInternal);
+  updateShapePositionInternalRef.current = updateShapePositionInternal;
+
+  const finalizeShapeMoveRef = useRef(finalizeShapeMove);
+  finalizeShapeMoveRef.current = finalizeShapeMove;
+
+  const setEditingShapeRef = useRef(setEditingShape);
+  setEditingShapeRef.current = setEditingShape;
+
   // Get toolset popover store
   const { open: openToolsetPopover, isOpen: isPopoverOpen } = useToolsetPopoverStore();
+
+  const openToolsetPopoverRef = useRef(openToolsetPopover);
+  openToolsetPopoverRef.current = openToolsetPopover;
 
   // Use connection point interaction hook
   const {
@@ -155,18 +201,18 @@ export function DiagramCanvas({
 
     // Entity interaction callbacks
     const entityCallbacks: EntityInteractionCallbacks = {
-      findEntityAtPoint,
-      isSelected,
-      getAllSelectedEntities,
-      setSelectedEntities,
-      addToSelection,
-      toggleSelection,
-      clearSelection,
-      selectEntitiesInBox,
-      setDraggingEntities,
-      clearDraggingEntities,
+      findEntityAtPoint: (...args) => findEntityAtPointRef.current(...args),
+      isSelected: (...args) => isSelectedRef.current(...args),
+      getAllSelectedEntities: () => getAllSelectedEntitiesRef.current(),
+      setSelectedEntities: (...args) => setSelectedEntitiesRef.current(...args),
+      addToSelection: (...args) => addToSelectionRef.current(...args),
+      toggleSelection: (...args) => toggleSelectionRef.current(...args),
+      clearSelection: () => clearSelectionRef.current(),
+      selectEntitiesInBox: (...args) => selectEntitiesInBoxRef.current(...args),
+      setDraggingEntities: (...args) => setDraggingEntitiesRef.current(...args),
+      clearDraggingEntities: () => clearDraggingEntitiesRef.current(),
       updateEntityPositionInternal: (id, x, y) => {
-        updateShapePositionInternal(id, x, y);
+        updateShapePositionInternalRef.current(id, x, y);
       },
       finalizeEntityMove: (moves) => {
         // Convert entity IDs to shape IDs for the store
@@ -177,18 +223,18 @@ export function DiagramCanvas({
           toX: move.toX,
           toY: move.toY,
         }));
-        finalizeShapeMove(shapeMoves);
+        finalizeShapeMoveRef.current(shapeMoves);
       },
       createRectangleAtPoint: (x, y) => {
         const newShapeResult = createRectangleAtPoint(x, y);
         if (newShapeResult.ok) {
-          addShape(newShapeResult.value);
+          addShapeRef.current(newShapeResult.value);
         } else {
           console.error('Failed to create rectangle:', newShapeResult.error);
         }
       },
       openToolsetPopover: (screenX, screenY, worldX, worldY) => {
-        openToolsetPopover(screenX, screenY, worldX, worldY);
+        openToolsetPopoverRef.current(screenX, screenY, worldX, worldY);
       },
       onSelectionBoxChange: (box) => {
         if (box) {
@@ -215,7 +261,7 @@ export function DiagramCanvas({
         });
       },
       startEditingText: (shapeId) => {
-        setEditingShape(shapeId);
+        setEditingShapeRef.current(shapeId);
       },
       getAllShapes: () => shapesRef.current,
     };
@@ -229,25 +275,9 @@ export function DiagramCanvas({
     );
 
     return cleanup;
-  }, [
-    addShape,
-    findEntityAtPoint,
-    isSelected,
-    getAllSelectedEntities,
-    setSelectedEntities,
-    addToSelection,
-    toggleSelection,
-    clearSelection,
-    selectEntitiesInBox,
-    setDraggingEntities,
-    clearDraggingEntities,
-    updateShapePositionInternal,
-    finalizeShapeMove,
-    openToolsetPopover,
-    setEditingShape,
-    connectionPointState.isDraggingConnector,
-    isHandlingConnectionPoint,
-  ]);
+    // Only depend on connectionPointState.isDraggingConnector and isHandlingConnectionPoint
+    // All store methods are accessed via refs to avoid recreating effect constantly
+  }, [connectionPointState.isDraggingConnector, isHandlingConnectionPoint]);
 
   // Setup keyboard input handlers (only once)
   useEffect(() => {

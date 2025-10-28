@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import { Box } from "@chakra-ui/react";
 import { DiagramCanvas } from "@/widgets/diagram-canvas";
 import { DocumentEditor } from "@/widgets/document-editor";
@@ -50,15 +50,16 @@ function DiagramContentWrapper({ contentId }: { contentId: string }) {
 
   const diagram = getDiagram(contentId);
 
-  // Auto-save debounced function
-  const debouncedSave = useRef(
-    debounce((id: string, snapshot: { shapes: Shape[]; connectors: Connector[] }) => {
+  // Auto-save debounced function - use useMemo to recreate when updateDiagram changes
+  const debouncedSave = useMemo(
+    () => debounce((id: string, snapshot: { shapes: Shape[]; connectors: Connector[] }) => {
       updateDiagram(id, {
         shapes: snapshot.shapes,
         connectors: snapshot.connectors,
       });
-    }, AUTO_SAVE_DEBOUNCE_MS)
-  ).current;
+    }, AUTO_SAVE_DEBOUNCE_MS),
+    [updateDiagram]
+  );
 
   const handleDiagramChange = useCallback((snapshot: { shapes: Shape[]; connectors: Connector[] }) => {
     debouncedSave(contentId, snapshot);
@@ -94,12 +95,13 @@ function DocumentContentWrapper({ contentId }: { contentId: string }) {
 
   const document = getDocument(contentId);
 
-  // Auto-save debounced function
-  const debouncedSave = useRef(
-    debounce((id: string, content: string) => {
+  // Auto-save debounced function - use useMemo to recreate when updateDocument changes
+  const debouncedSave = useMemo(
+    () => debounce((id: string, content: string) => {
       updateDocument(id, { content });
-    }, AUTO_SAVE_DEBOUNCE_MS)
-  ).current;
+    }, AUTO_SAVE_DEBOUNCE_MS),
+    [updateDocument]
+  );
 
   const handleContentChange = useCallback((content: string) => {
     debouncedSave(contentId, content);
