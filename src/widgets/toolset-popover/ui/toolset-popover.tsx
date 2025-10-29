@@ -8,7 +8,7 @@
 'use client';
 
 import React, { useCallback, useMemo } from 'react';
-import { Grid } from '@chakra-ui/react';
+import { Box, VStack, HStack } from '@chakra-ui/react';
 import {
   PopoverRoot,
   PopoverContent,
@@ -139,40 +139,113 @@ export const ToolsetPopover = React.memo(function ToolsetPopover({ diagramType, 
             }}
           >
             <PopoverBody p={2} onContextMenu={(e) => e.preventDefault()}>
-              <Grid
-                gridAutoFlow="column"
-                gridTemplateRows="repeat(5, 1fr)"
-                gap={1}
-              >
-                {toolset.tools.map((tool) => {
-                  if (!isSimpleTool(tool)) return null;
+              <VStack gap={0} align="start">
+                {/* Row 1: Tasks */}
+                <HStack gap={1} pb={1}>
+                  {toolset.tools.slice(0, 3).map((tool) => {
+                    if (!isSimpleTool(tool)) return null;
+                    const Icon = tool.icon;
+                    return (
+                      <Tooltip key={tool.id} content={tool.name} positioning={{ placement: 'right' }}>
+                        <IconButton
+                          aria-label={tool.name}
+                          onClick={() => handleToolSelect(tool)}
+                          variant="ghost"
+                          size="xs"
+                          width="24px"
+                          height="24px"
+                          minWidth="24px"
+                          minHeight="24px"
+                          padding={0}
+                          color='white'
+                          _hover={{
+                            bg: 'white',
+                            color: 'primary.900',
+                          }}
+                        >
+                          <Icon />
+                        </IconButton>
+                      </Tooltip>
+                    );
+                  })}
+                </HStack>
 
-                  const Icon = tool.icon;
+                {/* Divider */}
+                <Box
+                  height="1px"
+                  bg="whiteAlpha.300"
+                  my={1}
+                  width="100%"
+                />
 
-                  return (
-                    <Tooltip key={tool.id} content={tool.name} positioning={{ placement: 'right' }}>
-                      <IconButton
-                        aria-label={tool.name}
-                        onClick={() => handleToolSelect(tool)}
-                        variant="ghost"
-                        size="xs"
-                        width="24px"
-                        height="24px"
-                        minWidth="24px"
-                        minHeight="24px"
-                        padding={0}
-                        color='white'
-                        _hover={{
-                          bg: 'white',
-                          color: 'primary.900',
-                        }}
-                      >
-                        <Icon />
-                      </IconButton>
-                    </Tooltip>
-                  );
-                })}
-              </Grid>
+                {/* Row 2: Events */}
+                <HStack gap={1} py={1}>
+                  {toolset.tools.slice(3, 9).map((tool) => {
+                    if (!isSimpleTool(tool)) return null;
+                    const Icon = tool.icon;
+                    return (
+                      <Tooltip key={tool.id} content={tool.name} positioning={{ placement: 'right' }}>
+                        <IconButton
+                          aria-label={tool.name}
+                          onClick={() => handleToolSelect(tool)}
+                          variant="ghost"
+                          size="xs"
+                          width="24px"
+                          height="24px"
+                          minWidth="24px"
+                          minHeight="24px"
+                          padding={0}
+                          color='white'
+                          _hover={{
+                            bg: 'white',
+                            color: 'primary.900',
+                          }}
+                        >
+                          <Icon />
+                        </IconButton>
+                      </Tooltip>
+                    );
+                  })}
+                </HStack>
+
+                {/* Divider */}
+                <Box
+                  height="1px"
+                  bg="whiteAlpha.300"
+                  my={1}
+                  width="100%"
+                />
+
+                {/* Row 3: Gateways */}
+                <HStack gap={1} pt={1}>
+                  {toolset.tools.slice(9, 12).map((tool) => {
+                    if (!isSimpleTool(tool)) return null;
+                    const Icon = tool.icon;
+                    return (
+                      <Tooltip key={tool.id} content={tool.name} positioning={{ placement: 'right' }}>
+                        <IconButton
+                          aria-label={tool.name}
+                          onClick={() => handleToolSelect(tool)}
+                          variant="ghost"
+                          size="xs"
+                          width="24px"
+                          height="24px"
+                          minWidth="24px"
+                          minHeight="24px"
+                          padding={0}
+                          color='white'
+                          _hover={{
+                            bg: 'white',
+                            color: 'primary.900',
+                          }}
+                        >
+                          <Icon />
+                        </IconButton>
+                      </Tooltip>
+                    );
+                  })}
+                </HStack>
+              </VStack>
             </PopoverBody>
           </PopoverContent>
         )}

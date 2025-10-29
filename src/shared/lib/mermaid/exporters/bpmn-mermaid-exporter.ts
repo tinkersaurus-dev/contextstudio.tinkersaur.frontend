@@ -7,7 +7,7 @@
 
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
-import { ShapeType } from '@/entities/shape/model/types';
+import { isEventShape, isTaskShape, isGatewayShape } from '@/entities/shape/model/types';
 import type { MermaidExporter, MermaidExportResult, MermaidExportOptions } from '../mermaid-exporter';
 import { ok, err, type Result } from '@/shared/lib/result';
 
@@ -62,8 +62,8 @@ export class BpmnMermaidExporter implements MermaidExporter {
       // Add diagram type and direction
       lines.push(`flowchart ${this.options.direction}`);
 
-      // Add metadata comment if enabled
-      if (this.options.includeMetadata) {
+      // Add metadata comments if enabled
+      if (this.options.includeComments) {
         lines.push('');
         lines.push(`%% Generated: ${new Date().toISOString()}`);
         lines.push(`%% Shapes: ${shapes.length}, Connectors: ${connectors.length}`);
@@ -155,44 +155,82 @@ export class BpmnMermaidExporter implements MermaidExporter {
   }
 
   /**
-   * Export a single shape as a Mermaid node
+   * Export a single shape as a Mermaid node with metadata
    *
    * Mermaid syntax: id[Text] for rectangle, id((Text)) for circle, id{Text} for diamond
+   * With metadata: id@{ shape: circle, label: "Text", shapeType: event, subType: start }
    * The ID must be used in connections, the text is what displays in the shape
    */
   private exportShape(shape: Shape, idMap: Map<string, string>): string | null {
     const nodeId = idMap.get(shape.id) || this.sanitizeId(shape.id);
     const nodeText = this.sanitizeText(shape.text || '');
+    const nodeSyntax = this.getNodeShapeSyntax(shape, idMap);
 
-    switch (shape.shapeType) {
-      case ShapeType.StartEvent:
-        // Circle: id((Text))
-        return `${nodeId}(("${nodeText || 'Start'}"))`;
-
-      case ShapeType.EndEvent:
-        // Double circle: id(((Text)))
-        return `${nodeId}((("${nodeText || 'End'}")))`;
-
-      case ShapeType.Task:
-        // Rounded rectangle: id(Text)
-        return `${nodeId}("${nodeText || 'Task'}")`;
-
-      case ShapeType.Gateway:
-        // Diamond/Rhombus: id{Text}
-        return `${nodeId}{"${nodeText || 'Decision'}"}`;
-
-      case ShapeType.Pool:
-        // Pools are represented as subgraphs in Mermaid
-        return `subgraph ${nodeId}["${nodeText || 'Pool'}"]\nend`;
-
-      case ShapeType.Rectangle:
-        // Rectangle: id[Text]
-        return `${nodeId}["${nodeText || 'Process'}"]`;
-
-      default:
-        // Fallback for unknown shape types - use rectangle
-        return `${nodeId}["${nodeText || 'Unknown'}"]`;
+    // If metadata is enabled, add shape metadata
+    if (this.options.includeMetadata) {
+      const metadata = this.buildMetadata(shape, nodeText);
+      return `${nodeId}@${metadata}`;
     }
+
+    return nodeSyntax;
+  }
+
+  /**
+   * Build metadata object for a shape
+   */
+  private buildMetadata(shape: Shape, label: string): string {
+    const shapeType = shape.shapeType;
+    const subType = shape.subType;
+
+    // Determine the Mermaid shape syntax type
+    let mermaidShape = 'rectangle';
+    if (isEventShape(shape)) {
+      mermaidShape = subType === 'end' ? 'doublecircle' : 'circle';
+    } else if (isTaskShape(shape)) {
+      mermaidShape = 'rectangle';
+    } else if (isGatewayShape(shape)) {
+      mermaidShape = 'diamond';
+    } else if (shapeType === 'pool') {
+      mermaidShape = 'subgraph';
+    }
+
+    const metadata: Record<string, string> = {
+      shape: mermaidShape,
+      label: label || this.getDefaultLabel(shape),
+      shapeType,
+    };
+
+    if (subType) {
+      metadata.subType = subType;
+    }
+
+    // Convert to compact JSON format for mermaid
+    const entries = Object.entries(metadata)
+      .map(([key, value]) => `${key}: "${value}"`)
+      .join(', ');
+
+    return `{ ${entries} }`;
+  }
+
+  /**
+   * Get default label for a shape based on its type/subType
+   */
+  private getDefaultLabel(shape: Shape): string {
+    if (isEventShape(shape)) {
+      switch (shape.subType) {
+        case 'start': return 'Start';
+        case 'end': return 'End';
+        case 'intermediate': return 'Intermediate';
+        default: return 'Event';
+      }
+    } else if (isTaskShape(shape)) {
+      return shape.subType ? `${shape.subType} Task` : 'Task';
+    } else if (isGatewayShape(shape)) {
+      return shape.subType ? `${shape.subType} Gateway` : 'Gateway';
+    } else if (shape.shapeType === 'pool') {
+      return 'Pool';
+    }
+    return 'Process';
   }
 
   /**
@@ -226,34 +264,43 @@ export class BpmnMermaidExporter implements MermaidExporter {
   /**
    * Get the node shape syntax for inline definition
    * Returns the full node syntax: id[Text] or id((Text)) etc.
+   * With metadata support if enabled
    */
   private getNodeShapeSyntax(shape: Shape, idMap: Map<string, string>): string {
     const nodeId = idMap.get(shape.id) || this.sanitizeId(shape.id);
     const nodeText = this.sanitizeText(shape.text || '');
 
-    switch (shape.shapeType) {
-      case ShapeType.StartEvent:
-        return `${nodeId}(("${nodeText || 'Start'}"))`;
-
-      case ShapeType.EndEvent:
-        return `${nodeId}((("${nodeText || 'End'}")))`;
-
-      case ShapeType.Task:
-        return `${nodeId}("${nodeText || 'Task'}")`;
-
-      case ShapeType.Gateway:
-        return `${nodeId}{"${nodeText || 'Decision'}"}`;
-
-      case ShapeType.Pool:
-        // Pools can't be inline, return as regular ID
-        return nodeId;
-
-      case ShapeType.Rectangle:
-        return `${nodeId}["${nodeText || 'Process'}"]`;
-
-      default:
-        return `${nodeId}["${nodeText || 'Unknown'}"]`;
+    // If metadata is enabled, use metadata format
+    if (this.options.includeMetadata) {
+      const metadata = this.buildMetadata(shape, nodeText);
+      return `${nodeId}@${metadata}`;
     }
+
+    // Otherwise, use traditional Mermaid syntax
+    const shapeType = shape.shapeType;
+
+    if (isEventShape(shape)) {
+      // Events: circle or double circle
+      if (shape.subType === 'end') {
+        return `${nodeId}((("${nodeText || 'End'}")))`;
+      }
+      return `${nodeId}(("${nodeText || 'Start'}"))`;
+    } else if (isTaskShape(shape)) {
+      // Tasks: rounded rectangle
+      return `${nodeId}("${nodeText || 'Task'}")`;
+    } else if (isGatewayShape(shape)) {
+      // Gateways: diamond
+      return `${nodeId}{"${nodeText || 'Decision'}"}`;
+    } else if (shapeType === 'pool') {
+      // Pools can't be inline, return as regular ID
+      return nodeId;
+    } else if (shapeType === 'rectangle') {
+      // Rectangles: square brackets
+      return `${nodeId}["${nodeText || 'Process'}"]`;
+    }
+
+    // Default fallback
+    return `${nodeId}["${nodeText || 'Unknown'}"]`;
   }
 
   /**

@@ -43,8 +43,11 @@ export interface BaseTool {
  * Configuration for creating a shape
  */
 export interface ShapeConfig {
-  /** Type of shape to create */
+  /** Type of shape to create (e.g., 'task', 'event', 'gateway') */
   shapeType: string;
+
+  /** Optional shape subtype (e.g., 'start', 'end' for events; 'user', 'service' for tasks) */
+  subType?: string;
 
   /** Default width of the shape */
   width?: number;

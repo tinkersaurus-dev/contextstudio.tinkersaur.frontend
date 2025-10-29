@@ -12,7 +12,6 @@ import {
 import { generateShapeId } from '@/shared/lib/id-generator';
 import { calculatePosition } from '@/shared/lib/shape-position-utils';
 import { DiagramEntityType } from '@/entities/diagram-entity';
-import { ShapeType } from '../../model/types';
 import type { RectangleShape } from '../../model/types';
 import type { RectangularShapeOptions } from './base-factory-types';
 import { Result, ok, err } from '@/shared/lib/result';
@@ -72,7 +71,7 @@ export function createRectangle(
   const shape: RectangleShape = {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
-    shapeType: ShapeType.Rectangle,
+    shapeType: 'rectangle',
     position,
     dimensions: {
       width,

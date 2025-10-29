@@ -9,13 +9,16 @@ import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
 import { generateShapeId } from '@/shared/lib/id-generator';
 import { calculatePosition } from '@/shared/lib/shape-position-utils';
 import { DiagramEntityType } from '@/entities/diagram-entity';
-import { ShapeType } from '../../model/types';
 import type {
   TaskShape,
+  EventShape,
   StartEventShape,
   EndEventShape,
   GatewayShape,
   PoolShape,
+  TaskSubType,
+  EventSubType,
+  GatewaySubType,
 } from '../../model/types';
 import type {
   RectangularShapeOptions,
@@ -35,6 +38,8 @@ import { validateShape } from '@/shared/lib/entity-validation';
 export interface CreateTaskOptions extends RectangularShapeOptions {
   /** Corner radius for rounded rectangle */
   cornerRadius?: number;
+  /** Task subtype (user, service, script, etc.) */
+  subType?: TaskSubType;
 }
 
 /**
@@ -54,6 +59,7 @@ export function createTask(
     width = 120,
     height = 80,
     cornerRadius = 8,
+    subType,
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
@@ -65,7 +71,8 @@ export function createTask(
   const shape: TaskShape = {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
-    shapeType: ShapeType.Task,
+    shapeType: 'task',
+    subType,
     position,
     dimensions: { width, height },
     cornerRadius,
@@ -88,11 +95,65 @@ export function createTask(
 // ============================================================================
 
 /**
+ * Options for creating a BPMN Event shape
+ */
+export interface CreateEventOptions extends CircularShapeOptions {
+  /** Event subtype (start, end, timer, message, etc.) */
+  subType: EventSubType;
+}
+
+/**
+ * Create a BPMN Event shape (circle or double circle)
+ *
+ * @param x - X coordinate
+ * @param y - Y coordinate
+ * @param options - Configuration for the event (must include subType)
+ * @returns A Result containing the new event shape or an error message
+ */
+export function createEvent(
+  x: number,
+  y: number,
+  options: CreateEventOptions
+): Result<EventShape> {
+  const {
+    diameter = 40,
+    subType,
+    fillColor = CANVAS_COLORS.defaultShapeFill,
+    strokeColor = CANVAS_COLORS.defaultShapeStroke,
+    strokeWidth = STROKE_WIDTHS.shape,
+    reference = 'center',
+  } = options;
+
+  const position = calculatePosition(x, y, diameter, diameter, { reference });
+
+  const shape: EventShape = {
+    id: generateShapeId(),
+    type: DiagramEntityType.Shape,
+    shapeType: 'event',
+    subType,
+    position,
+    dimensions: { width: diameter, height: diameter },
+    fillColor,
+    strokeColor,
+    strokeWidth,
+    text: '',
+  };
+
+  const validationResult = validateShape(shape);
+  if (!validationResult.valid) {
+    return err(`Event shape validation failed: ${validationResult.errors.join(', ')}`);
+  }
+
+  return ok(shape);
+}
+
+/**
  * Options for creating a BPMN Start Event shape
  */
 export type CreateStartEventOptions = CircularShapeOptions;
 
 /**
+ * @deprecated Use createEvent with subType: 'start' instead
  * Create a BPMN Start Event shape (circle)
  *
  * @param x - X coordinate
@@ -105,34 +166,7 @@ export function createStartEvent(
   y: number,
   options: CreateStartEventOptions = {}
 ): Result<StartEventShape> {
-  const {
-    diameter = 40,
-    fillColor = CANVAS_COLORS.defaultShapeFill,
-    strokeColor = CANVAS_COLORS.defaultShapeStroke,
-    strokeWidth = STROKE_WIDTHS.shape,
-    reference = 'center',
-  } = options;
-
-  const position = calculatePosition(x, y, diameter, diameter, { reference });
-
-  const shape: StartEventShape = {
-    id: generateShapeId(),
-    type: DiagramEntityType.Shape,
-    shapeType: ShapeType.StartEvent,
-    position,
-    dimensions: { width: diameter, height: diameter },
-    fillColor,
-    strokeColor,
-    strokeWidth,
-    text: '',
-  };
-
-  const validationResult = validateShape(shape);
-  if (!validationResult.valid) {
-    return err(`Start event shape validation failed: ${validationResult.errors.join(', ')}`);
-  }
-
-  return ok(shape);
+  return createEvent(x, y, { ...options, subType: 'start' }) as Result<StartEventShape>;
 }
 
 /**
@@ -141,6 +175,7 @@ export function createStartEvent(
 export type CreateEndEventOptions = CircularShapeOptions;
 
 /**
+ * @deprecated Use createEvent with subType: 'end' instead
  * Create a BPMN End Event shape (double circle)
  *
  * @param x - X coordinate
@@ -153,34 +188,7 @@ export function createEndEvent(
   y: number,
   options: CreateEndEventOptions = {}
 ): Result<EndEventShape> {
-  const {
-    diameter = 40,
-    fillColor = CANVAS_COLORS.defaultShapeFill,
-    strokeColor = CANVAS_COLORS.defaultShapeStroke,
-    strokeWidth = STROKE_WIDTHS.shape,
-    reference = 'center',
-  } = options;
-
-  const position = calculatePosition(x, y, diameter, diameter, { reference });
-
-  const shape: EndEventShape = {
-    id: generateShapeId(),
-    type: DiagramEntityType.Shape,
-    shapeType: ShapeType.EndEvent,
-    position,
-    dimensions: { width: diameter, height: diameter },
-    fillColor,
-    strokeColor,
-    strokeWidth,
-    text: '',
-  };
-
-  const validationResult = validateShape(shape);
-  if (!validationResult.valid) {
-    return err(`End event shape validation failed: ${validationResult.errors.join(', ')}`);
-  }
-
-  return ok(shape);
+  return createEvent(x, y, { ...options, subType: 'end' }) as Result<EndEventShape>;
 }
 
 // ============================================================================
@@ -190,7 +198,10 @@ export function createEndEvent(
 /**
  * Options for creating a BPMN Gateway shape
  */
-export type CreateGatewayOptions = SquareShapeOptions;
+export interface CreateGatewayOptions extends SquareShapeOptions {
+  /** Gateway subtype (exclusive, inclusive, parallel, etc.) */
+  subType?: GatewaySubType;
+}
 
 /**
  * Create a BPMN Gateway shape (diamond)
@@ -207,6 +218,7 @@ export function createGateway(
 ): Result<GatewayShape> {
   const {
     size = 50,
+    subType,
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
@@ -218,7 +230,8 @@ export function createGateway(
   const shape: GatewayShape = {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
-    shapeType: ShapeType.Gateway,
+    shapeType: 'gateway',
+    subType,
     position,
     dimensions: { width: size, height: size },
     fillColor,
@@ -271,7 +284,7 @@ export function createPool(
   const shape: PoolShape = {
     id: generateShapeId(),
     type: DiagramEntityType.Shape,
-    shapeType: ShapeType.Pool,
+    shapeType: 'pool',
     position,
     dimensions: { width, height },
     fillColor,

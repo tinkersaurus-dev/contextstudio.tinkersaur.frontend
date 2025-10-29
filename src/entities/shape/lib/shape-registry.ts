@@ -3,13 +3,14 @@
  *
  * Provides an extensible registry for shape renderers. This allows new shape types
  * to be added without modifying the core rendering logic (Open/Closed Principle).
+ *
+ * Supports composite type:subType keys with fallback to base type rendering.
  */
 
-import { ShapeType, type BaseShape } from '../model/types';
+import { type BaseShape, getShapeKey, ShapeType } from '../model/types';
 import { renderRectangle } from '../ui/rectangle-shape';
 import { renderTask } from '../ui/task-shape';
-import { renderStartEvent } from '../ui/start-event-shape';
-import { renderEndEvent } from '../ui/end-event-shape';
+import { renderEvent } from '../ui/event-shape';
 import { renderGateway } from '../ui/gateway-shape';
 import { renderPool } from '../ui/pool-shape';
 
@@ -27,16 +28,17 @@ export type ShapeRenderer = (
  * Shape registry entry
  */
 interface ShapeRegistryEntry {
-  type: ShapeType;
+  key: string; // Can be "type" or "type:subType"
   renderer: ShapeRenderer;
   displayName: string;
 }
 
 /**
- * Shape registry - maps shape types to their renderers
+ * Shape registry - maps shape types (and subtypes) to their renderers
+ * Supports composite keys like "event:start" with fallback to base type "event"
  */
 class ShapeRegistry {
-  private registry: Map<ShapeType, ShapeRegistryEntry>;
+  private registry: Map<string, ShapeRegistryEntry>;
 
   constructor() {
     this.registry = new Map();
@@ -47,75 +49,129 @@ class ShapeRegistry {
    * Register default built-in shapes
    */
   private registerDefaultShapes(): void {
-    this.register(ShapeType.Rectangle, renderRectangle, 'Rectangle');
-    // Register BPMN shapes
-    this.register(ShapeType.Task, renderTask, 'Task');
-    this.register(ShapeType.StartEvent, renderStartEvent, 'Start Event');
-    this.register(ShapeType.EndEvent, renderEndEvent, 'End Event');
-    this.register(ShapeType.Gateway, renderGateway, 'Gateway');
-    this.register(ShapeType.Pool, renderPool, 'Pool');
+    // Register base types
+    this.register('rectangle', renderRectangle, 'Rectangle');
+    this.register('task', renderTask, 'Task');
+    this.register('event', renderEvent, 'Event');
+    this.register('gateway', renderGateway, 'Gateway');
+    this.register('pool', renderPool, 'Pool');
+
+    // Optionally register specific event subtypes with same renderer
+    // (they share the base renderer which handles subtypes internally)
+    this.register('event:start', renderEvent, 'Start Event');
+    this.register('event:end', renderEvent, 'End Event');
+    this.register('event:intermediate', renderEvent, 'Intermediate Event');
   }
 
   /**
    * Register a new shape renderer
    *
-   * @param type - Shape type enum value
+   * @param key - Shape type key (e.g., "task" or "event:start")
    * @param renderer - Renderer function for this shape
    * @param displayName - Human-readable name for the shape
    *
    * @example
-   * shapeRegistry.register(ShapeType.Circle, renderCircle, 'Circle');
+   * shapeRegistry.register('task:user', renderUserTask, 'User Task');
+   * shapeRegistry.register('event:timer', renderEvent, 'Timer Event');
    */
-  register(type: ShapeType, renderer: ShapeRenderer, displayName: string): void {
-    this.registry.set(type, {
-      type,
+  register(key: string, renderer: ShapeRenderer, displayName: string): void {
+    this.registry.set(key, {
+      key,
       renderer,
       displayName,
     });
   }
 
   /**
-   * Get renderer for a shape type
+   * Register using legacy ShapeType enum (for backward compatibility)
+   * @deprecated Use string-based register method instead
+   */
+  registerLegacy(type: ShapeType, renderer: ShapeRenderer, displayName: string): void {
+    this.registry.set(type, {
+      key: type,
+      renderer,
+      displayName,
+    });
+  }
+
+  /**
+   * Get renderer for a shape by key (with fallback to base type)
    *
-   * @param type - Shape type to get renderer for
+   * @param key - Shape key (e.g., "event:start" or just "event")
    * @returns Renderer function or undefined if not registered
    *
    * @example
-   * const renderer = shapeRegistry.getRenderer(ShapeType.Rectangle);
-   * if (renderer) {
-   *   renderer(ctx, shape, isSelected, scale);
-   * }
+   * const renderer = shapeRegistry.getRenderer('event:start');
+   * // Falls back to 'event' if 'event:start' not found
    */
-  getRenderer(type: ShapeType): ShapeRenderer | undefined {
-    return this.registry.get(type)?.renderer;
+  getRenderer(key: string): ShapeRenderer | undefined {
+    // Try exact match first
+    let entry = this.registry.get(key);
+
+    // If not found and key contains ':', try base type
+    if (!entry && key.includes(':')) {
+      const baseType = key.split(':')[0];
+      entry = this.registry.get(baseType);
+    }
+
+    return entry?.renderer;
   }
 
   /**
-   * Check if a shape type is registered
-   *
-   * @param type - Shape type to check
-   * @returns True if registered, false otherwise
+   * Get renderer for a shape object
    */
-  hasRenderer(type: ShapeType): boolean {
-    return this.registry.has(type);
+  getRendererForShape(shape: BaseShape): ShapeRenderer | undefined {
+    const key = getShapeKey(shape);
+    return this.getRenderer(key);
   }
 
   /**
-   * Get display name for a shape type
+   * Check if a renderer is registered for a key
    *
-   * @param type - Shape type
+   * @param key - Shape key to check
+   * @returns True if registered (including fallback), false otherwise
+   */
+  hasRenderer(key: string): boolean {
+    if (this.registry.has(key)) {
+      return true;
+    }
+
+    // Check base type fallback
+    if (key.includes(':')) {
+      const baseType = key.split(':')[0];
+      return this.registry.has(baseType);
+    }
+
+    return false;
+  }
+
+  /**
+   * Get display name for a shape key
+   *
+   * @param key - Shape key
    * @returns Display name or undefined if not registered
    */
-  getDisplayName(type: ShapeType): string | undefined {
-    return this.registry.get(type)?.displayName;
+  getDisplayName(key: string): string | undefined {
+    const entry = this.registry.get(key);
+    if (entry) {
+      return entry.displayName;
+    }
+
+    // Try base type fallback
+    if (key.includes(':')) {
+      const baseType = key.split(':')[0];
+      return this.registry.get(baseType)?.displayName;
+    }
+
+    return undefined;
   }
 
   /**
-   * Get all registered shape types
+   * Get all registered shape keys
    *
-   * @returns Array of registered shape types
+   * @returns Array of registered shape keys
    */
-  getAllShapeTypes(): ShapeType[] {
+  getAllShapeKeys(): string[] {
     return Array.from(this.registry.keys());
   }
 
@@ -131,11 +187,11 @@ class ShapeRegistry {
   /**
    * Unregister a shape renderer
    *
-   * @param type - Shape type to unregister
+   * @param key - Shape key to unregister
    * @returns True if unregistered, false if wasn't registered
    */
-  unregister(type: ShapeType): boolean {
-    return this.registry.delete(type);
+  unregister(key: string): boolean {
+    return this.registry.delete(key);
   }
 
   /**
@@ -154,6 +210,7 @@ export const shapeRegistry = new ShapeRegistry();
 
 /**
  * Render a shape using the registry
+ * Automatically handles composite type:subType keys with fallback to base type
  *
  * @param ctx - Canvas rendering context
  * @param shape - Shape to render
@@ -169,11 +226,12 @@ export function renderShapeFromRegistry(
   isSelected: boolean,
   scale: number
 ): void {
-  const renderer = shapeRegistry.getRenderer(shape.shapeType);
+  const renderer = shapeRegistry.getRendererForShape(shape);
 
   if (renderer) {
     renderer(ctx, shape, isSelected, scale);
   } else {
-    console.warn(`No renderer registered for shape type: ${shape.shapeType}`);
+    const key = getShapeKey(shape);
+    console.warn(`No renderer registered for shape key: ${key}`);
   }
 }

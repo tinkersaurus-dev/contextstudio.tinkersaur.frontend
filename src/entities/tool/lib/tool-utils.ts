@@ -5,12 +5,11 @@
  */
 
 import type { Tool, SimpleTool } from '../model/types';
-import { ShapeType, type Shape } from '@/entities/shape/model/types';
+import type { Shape } from '@/entities/shape/model/types';
 import {
   createRectangle,
   createTask,
-  createStartEvent,
-  createEndEvent,
+  createEvent,
   createGateway,
   createPool,
 } from '@/entities/shape/lib/shape-factory';
@@ -28,6 +27,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
   const { shapeConfig } = tool;
   const {
     shapeType,
+    subType,
     width,
     height,
     fillColor,
@@ -41,7 +41,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
   // If validation fails, unwrap will throw, which is appropriate for this use case
   // since invalid tool configurations should be caught during development
   switch (shapeType) {
-    case ShapeType.Rectangle:
+    case 'rectangle':
       return unwrap(createRectangle(x, y, {
         width,
         height,
@@ -51,10 +51,12 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         reference: 'center',
       }));
 
-    case ShapeType.Task:
+    case 'task':
       return unwrap(createTask(x, y, {
         width,
         height,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        subType: subType as any, // Cast to TaskSubType
         cornerRadius: properties.cornerRadius as number | undefined,
         fillColor,
         strokeColor,
@@ -62,34 +64,33 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         reference: 'center',
       }));
 
-    case ShapeType.StartEvent:
-      return unwrap(createStartEvent(x, y, {
+    case 'event':
+      // Event requires a subType
+      if (!subType) {
+        console.warn('Event shape created without subType, defaulting to "start"');
+      }
+      return unwrap(createEvent(x, y, {
         diameter: width,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        subType: (subType || 'start') as any, // Cast to EventSubType
         fillColor,
         strokeColor,
         strokeWidth,
         reference: 'center',
       }));
 
-    case ShapeType.EndEvent:
-      return unwrap(createEndEvent(x, y, {
-        diameter: width,
-        fillColor,
-        strokeColor,
-        strokeWidth,
-        reference: 'center',
-      }));
-
-    case ShapeType.Gateway:
+    case 'gateway':
       return unwrap(createGateway(x, y, {
         size: width,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        subType: subType as any, // Cast to GatewaySubType
         fillColor,
         strokeColor,
         strokeWidth,
         reference: 'center',
       }));
 
-    case ShapeType.Pool:
+    case 'pool':
       return unwrap(createPool(x, y, {
         width,
         height,

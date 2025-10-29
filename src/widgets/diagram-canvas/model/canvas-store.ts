@@ -190,7 +190,7 @@ export function createCanvasStore(diagram: Diagram) {
       return;
     }
 
-    const updatedShape = { ...currentShape, ...updates };
+    const updatedShape = { ...currentShape, ...updates } as Shape;
     const validationResult = EntitySystem.validate(updatedShape);
 
     if (!validationResult.valid) {
