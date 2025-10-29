@@ -7,7 +7,7 @@
 
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Box } from "@chakra-ui/react";
 import { DiagramCanvas } from "@/widgets/diagram-canvas";
 import { DocumentEditor } from "@/widgets/document-editor";
@@ -22,14 +22,15 @@ interface TabContentWrapperProps {
 }
 
 /**
- * Debounce utility function
+ * Debounce utility function with cancel support
  */
 function debounce<TArgs extends unknown[]>(
   func: (...args: TArgs) => void,
   wait: number
-): (...args: TArgs) => void {
+): ((...args: TArgs) => void) & { cancel: () => void } {
   let timeout: ReturnType<typeof setTimeout> | null = null;
-  return function executedFunction(...args: TArgs) {
+
+  const executedFunction = function (...args: TArgs) {
     const later = () => {
       timeout = null;
       func(...args);
@@ -39,6 +40,16 @@ function debounce<TArgs extends unknown[]>(
     }
     timeout = setTimeout(later, wait);
   };
+
+  // Add cancel method to clear pending timeout
+  executedFunction.cancel = () => {
+    if (timeout !== null) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  };
+
+  return executedFunction as typeof executedFunction & { cancel: () => void };
 }
 
 /**
@@ -60,6 +71,13 @@ function DiagramContentWrapper({ contentId }: { contentId: string }) {
     }, AUTO_SAVE_DEBOUNCE_MS),
     [updateDiagram]
   );
+
+  // Cleanup: cancel pending debounced saves on unmount or when debouncedSave changes
+  useEffect(() => {
+    return () => {
+      debouncedSave.cancel();
+    };
+  }, [debouncedSave]);
 
   const handleDiagramChange = useCallback((snapshot: { shapes: Shape[]; connectors: Connector[] }) => {
     debouncedSave(contentId, snapshot);
@@ -102,6 +120,13 @@ function DocumentContentWrapper({ contentId }: { contentId: string }) {
     }, AUTO_SAVE_DEBOUNCE_MS),
     [updateDocument]
   );
+
+  // Cleanup: cancel pending debounced saves on unmount or when debouncedSave changes
+  useEffect(() => {
+    return () => {
+      debouncedSave.cancel();
+    };
+  }, [debouncedSave]);
 
   const handleContentChange = useCallback((content: string) => {
     debouncedSave(contentId, content);
