@@ -19,7 +19,9 @@ import {
   UpdateConnectorCommand,
   DeleteEntitiesCommand,
   MoveEntitiesCommand,
+  ImportDiagramCommand,
   type ShapeMove,
+  type ImportMode,
 } from '@/shared/lib/commands';
 
 interface CanvasState {
@@ -45,6 +47,7 @@ interface CanvasState {
 
   // Diagram snapshot
   getDiagramSnapshot: () => { shapes: Shape[]; connectors: Connector[] };
+  setDiagram: (shapes: Shape[], connectors: Connector[]) => void;
 
   // Undo/Redo actions
   undo: () => void;
@@ -67,6 +70,9 @@ interface CanvasState {
 
   // Bulk operations
   deleteSelectedEntities: () => void;
+
+  // Import/Export operations
+  importDiagram: (shapes: Shape[], connectors: Connector[], mode?: 'replace' | 'append') => void;
 
   // Move operations (for drag-and-drop with single undo command)
   updateShapePositionInternal: (id: string, x: number, y: number) => void;
@@ -671,6 +677,30 @@ export function createCanvasStore(diagram: Diagram) {
       shapes: [...shapes],
       connectors: [...connectors],
     };
+  },
+
+  // Set diagram state (used for import and undo/redo)
+  setDiagram: (shapes, connectors) => {
+    set({ shapes: [...shapes], connectors: [...connectors] });
+  },
+
+  // Import diagram from Mermaid
+  importDiagram: (shapes, connectors, mode = 'replace') => {
+    const command = new ImportDiagramCommand(
+      shapes,
+      connectors,
+      mode as ImportMode,
+      get().getDiagramSnapshot,
+      get().setDiagram,
+      // For append mode, provide functions to add shapes and connectors
+      (shapesToAdd) => {
+        shapesToAdd.forEach(shape => get()._internalAddShape(shape));
+      },
+      (connectorsToAdd) => {
+        connectorsToAdd.forEach(connector => get()._internalAddConnector(connector));
+      }
+    );
+    get().executeCommand(command);
   },
 }));
 }

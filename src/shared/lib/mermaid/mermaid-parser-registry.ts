@@ -1,13 +1,15 @@
 /**
  * Mermaid Parser Registry
  *
- * Central registry for mapping diagram types to their corresponding Mermaid exporters.
- * Provides a factory function to get the appropriate exporter for a diagram type.
+ * Central registry for mapping diagram types to their corresponding Mermaid exporters and importers.
+ * Provides factory functions to get the appropriate exporter/importer for a diagram type.
  */
 
 import { DiagramType } from '@/shared/types/content-data';
 import type { MermaidExporter, MermaidExportOptions } from './mermaid-exporter';
+import type { MermaidImporter, MermaidImportOptions } from './mermaid-importer';
 import { createBpmnMermaidExporter } from './exporters/bpmn-mermaid-exporter';
+import { createBpmnMermaidImporter } from './importers/bpmn-mermaid-importer';
 import { ok, err, type Result } from '@/shared/lib/result';
 
 /**
@@ -75,5 +77,73 @@ export function hasMermaidExporter(diagramType: DiagramType): boolean {
 export function getSupportedDiagramTypes(): DiagramType[] {
   return Object.keys(exporterRegistry)
     .filter(type => hasMermaidExporter(type as DiagramType))
+    .map(type => type as DiagramType);
+}
+
+/**
+ * Registry mapping diagram types to their importer factory functions
+ */
+const importerRegistry: Record<DiagramType, (options?: MermaidImportOptions) => MermaidImporter> = {
+  [DiagramType.BPMN]: createBpmnMermaidImporter,
+  // TODO: Implement Sequence and DataFlow importers
+  [DiagramType.Sequence]: () => {
+    throw new Error('Sequence diagram Mermaid import not yet implemented');
+  },
+  [DiagramType.DataFlow]: () => {
+    throw new Error('DataFlow diagram Mermaid import not yet implemented');
+  },
+};
+
+/**
+ * Get the appropriate Mermaid importer for a diagram type
+ * @param diagramType - The type of diagram to import
+ * @param options - Optional configuration for the importer
+ * @returns Result containing the importer or an error
+ */
+export function getMermaidImporter(
+  diagramType: DiagramType,
+  options?: MermaidImportOptions
+): Result<MermaidImporter> {
+  try {
+    const importerFactory = importerRegistry[diagramType];
+
+    if (!importerFactory) {
+      return err(`No Mermaid importer registered for diagram type: ${diagramType}`);
+    }
+
+    const importer = importerFactory(options);
+    return ok(importer);
+  } catch (error) {
+    return err(`Failed to create Mermaid importer: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Check if a Mermaid importer is available for a diagram type
+ * @param diagramType - The type of diagram to check
+ * @returns True if an importer is available and functional
+ */
+export function hasMermaidImporter(diagramType: DiagramType): boolean {
+  try {
+    const importerFactory = importerRegistry[diagramType];
+    if (!importerFactory) {
+      return false;
+    }
+
+    // Try to create the importer to verify it's functional
+    importerFactory();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Get list of diagram types that support Mermaid import
+ * @returns Array of supported diagram types
+ */
+export function getSupportedImportDiagramTypes(): DiagramType[] {
+  return Object.keys(importerRegistry)
+    .filter(type => hasMermaidImporter(type as DiagramType))
     .map(type => type as DiagramType);
 }

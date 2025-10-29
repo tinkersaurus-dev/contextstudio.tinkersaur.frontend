@@ -61,6 +61,7 @@ const selectEntityActions = (state: ReturnType<CanvasStore['getState']>) => ({
   setEditingShape: state.setEditingShape,
   updateShapeText: state.updateShapeText,
   setSnapMode: state.setSnapMode,
+  importDiagram: state.importDiagram,
 });
 
 /**
@@ -180,6 +181,7 @@ export function DiagramCanvas({
     setEditingShape,
     updateShapeText,
     setSnapMode,
+    importDiagram,
   } = useStore(store, useShallow(selectEntityActions));
 
   // Subscribe to undo/redo actions (used by keyboard handlers)
@@ -441,6 +443,7 @@ export function DiagramCanvas({
         shapes={shapes}
         connectors={connectors}
         diagramType={diagramType}
+        onImport={importDiagram}
       />
     </div>
   );

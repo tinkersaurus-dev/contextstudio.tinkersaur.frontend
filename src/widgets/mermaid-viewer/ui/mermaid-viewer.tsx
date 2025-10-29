@@ -2,10 +2,11 @@
 
 import React, { useCallback } from 'react';
 import { Box, Textarea, IconButton, HStack, Text } from '@chakra-ui/react';
-import { LuChevronDown, LuCopy, LuCheck } from 'react-icons/lu';
+import { LuChevronDown, LuCopy, LuCheck, LuDownload } from 'react-icons/lu';
 import { Collapsible } from '@/shared/ui';
 import { useMermaidViewerStore } from '../model/mermaid-viewer-store';
 import { useMermaidSync } from '../hooks/use-mermaid-sync';
+import { MermaidImportDialog } from './mermaid-import-dialog';
 import {
   MERMAID_VIEWER_POSITION,
   MERMAID_VIEWER_SIZE,
@@ -22,6 +23,8 @@ export interface MermaidViewerProps {
   connectors: Connector[];
   /** Type of diagram */
   diagramType: DiagramType;
+  /** Callback for importing diagram */
+  onImport: (shapes: Shape[], connectors: Connector[], mode: 'replace' | 'append') => void;
 }
 
 /**
@@ -34,8 +37,9 @@ export const MermaidViewer = React.memo(function MermaidViewer({
   shapes,
   connectors,
   diagramType,
+  onImport,
 }: MermaidViewerProps) {
-  const { isOpen, mermaidSyntax, errorMessage, toggleOpen } = useMermaidViewerStore();
+  const { isOpen, mermaidSyntax, errorMessage, toggleOpen, openImportDialog } = useMermaidViewerStore();
   const [copied, setCopied] = React.useState(false);
 
   // Keep Mermaid syntax in sync with diagram changes
@@ -101,15 +105,27 @@ export const MermaidViewer = React.memo(function MermaidViewer({
           </Collapsible.Trigger>
 
           {isOpen && (
-            <IconButton
-              aria-label="Copy to clipboard"
-              size="xs"
-              variant="ghost"
-              onClick={handleCopy}
-              disabled={!mermaidSyntax || !!errorMessage}
-            >
-              {copied ? <LuCheck /> : <LuCopy />}
-            </IconButton>
+            <HStack gap="1">
+              <IconButton
+                aria-label="Import from Mermaid"
+                size="xs"
+                variant="ghost"
+                onClick={openImportDialog}
+                title="Import Mermaid diagram"
+              >
+                <LuDownload />
+              </IconButton>
+              <IconButton
+                aria-label="Copy to clipboard"
+                size="xs"
+                variant="ghost"
+                onClick={handleCopy}
+                disabled={!mermaidSyntax || !!errorMessage}
+                title="Copy Mermaid syntax"
+              >
+                {copied ? <LuCheck /> : <LuCopy />}
+              </IconButton>
+            </HStack>
           )}
         </HStack>
 
@@ -170,6 +186,7 @@ export const MermaidViewer = React.memo(function MermaidViewer({
           </Box>
         </Collapsible.Content>
       </Collapsible.Root>
+      <MermaidImportDialog diagramType={diagramType} onImport={onImport} />
     </Box>
   );
 });

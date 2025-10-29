@@ -16,6 +16,12 @@ interface MermaidViewerState {
   /** Error message if Mermaid generation failed */
   errorMessage: string | null;
 
+  /** Whether the import dialog is open */
+  isImportDialogOpen: boolean;
+
+  /** Error message for import operations */
+  importErrorMessage: string | null;
+
   /** Toggle the open/closed state */
   toggleOpen: () => void;
 
@@ -30,6 +36,15 @@ interface MermaidViewerState {
 
   /** Clear the current syntax and error */
   clear: () => void;
+
+  /** Open the import dialog */
+  openImportDialog: () => void;
+
+  /** Close the import dialog */
+  closeImportDialog: () => void;
+
+  /** Set an import error message */
+  setImportError: (error: string | null) => void;
 }
 
 /**
@@ -40,6 +55,8 @@ export const useMermaidViewerStore = create<MermaidViewerState>((set) => ({
   isOpen: false,
   mermaidSyntax: '',
   errorMessage: null,
+  isImportDialogOpen: false,
+  importErrorMessage: null,
 
   toggleOpen: () => set((state) => ({ isOpen: !state.isOpen })),
 
@@ -50,4 +67,10 @@ export const useMermaidViewerStore = create<MermaidViewerState>((set) => ({
   setError: (error) => set({ errorMessage: error }),
 
   clear: () => set({ mermaidSyntax: '', errorMessage: null }),
+
+  openImportDialog: () => set({ isImportDialogOpen: true, importErrorMessage: null }),
+
+  closeImportDialog: () => set({ isImportDialogOpen: false, importErrorMessage: null }),
+
+  setImportError: (error) => set({ importErrorMessage: error }),
 }));

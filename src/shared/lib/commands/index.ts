@@ -25,3 +25,6 @@ export {
   MoveEntitiesCommand,
   type ShapeMove,
 } from './move-entities-command';
+
+// Import/Export commands
+export { ImportDiagramCommand, type ImportMode } from './import-diagram-command';
