@@ -27,3 +27,5 @@ export { PopoverRoot, PopoverTrigger, PopoverAnchor, PopoverPositioner, PopoverC
 export type { PopoverRootProps, PopoverContentProps } from "./popover";
 export { TreeView, TreeViewRoot, createTreeCollection } from "./tree-view";
 export type { TreeViewRootProps } from "./tree-view";
+export { Collapsible, CollapsibleRoot, CollapsibleTrigger, CollapsibleContent, CollapsibleIndicator, CollapsibleContext } from "./collapsible";
+export type { CollapsibleRootProps, CollapsibleTriggerProps, CollapsibleContentProps, CollapsibleIndicatorProps } from "./collapsible";

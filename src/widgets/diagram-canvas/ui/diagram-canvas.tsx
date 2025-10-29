@@ -12,6 +12,7 @@ import { createOrthogonalConnector } from '@/entities/connector';
 import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
 import { ToolsetPopover, useToolsetPopoverStore } from '@/widgets/toolset-popover';
 import { TextEditOverlay } from '@/widgets/text-edit-overlay';
+import { MermaidViewer } from '@/widgets/mermaid-viewer';
 import { CanvasTransform } from '@/shared/lib/canvas-transform';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
 import { useConnectionPointInteraction } from '../hooks/use-connection-point-interaction';
@@ -435,6 +436,11 @@ export function DiagramCanvas({
         transform={transform}
         onCommit={handleTextCommit}
         onCancel={handleTextCancel}
+      />
+      <MermaidViewer
+        shapes={shapes}
+        connectors={connectors}
+        diagramType={diagramType}
       />
     </div>
   );
