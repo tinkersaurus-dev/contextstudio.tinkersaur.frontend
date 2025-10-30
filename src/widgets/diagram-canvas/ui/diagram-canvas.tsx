@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useStore } from 'zustand';
 import { useShallow } from 'zustand/shallow';
-import { setupMouseInput, EntityInteractionCallbacks } from '../lib/mouse-input';
+import { MouseInteractionManager } from '../lib/mouse-interaction-manager';
+import { EntityInteractionCallbacks } from '../lib/mouse-input-types';
 import { setupKeyboardInput, KeyboardInteractionCallbacks } from '../lib/keyboard-input';
 import { SelectionBox } from '../lib/selection-box-renderer';
 import { createCanvasStore, type CanvasStore } from '../model/canvas-store';
@@ -343,13 +344,16 @@ export function DiagramCanvas({
       getAllShapes: () => shapesRef.current,
     };
 
-    // Pass getter function that always returns current transform
-    const cleanup = setupMouseInput(
+    // Create mouse interaction manager
+    const mouseManager = new MouseInteractionManager(
       canvas,
       () => transformRef.current,
       setTransform,
       entityCallbacks
     );
+
+    // Setup event listeners and get cleanup function
+    const cleanup = mouseManager.setup();
 
     return cleanup;
     // Only depend on connectionPointState.isDraggingConnector and isHandlingConnectionPoint
