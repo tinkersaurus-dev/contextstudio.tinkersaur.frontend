@@ -13,7 +13,7 @@ import {
   createEmptyDocument,
 } from '@/shared/types/content-data';
 import { MAX_OPEN_TABS } from '@/shared/config/workspace-config';
-import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
+import { createError, logError, ErrorSeverity } from '@/shared/lib/core/result';
 
 interface ContentState {
   // Tree State

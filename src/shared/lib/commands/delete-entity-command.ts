@@ -5,7 +5,7 @@
  * Supports undo by re-adding the deleted entity.
  */
 
-import type { Command } from '../command-system';
+import type { Command } from './command-system';
 import type { DiagramEntity } from '@/entities/diagram-entity';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import type { Connector } from '@/entities/connector';

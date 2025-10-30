@@ -4,7 +4,7 @@
  * Renders the selection box rectangle when user drags to multi-select entities
  */
 
-import { getBoundingBox, renderSelectionBoxRect } from '@/shared/lib/canvas-rendering-utils';
+import { getBoundingBox, renderSelectionBoxRect } from '@/shared/lib/rendering';
 
 export interface SelectionBox {
   startX: number;

@@ -13,7 +13,7 @@ import {
   createGateway,
   createPool,
 } from '@/entities/shape/lib/shape-factory';
-import { unwrap } from '@/shared/lib/result';
+import { unwrap } from '@/shared/lib/core/result';
 
 /**
  * Create a shape from a simple tool configuration

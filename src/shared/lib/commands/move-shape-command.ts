@@ -5,8 +5,8 @@
  * More efficient than UpdateShapeCommand for drag operations.
  */
 
-import type { Command } from '../command-system';
-import type { Point } from '../canvas-transform';
+import type { Command } from './command-system';
+import type { Point } from '../rendering';
 import type { Shape } from '@/entities/shape';
 
 /**

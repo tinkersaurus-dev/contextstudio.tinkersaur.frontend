@@ -17,7 +17,7 @@ import type { Connector } from '@/entities/connector';
 import { renderShapeFromRegistry } from '@/entities/shape/lib/shape-registry';
 import { renderConnectorFromRegistry } from '@/entities/connector/lib/connector-registry';
 import { renderBaseShape } from '@/entities/shape/ui/base-shape';
-import type { EntityContext } from './rendering-types';
+import type { EntityContext } from '../rendering';
 
 /**
  * Entity Renderer

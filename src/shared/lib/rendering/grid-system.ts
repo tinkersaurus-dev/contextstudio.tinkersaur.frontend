@@ -12,7 +12,7 @@ import {
   ZOOM_THRESHOLDS,
   type GridConfig,
 } from '@/shared/config/canvas-config';
-import type { GridRenderContext } from './rendering-types';
+import type { GridRenderContext } from './types';
 
 /**
  * Snap mode options for grid snapping

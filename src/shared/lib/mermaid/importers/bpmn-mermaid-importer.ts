@@ -11,7 +11,7 @@ import type { TaskSubType, EventSubType, GatewaySubType } from '@/entities/shape
 import { createTask, createEvent, createGateway, createPool } from '@/entities/shape/lib/factories/bpmn-shape-factory';
 import { createOrthogonalConnector, createCurvedConnector } from '@/entities/connector';
 import type { MermaidImporter, MermaidImportResult, MermaidImportOptions } from '../mermaid-importer';
-import { ok, err, type Result } from '@/shared/lib/result';
+import { ok, err, type Result } from '@/shared/lib/core/result';
 
 /**
  * Parsed node information

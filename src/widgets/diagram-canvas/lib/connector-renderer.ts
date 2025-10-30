@@ -9,9 +9,9 @@ import type { Connector } from '@/entities/connector';
 import type { Shape } from '@/entities/shape';
 import { renderConnectorFromRegistry } from '@/entities/connector';
 import { isConnectorValid } from '@/entities/connector';
-import type { ConnectorRenderContext } from '@/shared/lib/rendering-types';
-import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
-import { createShapeMap } from '@/shared/lib/map-utils';
+import type { ConnectorRenderContext } from '@/shared/lib/rendering';
+import { createError, logError, ErrorSeverity } from '@/shared/lib/core/result';
+import { createShapeMap } from '@/shared/lib/core/map-utils';
 
 /**
  * Render a single connector using the standardized context pattern

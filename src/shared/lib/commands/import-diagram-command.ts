@@ -5,7 +5,7 @@
  * Supports undo by restoring the previous diagram state.
  */
 
-import type { Command } from '../command-system';
+import type { Command } from './command-system';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
 

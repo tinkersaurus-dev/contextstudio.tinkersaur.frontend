@@ -5,7 +5,7 @@
  * Supports undo by restoring the connector.
  */
 
-import type { Command } from '../command-system';
+import type { Command } from './command-system';
 import type { Connector } from '@/entities/connector';
 
 /**

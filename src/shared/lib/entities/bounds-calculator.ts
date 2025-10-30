@@ -17,9 +17,9 @@ import {
   getEntityBounds,
   getShapeBounds,
   getConnectorBounds,
-} from './geometry/bounds';
-import type { Bounds } from './geometry/types';
-import type { BoundsContext } from './rendering-types';
+} from '../geometry/bounds';
+import type { Bounds } from '../geometry/types';
+import type { BoundsContext } from '../rendering';
 
 // Re-export Bounds type for convenience
 export type { Bounds };

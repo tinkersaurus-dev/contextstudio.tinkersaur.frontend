@@ -6,7 +6,7 @@
  */
 
 import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
-import { generateShapeId } from '@/shared/lib/id-generator';
+import { generateShapeId } from '@/shared/lib/core/id-generator';
 import { calculatePosition } from '@/shared/lib/geometry';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import type {
@@ -25,9 +25,9 @@ import type {
   CircularShapeOptions,
   SquareShapeOptions,
 } from './base-factory-types';
-import { Result, ok, err } from '@/shared/lib/result';
-import { validateShape } from '@/shared/lib/entity-validation';
-import { getDefaultTextConfig } from '@/shared/lib/text-wrapping-utils';
+import { Result, ok, err } from '@/shared/lib/core/result';
+import { validateShape } from '@/shared/lib/entities';
+import { getDefaultTextConfig } from '@/shared/lib/rendering';
 
 // ============================================================================
 // BPMN Task Shape

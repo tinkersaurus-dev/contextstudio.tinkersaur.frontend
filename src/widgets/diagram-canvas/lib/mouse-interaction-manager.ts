@@ -8,10 +8,10 @@
  * providing a single entry point with better encapsulation and clearer state management.
  */
 
-import { getCanvasMousePosition, CanvasTransform, type Point } from '@/shared/lib/canvas-transform';
+import { getCanvasMousePosition, CanvasTransform, type Point } from '@/shared/lib/rendering';
 import { MOUSE_BUTTONS } from '@/shared/config/mouse-config';
 import { ZOOM_CONFIG } from '@/shared/config/canvas-config';
-import { GridSystem } from '@/shared/lib/grid-system';
+import { GridSystem } from '@/shared/lib/rendering';
 import type { EntityInteractionCallbacks } from './mouse-input-types';
 
 /**

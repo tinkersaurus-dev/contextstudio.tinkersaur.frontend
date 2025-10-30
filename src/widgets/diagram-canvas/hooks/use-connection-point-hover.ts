@@ -10,8 +10,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { AnchorPosition } from '@/entities/connector';
 import type { Shape } from '@/entities/shape';
-import { CanvasTransform } from '@/shared/lib/canvas-transform';
-import { ConnectionPointEngine } from '@/shared/lib/connection-point-engine';
+import { CanvasTransform } from '@/shared/lib/rendering';
+import { ConnectionPointEngine } from '@/shared/lib/connections';
 import { SHAPE_PROXIMITY_CONFIG } from '@/shared/config/canvas-config';
 
 /**

@@ -18,10 +18,10 @@ import {
   isCurvedConnector,
 } from '../../model/types';
 import { DiagramEntityType } from '@/entities/diagram-entity';
-import { generateEntityId } from '@/shared/lib/id-generator';
+import { generateEntityId } from '@/shared/lib/core/id-generator';
 import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
-import { Result, ok, err } from '@/shared/lib/result';
-import { validateConnector } from '@/shared/lib/entity-validation';
+import { Result, ok, err } from '@/shared/lib/core/result';
+import { validateConnector } from '@/shared/lib/entities';
 
 /**
  * Options for creating a connector

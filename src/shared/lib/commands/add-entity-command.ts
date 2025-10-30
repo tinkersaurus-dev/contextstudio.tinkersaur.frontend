@@ -5,7 +5,7 @@
  * Supports undo by removing the added entity.
  */
 
-import type { Command } from '../command-system';
+import type { Command } from './command-system';
 import type { DiagramEntity } from '@/entities/diagram-entity';
 
 /**

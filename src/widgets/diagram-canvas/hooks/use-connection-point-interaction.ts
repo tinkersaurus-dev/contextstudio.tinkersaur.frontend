@@ -10,7 +10,7 @@
 import { useCallback } from 'react';
 import type { AnchorPosition, Connector } from '@/entities/connector';
 import type { Shape } from '@/entities/shape';
-import { CanvasTransform } from '@/shared/lib/canvas-transform';
+import { CanvasTransform } from '@/shared/lib/rendering';
 import { useConnectionPointHover } from './use-connection-point-hover';
 import { useConnectionPointDrag } from './use-connection-point-drag';
 

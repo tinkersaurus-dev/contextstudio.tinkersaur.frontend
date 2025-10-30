@@ -22,20 +22,20 @@ import type { DiagramEntity } from '@/entities/diagram-entity';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
-import { EntityRenderer } from './entity-renderer';
-import { EntityHitTester } from './entity-hit-tester';
-import { EntityBoundsCalculator, type Bounds } from './entity-bounds-calculator';
+import { EntityRenderer } from './renderer';
+import { EntityHitTester } from './hit-tester';
+import { EntityBoundsCalculator, type Bounds } from './bounds-calculator';
 import {
   validateEntity,
   validateShape,
   validateConnector,
   type ValidationResult,
-} from './entity-validation';
+} from './validation';
 import type {
   EntityContext,
   HitTestContext,
   BoundsContext,
-} from './rendering-types';
+} from '../rendering';
 
 // Re-export Bounds type for backward compatibility
 export type { Bounds };

@@ -8,10 +8,10 @@
  * need to track shape movements.
  */
 
-import type { Command } from '../command-system';
+import type { Command } from './command-system';
 import { CompositeCommand } from './composite-command';
 import { MoveShapeCommand } from './move-shape-command';
-import type { Point } from '../canvas-transform';
+import type { Point } from '../rendering';
 import type { Shape } from '@/entities/shape';
 
 /**

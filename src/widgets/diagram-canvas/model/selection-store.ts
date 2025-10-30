@@ -9,8 +9,8 @@
  */
 
 import { DiagramEntity } from '@/entities/diagram-entity';
-import { EntitySystem } from '@/shared/lib/entity-system';
-import { createShapeMap } from '@/shared/lib/map-utils';
+import { EntitySystem } from '@/shared/lib/entities';
+import { createShapeMap } from '@/shared/lib/core/map-utils';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
 

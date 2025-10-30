@@ -10,7 +10,7 @@
  * - Proper restoration order on undo
  */
 
-import type { Command } from '../command-system';
+import type { Command } from './command-system';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
 

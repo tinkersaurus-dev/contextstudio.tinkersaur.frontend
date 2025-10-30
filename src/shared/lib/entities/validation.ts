@@ -18,11 +18,11 @@ import {
   shapeRule,
   connectorRule,
   entityRule,
-} from './validation-engine';
+} from '../core/validation-engine';
 
 // Re-export ValidationResult and helpers for convenience
 export type { ValidationResult };
-export { valid, invalid, combineValidations } from './validation-engine';
+export { valid, invalid, combineValidations } from '../core/validation-engine';
 
 /**
  * Validate a shape entity

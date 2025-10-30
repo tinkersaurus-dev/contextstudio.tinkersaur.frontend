@@ -10,7 +10,7 @@ import type { MermaidExporter, MermaidExportOptions } from './mermaid-exporter';
 import type { MermaidImporter, MermaidImportOptions } from './mermaid-importer';
 import { createBpmnMermaidExporter } from './exporters/bpmn-mermaid-exporter';
 import { createBpmnMermaidImporter } from './importers/bpmn-mermaid-importer';
-import { ok, err, type Result } from '@/shared/lib/result';
+import { ok, err, type Result } from '@/shared/lib/core/result';
 
 /**
  * Registry mapping diagram types to their exporter factory functions

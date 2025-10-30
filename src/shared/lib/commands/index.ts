@@ -7,6 +7,9 @@
  * @module commands
  */
 
+// Command system
+export * from './command-system';
+
 // Shape commands
 export { AddShapeCommand } from './add-shape-command';
 export { DeleteShapeCommand } from './delete-shape-command';

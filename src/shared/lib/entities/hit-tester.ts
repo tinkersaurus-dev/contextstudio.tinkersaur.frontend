@@ -19,8 +19,8 @@ import {
   isPointInShape,
   isPointOnConnector,
 } from '@/widgets/diagram-canvas/lib/canvas-hit-detection';
-import type { HitTestContext, BoundsContext } from './rendering-types';
-import type { Bounds } from './geometry/types';
+import type { HitTestContext, BoundsContext } from '../rendering';
+import type { Bounds } from '../geometry/types';
 
 /**
  * Entity Hit Tester

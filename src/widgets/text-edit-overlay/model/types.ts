@@ -4,7 +4,7 @@
  * Types for the text editing overlay component used across diagram entities.
  */
 
-import type { CanvasTransform } from '@/shared/lib/canvas-transform';
+import type { CanvasTransform } from '@/shared/lib/rendering';
 
 /**
  * Entity being edited

@@ -10,8 +10,8 @@
 
 import { Shape } from '@/entities/shape';
 import { Connector } from '@/entities/connector';
-import { EntitySystem } from '@/shared/lib/entity-system';
-import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
+import { EntitySystem } from '@/shared/lib/entities';
+import { createError, logError, ErrorSeverity } from '@/shared/lib/core/result';
 import {
   AddShapeCommand,
   DeleteShapeCommand,
@@ -19,7 +19,7 @@ import {
   MoveEntitiesCommand,
   type ShapeMove,
 } from '@/shared/lib/commands';
-import type { Command } from '@/shared/lib/command-system';
+import type { Command } from '@/shared/lib/commands';
 
 /**
  * Shape management store state interface

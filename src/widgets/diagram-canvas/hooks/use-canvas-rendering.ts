@@ -9,8 +9,8 @@
 
 import { useEffect, useState } from 'react';
 import { renderCanvas } from '../lib/canvas-renderer';
-import { ensureFontsLoaded } from '@/shared/lib/font-loader';
-import type { CanvasTransform } from '@/shared/lib/canvas-transform';
+import { ensureFontsLoaded } from '@/shared/lib/rendering';
+import type { CanvasTransform } from '@/shared/lib/rendering';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
 import type { SelectionBox } from '../lib/selection-box-renderer';

@@ -18,10 +18,10 @@ import { create } from 'zustand';
 import { Shape } from '@/entities/shape';
 import { Connector } from '@/entities/connector';
 import { DiagramEntity } from '@/entities/diagram-entity';
-import type { SnapMode } from '@/shared/lib/grid-system';
-import { EntitySystem } from '@/shared/lib/entity-system';
-import { createShapeMap } from '@/shared/lib/map-utils';
-import { CommandHistory, type Command } from '@/shared/lib/command-system';
+import type { SnapMode } from '@/shared/lib/rendering';
+import { EntitySystem } from '@/shared/lib/entities';
+import { createShapeMap } from '@/shared/lib/core/map-utils';
+import { CommandHistory, type Command } from '@/shared/lib/commands';
 import type { Diagram } from '@/shared/types/content-data';
 import {
   DeleteEntitiesCommand,

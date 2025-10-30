@@ -2,8 +2,8 @@ import { Shape } from '@/entities/shape';
 import { renderBaseShape } from '@/entities/shape/ui/base-shape';
 import { renderShapeFromRegistry } from '@/entities/shape/lib/shape-registry';
 import { renderSelectionBox, SelectionBox } from './selection-box-renderer';
-import type { ShapeRenderContext } from '@/shared/lib/rendering-types';
-import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
+import type { ShapeRenderContext } from '@/shared/lib/rendering';
+import { createError, logError, ErrorSeverity } from '@/shared/lib/core/result';
 
 /**
  * Render a single shape using the standardized context pattern

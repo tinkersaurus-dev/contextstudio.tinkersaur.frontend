@@ -44,4 +44,4 @@ export {
   anchorForAngle,
   findConnectionPointAtPosition,
   getShapesNearPosition,
-} from '../connection-point-system';
+} from '../connections';

@@ -9,7 +9,7 @@ import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
 import { isEventShape, isTaskShape, isGatewayShape } from '@/entities/shape/model/types';
 import type { MermaidExporter, MermaidExportResult, MermaidExportOptions } from '../mermaid-exporter';
-import { ok, err, type Result } from '@/shared/lib/result';
+import { ok, err, type Result } from '@/shared/lib/core/result';
 
 /**
  * BPMN Mermaid Exporter Implementation

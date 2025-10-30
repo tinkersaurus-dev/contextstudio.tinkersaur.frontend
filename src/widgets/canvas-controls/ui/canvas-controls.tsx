@@ -6,7 +6,7 @@ import { IconButton, ButtonGroup, PopoverRoot, PopoverTrigger, PopoverContent, P
 import { CANVAS_CONTROLS_POSITION } from '@/shared/config/canvas-config';
 import { SNAP_MODE_OPTIONS } from '../config/snap-mode-config';
 import { useCanvasControlsState } from '../hooks/use-canvas-controls-state';
-import type { SnapMode } from '@/shared/lib/grid-system';
+import type { SnapMode } from '@/shared/lib/rendering';
 
 export interface CanvasControlsProps {
   snapMode: SnapMode;

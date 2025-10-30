@@ -14,7 +14,7 @@ import type { DiagramEntity } from '@/entities/diagram-entity';
 import { getConnectorEndpoints } from '@/entities/connector';
 import { distanceToLineSegment } from '@/shared/lib/geometry';
 import { CONNECTOR_HIT_CONFIG } from '@/shared/config/canvas-config';
-import { createShapeMap } from '@/shared/lib/map-utils';
+import { createShapeMap } from '@/shared/lib/core/map-utils';
 
 /**
  * Find the topmost entity at a specific point

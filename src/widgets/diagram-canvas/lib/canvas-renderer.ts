@@ -5,16 +5,16 @@
  * This separates rendering concerns from component logic for better testability.
  */
 
-import { GridSystem, DEFAULT_GRID_CONFIG, type GridConfig } from '@/shared/lib/grid-system';
+import { GridSystem, DEFAULT_GRID_CONFIG, type GridConfig } from '@/shared/lib/rendering';
 import { renderShapes } from './shape-renderer';
 import { renderConnectors } from './connector-renderer';
-import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
-import { CanvasTransform } from '@/shared/lib/canvas-transform';
+import { ConnectionPointSystem } from '@/shared/lib/connections';
+import { CanvasTransform } from '@/shared/lib/rendering';
 import type { SelectionBox } from './selection-box-renderer';
 import type { Shape } from '@/entities/shape';
 import type { Connector, AnchorPosition } from '@/entities/connector';
 import { CANVAS_COLORS } from '@/shared/config/canvas-config';
-import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
+import { createError, logError, ErrorSeverity } from '@/shared/lib/core/result';
 
 export interface CanvasRenderContext {
   /** Canvas element to render to */

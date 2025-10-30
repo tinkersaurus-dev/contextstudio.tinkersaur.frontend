@@ -12,15 +12,15 @@
 import { Connector } from '@/entities/connector';
 import { updateConnectorForShapeMove } from '@/entities/connector';
 import { updateConnectorAnchors } from '@/entities/connector/lib/connector-auto-update';
-import { EntitySystem } from '@/shared/lib/entity-system';
-import { createShapeMap } from '@/shared/lib/map-utils';
-import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
+import { EntitySystem } from '@/shared/lib/entities';
+import { createShapeMap } from '@/shared/lib/core/map-utils';
+import { createError, logError, ErrorSeverity } from '@/shared/lib/core/result';
 import {
   AddConnectorCommand,
   DeleteConnectorCommand,
   UpdateConnectorCommand,
 } from '@/shared/lib/commands';
-import type { Command } from '@/shared/lib/command-system';
+import type { Command } from '@/shared/lib/commands';
 import type { Shape } from '@/entities/shape';
 
 /**

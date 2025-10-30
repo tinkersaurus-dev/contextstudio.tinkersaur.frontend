@@ -7,7 +7,7 @@
 
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
-import type { Result } from '@/shared/lib/result';
+import type { Result } from '@/shared/lib/core/result';
 
 /**
  * Result of a Mermaid export operation

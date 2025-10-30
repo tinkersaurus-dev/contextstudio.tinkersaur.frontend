@@ -5,8 +5,8 @@
  * These provide a contract for what operations entities support.
  */
 
-import type { Bounds, BoundsContext } from './geometry';
-import type { ValidationResult } from './validation-engine';
+import type { Bounds, BoundsContext } from '../geometry';
+import type { ValidationResult } from '../core/validation-engine';
 
 /**
  * Context for rendering operations

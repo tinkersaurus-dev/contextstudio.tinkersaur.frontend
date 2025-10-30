@@ -1,12 +1,12 @@
 import { BaseShape } from '../model/types';
-import { renderSelectionIndicator } from '@/shared/lib/canvas-rendering-utils';
-import { getCanvasFontString } from '@/shared/lib/font-loader';
+import { renderSelectionIndicator } from '@/shared/lib/rendering';
+import { getCanvasFontString } from '@/shared/lib/rendering';
 import {
   wrapText,
   getDefaultTextConfig,
   type TextTruncation,
   type TextPlacement,
-} from '@/shared/lib/text-wrapping-utils';
+} from '@/shared/lib/rendering';
 
 export interface BaseShapeProps {
   shape: BaseShape;

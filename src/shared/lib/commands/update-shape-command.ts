@@ -5,7 +5,7 @@
  * Stores both before and after states to enable undo/redo.
  */
 
-import type { Command } from '../command-system';
+import type { Command } from './command-system';
 import type { Shape } from '@/entities/shape';
 
 /**

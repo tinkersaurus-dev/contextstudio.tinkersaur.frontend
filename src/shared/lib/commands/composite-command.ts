@@ -9,7 +9,7 @@
  * but require multiple state changes (e.g., deleting multiple selected entities).
  */
 
-import type { Command } from '../command-system';
+import type { Command } from './command-system';
 
 /**
  * Command that groups multiple commands into a single undo/redo operation.
