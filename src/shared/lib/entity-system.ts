@@ -5,6 +5,12 @@
  * Provides a single entry point for rendering, hit testing, bounds calculation,
  * validation, and creation of all entity types.
  *
+ * This is a thin facade that delegates to specialized classes:
+ * - EntityRenderer for rendering operations
+ * - EntityHitTester for hit detection
+ * - EntityBoundsCalculator for bounds calculation
+ * - entity-validation.ts for validation
+ *
  * This consolidates entity operations that were previously scattered across:
  * - Rendering in widgets/diagram-canvas/lib/shape-renderer.ts and connector-renderer.ts
  * - Hit detection in widgets/diagram-canvas/lib/canvas-hit-detection.ts
@@ -16,19 +22,9 @@ import type { DiagramEntity } from '@/entities/diagram-entity';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
-import { renderShapeFromRegistry } from '@/entities/shape/lib/shape-registry';
-import { renderConnectorFromRegistry } from '@/entities/connector/lib/connector-registry';
-import { renderBaseShape } from '@/entities/shape/ui/base-shape';
-import {
-  isPointInShape,
-  isPointOnConnector,
-} from '@/widgets/diagram-canvas/lib/canvas-hit-detection';
-import {
-  getEntityBounds,
-  getShapeBounds,
-  getConnectorBounds,
-  type Bounds,
-} from './geometry';
+import { EntityRenderer } from './entity-renderer';
+import { EntityHitTester } from './entity-hit-tester';
+import { EntityBoundsCalculator, type Bounds } from './entity-bounds-calculator';
 import {
   validateEntity,
   validateShape,
@@ -40,6 +36,9 @@ import type {
   HitTestContext,
   BoundsContext,
 } from './rendering-types';
+
+// Re-export Bounds type for backward compatibility
+export type { Bounds };
 
 /**
  * Entity System
@@ -66,13 +65,13 @@ import type {
  */
 export class EntitySystem {
   // =========================================================================
-  // Rendering Operations
+  // Rendering Operations (delegated to EntityRenderer)
   // =========================================================================
 
   /**
    * Render any diagram entity to a canvas
    *
-   * Delegates to specialized renderers based on entity type.
+   * Delegates to EntityRenderer for actual rendering.
    * Shapes are rendered via shape registry, connectors via connector registry.
    *
    * @param entity - Entity to render
@@ -90,70 +89,17 @@ export class EntitySystem {
    * });
    */
   static render(entity: DiagramEntity, context: EntityContext): void {
-    const { ctx, scale, isSelected } = context;
-
-    if (!ctx || scale === undefined || isSelected === undefined) {
-      throw new Error(
-        'EntitySystem.render requires ctx, scale, and isSelected in context'
-      );
-    }
-
-    if (entity.type === DiagramEntityType.Shape) {
-      this.renderShape(entity as Shape, ctx, isSelected, scale);
-    } else if (entity.type === DiagramEntityType.Connector) {
-      const { shapes } = context;
-      if (!shapes) {
-        throw new Error(
-          'EntitySystem.render requires shapes map in context for connectors'
-        );
-      }
-      this.renderConnector(entity as Connector, ctx, shapes, isSelected, scale);
-    }
-  }
-
-  /**
-   * Render a shape entity
-   *
-   * @param shape - Shape to render
-   * @param ctx - Canvas context
-   * @param isSelected - Whether shape is selected
-   * @param scale - Canvas scale
-   */
-  private static renderShape(
-    shape: Shape,
-    ctx: CanvasRenderingContext2D,
-    isSelected: boolean,
-    scale: number
-  ): void {
-    renderBaseShape(ctx, shape, isSelected, scale, renderShapeFromRegistry);
-  }
-
-  /**
-   * Render a connector entity
-   *
-   * @param connector - Connector to render
-   * @param ctx - Canvas context
-   * @param shapes - Map of shapes for endpoint resolution
-   * @param isSelected - Whether connector is selected
-   * @param scale - Canvas scale
-   */
-  private static renderConnector(
-    connector: Connector,
-    ctx: CanvasRenderingContext2D,
-    shapes: Map<string, Shape>,
-    isSelected: boolean,
-    scale: number
-  ): void {
-    renderConnectorFromRegistry(ctx, connector, shapes, isSelected, scale);
+    return EntityRenderer.render(entity, context);
   }
 
   // =========================================================================
-  // Hit Testing Operations
+  // Hit Testing Operations (delegated to EntityHitTester)
   // =========================================================================
 
   /**
    * Test if a point hits an entity
    *
+   * Delegates to EntityHitTester for hit detection.
    * Performs type-appropriate hit detection:
    * - Shapes: Bounding box test
    * - Connectors: Line proximity test
@@ -179,56 +125,17 @@ export class EntitySystem {
     y: number,
     context?: HitTestContext
   ): boolean {
-    if (entity.type === DiagramEntityType.Shape) {
-      return this.hitTestShape(entity as Shape, x, y);
-    } else if (entity.type === DiagramEntityType.Connector) {
-      const shapes = context?.shapes;
-      if (!shapes) {
-        // Without shapes, can't accurately test connector
-        return false;
-      }
-      return this.hitTestConnector(entity as Connector, x, y, shapes);
-    }
-    return false;
-  }
-
-  /**
-   * Test if a point hits a shape
-   *
-   * @param shape - Shape to test
-   * @param x - World X coordinate
-   * @param y - World Y coordinate
-   * @returns True if point is inside shape bounds
-   */
-  private static hitTestShape(shape: Shape, x: number, y: number): boolean {
-    return isPointInShape(x, y, shape);
-  }
-
-  /**
-   * Test if a point hits a connector
-   *
-   * @param connector - Connector to test
-   * @param x - World X coordinate
-   * @param y - World Y coordinate
-   * @param shapes - Map of shapes for endpoint resolution
-   * @returns True if point is near connector line
-   */
-  private static hitTestConnector(
-    connector: Connector,
-    x: number,
-    y: number,
-    shapes: Map<string, Shape>
-  ): boolean {
-    return isPointOnConnector(x, y, connector, shapes);
+    return EntityHitTester.hitTest(entity, x, y, context);
   }
 
   // =========================================================================
-  // Bounds Calculation Operations
+  // Bounds Calculation Operations (delegated to EntityBoundsCalculator)
   // =========================================================================
 
   /**
    * Get the bounding box for any entity
    *
+   * Delegates to EntityBoundsCalculator for bounds calculation.
    * Returns the axis-aligned bounding rectangle that contains the entity.
    * For shapes, this is simply position + dimensions.
    * For connectors, calculated from endpoint positions.
@@ -244,13 +151,7 @@ export class EntitySystem {
    * const bounds = EntitySystem.getBounds(connector, { shapes: shapesMap });
    */
   static getBounds(entity: DiagramEntity, context?: BoundsContext): Bounds {
-    if (entity.type === DiagramEntityType.Shape) {
-      return getShapeBounds(entity as Shape);
-    } else if (entity.type === DiagramEntityType.Connector) {
-      return getConnectorBounds(entity as Connector, context?.shapes);
-    }
-    // Fallback
-    return getEntityBounds(entity, context);
+    return EntityBoundsCalculator.getBounds(entity, context);
   }
 
   // =========================================================================
@@ -323,6 +224,7 @@ export class EntitySystem {
   /**
    * Render multiple entities
    *
+   * Delegates to EntityRenderer for batch rendering.
    * Efficiently renders an array of entities with shared context.
    * Includes per-entity error handling to prevent cascade failures.
    *
@@ -342,22 +244,13 @@ export class EntitySystem {
     context: Omit<EntityContext, 'isSelected'>,
     selectedIds: Set<string>
   ): void {
-    entities.forEach((entity) => {
-      try {
-        this.render(entity, {
-          ...context,
-          isSelected: selectedIds.has(entity.id),
-        });
-      } catch (error) {
-        console.error(`Error rendering entity ${entity.id}:`, error);
-        // Continue rendering other entities
-      }
-    });
+    return EntityRenderer.renderMany(entities, context, selectedIds);
   }
 
   /**
    * Find the first entity at a point
    *
+   * Delegates to EntityHitTester for finding entities at points.
    * Tests entities in reverse order (topmost first) and returns the first hit.
    *
    * @param entities - Array of entities to test
@@ -380,19 +273,13 @@ export class EntitySystem {
     y: number,
     context?: HitTestContext
   ): DiagramEntity | null {
-    // Iterate in reverse (topmost first)
-    for (let i = entities.length - 1; i >= 0; i--) {
-      const entity = entities[i];
-      if (this.hitTest(entity, x, y, context)) {
-        return entity;
-      }
-    }
-    return null;
+    return EntityHitTester.findEntityAtPoint(entities, x, y, context);
   }
 
   /**
    * Find all entities in a bounding box
    *
+   * Delegates to EntityHitTester for finding entities in boxes.
    * Returns entities whose bounds intersect with the given box.
    *
    * @param entities - Array of entities to check
@@ -412,25 +299,11 @@ export class EntitySystem {
     boxBounds: Bounds,
     context?: BoundsContext
   ): DiagramEntity[] {
-    return entities.filter((entity) => {
-      const entityBounds = this.getBounds(entity, context);
-      return this.boundsIntersect(entityBounds, boxBounds);
-    });
-  }
-
-  /**
-   * Check if two bounding boxes intersect
-   *
-   * @param a - First bounds
-   * @param b - Second bounds
-   * @returns True if bounds intersect
-   */
-  private static boundsIntersect(a: Bounds, b: Bounds): boolean {
-    return !(
-      a.x + a.width < b.x ||
-      a.x > b.x + b.width ||
-      a.y + a.height < b.y ||
-      a.y > b.y + b.height
+    return EntityHitTester.findEntitiesInBox(
+      entities,
+      boxBounds,
+      EntityBoundsCalculator.getBounds,
+      context
     );
   }
 
