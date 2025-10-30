@@ -51,7 +51,7 @@ export function useMermaidSync({
 
     // Get the appropriate exporter for this diagram type with metadata enabled
     const exporterResult = getMermaidExporter(diagramType, {
-      includeMetadata: false,
+      includeMetadata: true,
       includeComments: false,
     });
 

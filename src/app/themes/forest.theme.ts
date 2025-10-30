@@ -131,6 +131,22 @@ export const forestTheme: ThemeConfig = {
       bg: "#ffffff", // White
       toolbar: "#bbf7d0", // Primary.200
       text: "#052e16", // Primary.950
+      borderMain: "#d6d3d1", // Secondary.300
+      borderInternal: "#e7e5e4", // Secondary.200
+      hoverBg: "#dcfce7", // Primary.100
+      hoverText: "#14532d", // Primary.900
+      hoverButton: "#22c55e", // Primary.500
+    },
+
+    tabs: {
+      bg: "#fafaf9", // Neutral.50
+      border: "#d6d3d1", // Secondary.300
+      activeBg: "#ffffff", // White
+      activeText: "#14532d", // Primary.900
+      inactiveBg: "#fafaf9", // Neutral.50
+      inactiveText: "#78716c", // Secondary.500
+      hoverBg: "#dcfce7", // Primary.100
+      hoverText: "#052e16", // Primary.950
     },
 
     editor: {

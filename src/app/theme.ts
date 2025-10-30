@@ -185,6 +185,21 @@ const config = defineConfig({
         "sidebar.bg": { value: activeTheme.ui.sidebar.bg },
         "sidebar.toolbar": { value: activeTheme.ui.sidebar.toolbar },
         "sidebar.text": { value: activeTheme.ui.sidebar.text },
+        "sidebar.borderMain": { value: activeTheme.ui.sidebar.borderMain },
+        "sidebar.borderInternal": { value: activeTheme.ui.sidebar.borderInternal },
+        "sidebar.hoverBg": { value: activeTheme.ui.sidebar.hoverBg },
+        "sidebar.hoverText": { value: activeTheme.ui.sidebar.hoverText },
+        "sidebar.hoverButton": { value: activeTheme.ui.sidebar.hoverButton },
+
+        // Tabs colors
+        "tabs.bg": { value: activeTheme.ui.tabs.bg },
+        "tabs.border": { value: activeTheme.ui.tabs.border },
+        "tabs.activeBg": { value: activeTheme.ui.tabs.activeBg },
+        "tabs.activeText": { value: activeTheme.ui.tabs.activeText },
+        "tabs.inactiveBg": { value: activeTheme.ui.tabs.inactiveBg },
+        "tabs.inactiveText": { value: activeTheme.ui.tabs.inactiveText },
+        "tabs.hoverBg": { value: activeTheme.ui.tabs.hoverBg },
+        "tabs.hoverText": { value: activeTheme.ui.tabs.hoverText },
 
         // Editor colors
         "editor.bg": { value: activeTheme.ui.editor.bg },

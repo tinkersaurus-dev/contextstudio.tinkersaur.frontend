@@ -131,6 +131,22 @@ export const defaultTheme: ThemeConfig = {
       bg: "#ffffff", // White
       toolbar: "#99caff", // Primary.200
       text: "#001a33", // Primary.950
+      borderMain: "#d1d5db", // Secondary.300
+      borderInternal: "#e5e7eb", // Secondary.200
+      hoverBg: "#e6f2ff", // Primary.50
+      hoverText: "#002042", // Primary.900
+      hoverButton: "#4ca1ff", // Primary.400
+    },
+
+    tabs: {
+      bg: "#f7f7f7", // Secondary.50
+      border: "#d1d5db", // Secondary.300
+      activeBg: "#ffffff", // White
+      activeText: "#002042", // Primary.900
+      inactiveBg: "#f7f7f7", // Secondary.50
+      inactiveText: "#6b7280", // Secondary.500
+      hoverBg: "#e6f2ff", // Primary.50
+      hoverText: "#001a33", // Primary.950
     },
 
     editor: {

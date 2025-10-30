@@ -131,6 +131,22 @@ export const darkTheme: ThemeConfig = {
       bg: "#1f2937",
       toolbar: "#333f50ff",
       text: "#bfdeff",
+      borderMain: "#374151",
+      borderInternal: "#4b5563",
+      hoverBg: "#374151",
+      hoverText: "#e6f2ff",
+      hoverButton: "#4ca1ff",
+    },
+
+    tabs: {
+      bg: "#1f2937",
+      border: "#374151",
+      activeBg: "#ffffff",
+      activeText: "#1f2937",
+      inactiveBg: "#1f2937",
+      inactiveText: "#9ca3af",
+      hoverBg: "#374151",
+      hoverText: "#e5e7eb",
     },
 
     editor: {

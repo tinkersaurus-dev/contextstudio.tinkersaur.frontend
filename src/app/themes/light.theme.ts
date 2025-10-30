@@ -131,6 +131,22 @@ export const lightTheme: ThemeConfig = {
       bg: "#ffffff",
       toolbar: "#99caff",
       text: "#001a33",
+      borderMain: "#d1d5db",
+      borderInternal: "#e5e7eb",
+      hoverBg: "#e6f2ff",
+      hoverText: "#002042",
+      hoverButton: "#4ca1ff",
+    },
+
+    tabs: {
+      bg: "#f9fafb",
+      border: "#d1d5db",
+      activeBg: "#ffffff",
+      activeText: "#002042",
+      inactiveBg: "#f9fafb",
+      inactiveText: "#6b7280",
+      hoverBg: "#e6f2ff",
+      hoverText: "#001a33",
     },
 
     editor: {

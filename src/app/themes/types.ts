@@ -120,6 +120,36 @@ export interface UIColors {
     toolbar: string;
     /** Sidebar text color */
     text: string;
+    /** Main border color */
+    borderMain: string;
+    /** Internal border color */
+    borderInternal: string;
+    /** Hover background color */
+    hoverBg: string;
+    /** Hover text color */
+    hoverText: string;
+    /** Hover button color */
+    hoverButton: string;
+  };
+
+  /** Tabs component colors */
+  tabs: {
+    /** Tabs container background */
+    bg: string;
+    /** Tab border color */
+    border: string;
+    /** Active tab background */
+    activeBg: string;
+    /** Active tab text color */
+    activeText: string;
+    /** Inactive tab background */
+    inactiveBg: string;
+    /** Inactive tab text color */
+    inactiveText: string;
+    /** Hover tab background */
+    hoverBg: string;
+    /** Hover tab text color */
+    hoverText: string;
   };
 
   /** Editor component colors */

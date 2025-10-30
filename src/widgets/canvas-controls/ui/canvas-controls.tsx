@@ -2,7 +2,7 @@
 
 import React, { useCallback } from 'react';
 import { LuGrid2X2, LuFocus } from 'react-icons/lu';
-import { IconButton, ButtonGroup, ActionBar, Tooltip } from '@/shared/ui';
+import { IconButton, ButtonGroup, PopoverRoot, PopoverTrigger, PopoverContent, PopoverBody, Tooltip } from '@/shared/ui';
 import { CANVAS_CONTROLS_POSITION } from '@/shared/config/canvas-config';
 import { SNAP_MODE_OPTIONS } from '../config/snap-mode-config';
 import { useCanvasControlsState } from '../hooks/use-canvas-controls-state';
@@ -21,7 +21,6 @@ export const CanvasControls = React.memo(function CanvasControls({ snapMode, set
   const {
     isBackgroundOpen,
     isInteractionsOpen,
-    isAnyPanelOpen,
     openBackgroundPanel,
     openInteractionsPanel,
     closeAllPanels,
@@ -29,94 +28,97 @@ export const CanvasControls = React.memo(function CanvasControls({ snapMode, set
 
   // Memoize handlers to prevent child re-renders
   const handleBackgroundOpenChange = useCallback((e: { open: boolean }) => {
-    if (!e.open) {
+    console.log('[CanvasControls] Background popover open change:', e.open);
+    if (e.open) {
+      openBackgroundPanel();
+    } else {
       closeAllPanels();
     }
-  }, [closeAllPanels]);
+  }, [openBackgroundPanel, closeAllPanels]);
 
   const handleInteractionsOpenChange = useCallback((e: { open: boolean }) => {
-    if (!e.open) {
+    console.log('[CanvasControls] Interactions popover open change:', e.open);
+    if (e.open) {
+      openInteractionsPanel();
+    } else {
       closeAllPanels();
     }
-  }, [closeAllPanels]);
+  }, [openInteractionsPanel, closeAllPanels]);
 
   const handleSnapModeChange = useCallback((mode: SnapMode) => {
     setSnapMode(mode);
   }, [setSnapMode]);
 
-  return (
-    <>
-      {/* Button Group - hidden when action bar is open */}
-      {!isAnyPanelOpen && (
-        <ButtonGroup
-          attached
-          style={{
-            position: 'absolute',
-            bottom: `${CANVAS_CONTROLS_POSITION.bottom}px`,
-            left: CANVAS_CONTROLS_POSITION.horizontalCenter,
-            transform: 'translateX(-50%)',
-            zIndex: 5,
-          }}
-        >
-          <IconButton
-            aria-label="Background Settings"
-            size="xs"
-            variant="ghost"
-            onClick={openBackgroundPanel}
-          >
-            <LuGrid2X2 />
-          </IconButton>
-          <IconButton
-            aria-label="Interactions Settings"
-            size="xs"
-            variant="ghost"
-            onClick={openInteractionsPanel}
-          >
-            <LuFocus />
-          </IconButton>
-        </ButtonGroup>
-      )}
+  console.log('[CanvasControls] Render - isBackgroundOpen:', isBackgroundOpen, 'isInteractionsOpen:', isInteractionsOpen);
 
-      {/* Background Settings Action Bar */}
-      <ActionBar.Root
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: `${CANVAS_CONTROLS_POSITION.bottom}px`,
+        left: CANVAS_CONTROLS_POSITION.horizontalCenter,
+        transform: 'translateX(-50%)',
+        zIndex: 5,
+      }}
+    >
+      {/* Background Settings Popover */}
+      <PopoverRoot
         open={isBackgroundOpen}
         onOpenChange={handleBackgroundOpenChange}
         closeOnInteractOutside={true}
       >
-        <ActionBar.Content backgroundColor="panel.bg">
-          <ActionBar.SelectionTrigger>
-            Background
-          </ActionBar.SelectionTrigger>
-          <ActionBar.Separator />
-          {/* Add background settings controls here */}
-        </ActionBar.Content>
-      </ActionBar.Root>
+        <PopoverTrigger asChild>
+          <IconButton
+            aria-label="Background Settings"
+            size="xs"
+            variant="ghost"
+            onClick={() => console.log('[CanvasControls] Background button clicked')}
+          >
+            <LuGrid2X2 />
+          </IconButton>
+        </PopoverTrigger>
+        <PopoverContent>
+          <PopoverBody>
+            {/* Add background settings controls here */}
+            Background settings coming soon
+          </PopoverBody>
+        </PopoverContent>
+      </PopoverRoot>
 
-      {/* Interactions Settings Action Bar */}
-      <ActionBar.Root
+      {/* Interactions Settings Popover */}
+      <PopoverRoot
         open={isInteractionsOpen}
         onOpenChange={handleInteractionsOpenChange}
         closeOnInteractOutside={true}
-
       >
-        <ActionBar.Content backgroundColor="panel.bg">
-
-          <ButtonGroup attached size="xs">
-            {SNAP_MODE_OPTIONS.map(({ mode, label, tooltip, Icon }) => (
-              <Tooltip key={mode} content={tooltip}>
-                <IconButton
-                  aria-label={label}
-                  variant={snapMode === mode ? 'subtle' : 'solid'}
-                  onClick={() => handleSnapModeChange(mode)}
-                >
-                  <Icon />
-                </IconButton>
-              </Tooltip>
-            ))}
-          </ButtonGroup>
-          <ActionBar.Separator />
-        </ActionBar.Content>
-      </ActionBar.Root>
-    </>
+        <PopoverTrigger asChild>
+          <IconButton
+            aria-label="Interactions Settings"
+            size="xs"
+            variant="ghost"
+            onClick={() => console.log('[CanvasControls] Interactions button clicked')}
+          >
+            <LuFocus />
+          </IconButton>
+        </PopoverTrigger>
+        <PopoverContent>
+          <PopoverBody>
+            <ButtonGroup attached size="xs">
+              {SNAP_MODE_OPTIONS.map(({ mode, label, tooltip, Icon }) => (
+                <Tooltip key={mode} content={tooltip}>
+                  <IconButton
+                    aria-label={label}
+                    variant={snapMode === mode ? 'subtle' : 'solid'}
+                    onClick={() => handleSnapModeChange(mode)}
+                  >
+                    <Icon />
+                  </IconButton>
+                </Tooltip>
+              ))}
+            </ButtonGroup>
+          </PopoverBody>
+        </PopoverContent>
+      </PopoverRoot>
+    </div>
   );
 });

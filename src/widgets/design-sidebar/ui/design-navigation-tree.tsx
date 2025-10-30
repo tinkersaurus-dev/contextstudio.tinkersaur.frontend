@@ -12,6 +12,7 @@ import { forwardRef, useImperativeHandle, useState, useCallback, useMemo } from 
 import { TreeView, createTreeCollection } from "@/shared/ui";
 import type { ContentNode } from "@/shared/types/design-studio";
 import { LuFile, LuFolder, LuImage, LuFileText } from "react-icons/lu";
+import { BsDiagram2 } from "react-icons/bs";
 import { FolderAddContentMenu } from "./folder-add-content-menu";
 import { CreateDiagramDialog } from "./create-diagram-dialog";
 import { useContentStore } from "../model/content-store";
@@ -38,7 +39,7 @@ function getContentIcon(type: ContentNode["type"]) {
     case "folder":
       return <LuFolder />;
     case "diagram":
-      return <LuFile />;
+      return <BsDiagram2 />;
     case "document":
       return <LuFileText />;
     case "image":
