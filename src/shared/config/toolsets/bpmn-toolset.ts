@@ -25,7 +25,10 @@ import {
   LuColumns2,
 } from 'react-icons/lu';
 import { ToolType, type Toolset } from '@/entities/tool';
-import { activeTheme } from '@/app/theme';
+import { getActiveTheme } from '@/app/themes/theme-registry';
+
+// Get theme colors for toolset initialization
+const activeTheme = getActiveTheme();
 
 /**
  * BPMN Toolset

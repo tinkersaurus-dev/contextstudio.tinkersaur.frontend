@@ -1,30 +1,30 @@
 import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
-import { getActiveTheme } from "./themes";
 
 /**
  * Custom theme configuration for the application.
  *
  * This file integrates our custom theme system with Chakra UI's theming.
- * The active theme is loaded from the theme registry and converted to
- * Chakra UI's configuration format.
+ * Theme colors are provided via CSS custom properties (CSS variables) that
+ * are injected at runtime by the ThemeProvider.
  *
- * Supports both light and dark modes through semantic tokens.
+ * This approach allows dynamic theme switching without page reloads.
  *
  * To change the active theme:
- * - Set NEXT_PUBLIC_THEME_ID environment variable, or
- * - Modify the getActiveTheme() function in theme-registry.ts
+ * - Use the ThemeSelector component in the header
+ * - Or call setTheme() from the useTheme() hook
  *
  * To create a new theme:
  * 1. Create a new theme file in src/app/themes/ (e.g., green.theme.ts)
  * 2. Register it in theme-registry.ts
- * 3. Set NEXT_PUBLIC_THEME_ID to use it
+ * 3. Theme will be available for selection automatically
  */
-
-// Get the active theme from the registry
-const activeTheme = getActiveTheme();
 
 /**
  * Convert our theme configuration to Chakra UI config format
+ *
+ * All color values reference CSS custom properties (--theme-*) that are
+ * injected dynamically by the ThemeProvider. This allows instant theme
+ * switching without page reloads.
  */
 const config = defineConfig({
   theme: {
@@ -35,121 +35,121 @@ const config = defineConfig({
         mono: { value: "var(--font-geist-mono), monospace" },
       },
       colors: {
-        // Primary color palette (renamed from "brand")
+        // Primary color palette
         primary: {
-          50: { value: activeTheme.primary[50] },
-          100: { value: activeTheme.primary[100] },
-          200: { value: activeTheme.primary[200] },
-          300: { value: activeTheme.primary[300] },
-          400: { value: activeTheme.primary[400] },
-          500: { value: activeTheme.primary[500] },
-          600: { value: activeTheme.primary[600] },
-          700: { value: activeTheme.primary[700] },
-          800: { value: activeTheme.primary[800] },
-          900: { value: activeTheme.primary[900] },
-          950: { value: activeTheme.primary[950] },
+          50: { value: "var(--theme-primary-50)" },
+          100: { value: "var(--theme-primary-100)" },
+          200: { value: "var(--theme-primary-200)" },
+          300: { value: "var(--theme-primary-300)" },
+          400: { value: "var(--theme-primary-400)" },
+          500: { value: "var(--theme-primary-500)" },
+          600: { value: "var(--theme-primary-600)" },
+          700: { value: "var(--theme-primary-700)" },
+          800: { value: "var(--theme-primary-800)" },
+          900: { value: "var(--theme-primary-900)" },
+          950: { value: "var(--theme-primary-950)" },
         },
 
         // Secondary color palette
         secondary: {
-          50: { value: activeTheme.secondary[50] },
-          100: { value: activeTheme.secondary[100] },
-          200: { value: activeTheme.secondary[200] },
-          300: { value: activeTheme.secondary[300] },
-          400: { value: activeTheme.secondary[400] },
-          500: { value: activeTheme.secondary[500] },
-          600: { value: activeTheme.secondary[600] },
-          700: { value: activeTheme.secondary[700] },
-          800: { value: activeTheme.secondary[800] },
-          900: { value: activeTheme.secondary[900] },
-          950: { value: activeTheme.secondary[950] },
+          50: { value: "var(--theme-secondary-50)" },
+          100: { value: "var(--theme-secondary-100)" },
+          200: { value: "var(--theme-secondary-200)" },
+          300: { value: "var(--theme-secondary-300)" },
+          400: { value: "var(--theme-secondary-400)" },
+          500: { value: "var(--theme-secondary-500)" },
+          600: { value: "var(--theme-secondary-600)" },
+          700: { value: "var(--theme-secondary-700)" },
+          800: { value: "var(--theme-secondary-800)" },
+          900: { value: "var(--theme-secondary-900)" },
+          950: { value: "var(--theme-secondary-950)" },
         },
 
         // Tertiary color palette
         tertiary: {
-          50: { value: activeTheme.tertiary[50] },
-          100: { value: activeTheme.tertiary[100] },
-          200: { value: activeTheme.tertiary[200] },
-          300: { value: activeTheme.tertiary[300] },
-          400: { value: activeTheme.tertiary[400] },
-          500: { value: activeTheme.tertiary[500] },
-          600: { value: activeTheme.tertiary[600] },
-          700: { value: activeTheme.tertiary[700] },
-          800: { value: activeTheme.tertiary[800] },
-          900: { value: activeTheme.tertiary[900] },
-          950: { value: activeTheme.tertiary[950] },
+          50: { value: "var(--theme-tertiary-50)" },
+          100: { value: "var(--theme-tertiary-100)" },
+          200: { value: "var(--theme-tertiary-200)" },
+          300: { value: "var(--theme-tertiary-300)" },
+          400: { value: "var(--theme-tertiary-400)" },
+          500: { value: "var(--theme-tertiary-500)" },
+          600: { value: "var(--theme-tertiary-600)" },
+          700: { value: "var(--theme-tertiary-700)" },
+          800: { value: "var(--theme-tertiary-800)" },
+          900: { value: "var(--theme-tertiary-900)" },
+          950: { value: "var(--theme-tertiary-950)" },
         },
 
         // Neutral/gray palette
         neutral: {
-          50: { value: activeTheme.neutral[50] },
-          100: { value: activeTheme.neutral[100] },
-          200: { value: activeTheme.neutral[200] },
-          300: { value: activeTheme.neutral[300] },
-          400: { value: activeTheme.neutral[400] },
-          500: { value: activeTheme.neutral[500] },
-          600: { value: activeTheme.neutral[600] },
-          700: { value: activeTheme.neutral[700] },
-          800: { value: activeTheme.neutral[800] },
-          900: { value: activeTheme.neutral[900] },
-          950: { value: activeTheme.neutral[950] },
+          50: { value: "var(--theme-neutral-50)" },
+          100: { value: "var(--theme-neutral-100)" },
+          200: { value: "var(--theme-neutral-200)" },
+          300: { value: "var(--theme-neutral-300)" },
+          400: { value: "var(--theme-neutral-400)" },
+          500: { value: "var(--theme-neutral-500)" },
+          600: { value: "var(--theme-neutral-600)" },
+          700: { value: "var(--theme-neutral-700)" },
+          800: { value: "var(--theme-neutral-800)" },
+          900: { value: "var(--theme-neutral-900)" },
+          950: { value: "var(--theme-neutral-950)" },
         },
 
         // Status color palettes
         info: {
-          50: { value: activeTheme.status.info[50] },
-          100: { value: activeTheme.status.info[100] },
-          200: { value: activeTheme.status.info[200] },
-          300: { value: activeTheme.status.info[300] },
-          400: { value: activeTheme.status.info[400] },
-          500: { value: activeTheme.status.info[500] },
-          600: { value: activeTheme.status.info[600] },
-          700: { value: activeTheme.status.info[700] },
-          800: { value: activeTheme.status.info[800] },
-          900: { value: activeTheme.status.info[900] },
-          950: { value: activeTheme.status.info[950] },
+          50: { value: "var(--theme-info-50)" },
+          100: { value: "var(--theme-info-100)" },
+          200: { value: "var(--theme-info-200)" },
+          300: { value: "var(--theme-info-300)" },
+          400: { value: "var(--theme-info-400)" },
+          500: { value: "var(--theme-info-500)" },
+          600: { value: "var(--theme-info-600)" },
+          700: { value: "var(--theme-info-700)" },
+          800: { value: "var(--theme-info-800)" },
+          900: { value: "var(--theme-info-900)" },
+          950: { value: "var(--theme-info-950)" },
         },
 
         success: {
-          50: { value: activeTheme.status.success[50] },
-          100: { value: activeTheme.status.success[100] },
-          200: { value: activeTheme.status.success[200] },
-          300: { value: activeTheme.status.success[300] },
-          400: { value: activeTheme.status.success[400] },
-          500: { value: activeTheme.status.success[500] },
-          600: { value: activeTheme.status.success[600] },
-          700: { value: activeTheme.status.success[700] },
-          800: { value: activeTheme.status.success[800] },
-          900: { value: activeTheme.status.success[900] },
-          950: { value: activeTheme.status.success[950] },
+          50: { value: "var(--theme-success-50)" },
+          100: { value: "var(--theme-success-100)" },
+          200: { value: "var(--theme-success-200)" },
+          300: { value: "var(--theme-success-300)" },
+          400: { value: "var(--theme-success-400)" },
+          500: { value: "var(--theme-success-500)" },
+          600: { value: "var(--theme-success-600)" },
+          700: { value: "var(--theme-success-700)" },
+          800: { value: "var(--theme-success-800)" },
+          900: { value: "var(--theme-success-900)" },
+          950: { value: "var(--theme-success-950)" },
         },
 
         warning: {
-          50: { value: activeTheme.status.warning[50] },
-          100: { value: activeTheme.status.warning[100] },
-          200: { value: activeTheme.status.warning[200] },
-          300: { value: activeTheme.status.warning[300] },
-          400: { value: activeTheme.status.warning[400] },
-          500: { value: activeTheme.status.warning[500] },
-          600: { value: activeTheme.status.warning[600] },
-          700: { value: activeTheme.status.warning[700] },
-          800: { value: activeTheme.status.warning[800] },
-          900: { value: activeTheme.status.warning[900] },
-          950: { value: activeTheme.status.warning[950] },
+          50: { value: "var(--theme-warning-50)" },
+          100: { value: "var(--theme-warning-100)" },
+          200: { value: "var(--theme-warning-200)" },
+          300: { value: "var(--theme-warning-300)" },
+          400: { value: "var(--theme-warning-400)" },
+          500: { value: "var(--theme-warning-500)" },
+          600: { value: "var(--theme-warning-600)" },
+          700: { value: "var(--theme-warning-700)" },
+          800: { value: "var(--theme-warning-800)" },
+          900: { value: "var(--theme-warning-900)" },
+          950: { value: "var(--theme-warning-950)" },
         },
 
         danger: {
-          50: { value: activeTheme.status.danger[50] },
-          100: { value: activeTheme.status.danger[100] },
-          200: { value: activeTheme.status.danger[200] },
-          300: { value: activeTheme.status.danger[300] },
-          400: { value: activeTheme.status.danger[400] },
-          500: { value: activeTheme.status.danger[500] },
-          600: { value: activeTheme.status.danger[600] },
-          700: { value: activeTheme.status.danger[700] },
-          800: { value: activeTheme.status.danger[800] },
-          900: { value: activeTheme.status.danger[900] },
-          950: { value: activeTheme.status.danger[950] },
+          50: { value: "var(--theme-danger-50)" },
+          100: { value: "var(--theme-danger-100)" },
+          200: { value: "var(--theme-danger-200)" },
+          300: { value: "var(--theme-danger-300)" },
+          400: { value: "var(--theme-danger-400)" },
+          500: { value: "var(--theme-danger-500)" },
+          600: { value: "var(--theme-danger-600)" },
+          700: { value: "var(--theme-danger-700)" },
+          800: { value: "var(--theme-danger-800)" },
+          900: { value: "var(--theme-danger-900)" },
+          950: { value: "var(--theme-danger-950)" },
         },
       },
     },
@@ -172,42 +172,42 @@ const config = defineConfig({
         },
 
         // Header-specific colors
-        "header.bg": { value: activeTheme.ui.header.bg },
-        "header.title": { value: activeTheme.ui.header.title },
-        "header.nav": { value: activeTheme.ui.header.nav },
-        "header.nav.hover": { value: activeTheme.ui.header.navHover },
+        "header.bg": { value: "var(--theme-ui-header-bg)" },
+        "header.title": { value: "var(--theme-ui-header-title)" },
+        "header.nav": { value: "var(--theme-ui-header-nav)" },
+        "header.nav.hover": { value: "var(--theme-ui-header-nav-hover)" },
 
         // Panel colors
-        "panel.bg": { value: activeTheme.ui.panel.bg },
-        "panel.text": { value: activeTheme.ui.panel.text },
+        "panel.bg": { value: "var(--theme-ui-panel-bg)" },
+        "panel.text": { value: "var(--theme-ui-panel-text)" },
 
         // Sidebar colors
-        "sidebar.bg": { value: activeTheme.ui.sidebar.bg },
-        "sidebar.toolbar": { value: activeTheme.ui.sidebar.toolbar },
-        "sidebar.text": { value: activeTheme.ui.sidebar.text },
-        "sidebar.borderMain": { value: activeTheme.ui.sidebar.borderMain },
-        "sidebar.borderInternal": { value: activeTheme.ui.sidebar.borderInternal },
-        "sidebar.hoverBg": { value: activeTheme.ui.sidebar.hoverBg },
-        "sidebar.hoverText": { value: activeTheme.ui.sidebar.hoverText },
-        "sidebar.hoverButton": { value: activeTheme.ui.sidebar.hoverButton },
+        "sidebar.bg": { value: "var(--theme-ui-sidebar-bg)" },
+        "sidebar.toolbar": { value: "var(--theme-ui-sidebar-toolbar)" },
+        "sidebar.text": { value: "var(--theme-ui-sidebar-text)" },
+        "sidebar.borderMain": { value: "var(--theme-ui-sidebar-border-main)" },
+        "sidebar.borderInternal": { value: "var(--theme-ui-sidebar-border-internal)" },
+        "sidebar.hoverBg": { value: "var(--theme-ui-sidebar-hover-bg)" },
+        "sidebar.hoverText": { value: "var(--theme-ui-sidebar-hover-text)" },
+        "sidebar.hoverButton": { value: "var(--theme-ui-sidebar-hover-button)" },
 
         // Tabs colors
-        "tabs.bg": { value: activeTheme.ui.tabs.bg },
-        "tabs.border": { value: activeTheme.ui.tabs.border },
-        "tabs.activeBg": { value: activeTheme.ui.tabs.activeBg },
-        "tabs.activeText": { value: activeTheme.ui.tabs.activeText },
-        "tabs.inactiveBg": { value: activeTheme.ui.tabs.inactiveBg },
-        "tabs.inactiveText": { value: activeTheme.ui.tabs.inactiveText },
-        "tabs.hoverBg": { value: activeTheme.ui.tabs.hoverBg },
-        "tabs.hoverText": { value: activeTheme.ui.tabs.hoverText },
+        "tabs.bg": { value: "var(--theme-ui-tabs-bg)" },
+        "tabs.border": { value: "var(--theme-ui-tabs-border)" },
+        "tabs.activeBg": { value: "var(--theme-ui-tabs-active-bg)" },
+        "tabs.activeText": { value: "var(--theme-ui-tabs-active-text)" },
+        "tabs.inactiveBg": { value: "var(--theme-ui-tabs-inactive-bg)" },
+        "tabs.inactiveText": { value: "var(--theme-ui-tabs-inactive-text)" },
+        "tabs.hoverBg": { value: "var(--theme-ui-tabs-hover-bg)" },
+        "tabs.hoverText": { value: "var(--theme-ui-tabs-hover-text)" },
 
         // Editor colors
-        "editor.bg": { value: activeTheme.ui.editor.bg },
-        "editor.text": { value: activeTheme.ui.editor.text },
-        "editor.lineNumbers": { value: activeTheme.ui.editor.lineNumbers },
-        "editor.lineNumbersText": { value: activeTheme.ui.editor.lineNumbersText },
-        "editor.lineNumbersBorder": { value: activeTheme.ui.editor.lineNumbersBorder },
-        "editor.inputBorder": { value: activeTheme.ui.editor.inputBorder },
+        "editor.bg": { value: "var(--theme-ui-editor-bg)" },
+        "editor.text": { value: "var(--theme-ui-editor-text)" },
+        "editor.lineNumbers": { value: "var(--theme-ui-editor-line-numbers)" },
+        "editor.lineNumbersText": { value: "var(--theme-ui-editor-line-numbers-text)" },
+        "editor.lineNumbersBorder": { value: "var(--theme-ui-editor-line-numbers-border)" },
+        "editor.inputBorder": { value: "var(--theme-ui-editor-input-border)" },
       },
     },
     // Customize text styles
@@ -226,9 +226,3 @@ const config = defineConfig({
 });
 
 export const system = createSystem(config, defaultConfig);
-
-/**
- * Export the active theme for use in non-Chakra contexts
- * (canvas rendering, custom components, etc.)
- */
-export { activeTheme };

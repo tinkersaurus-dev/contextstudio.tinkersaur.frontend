@@ -7,6 +7,7 @@
 
 export * from "./types";
 export * from "./theme-registry";
+export * from "./theme-css-vars";
 export { defaultTheme } from "./default.theme";
 export { lightTheme } from "./light.theme";
 export { darkTheme } from "./dark.theme";

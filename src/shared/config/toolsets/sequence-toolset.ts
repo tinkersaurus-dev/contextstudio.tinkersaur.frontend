@@ -10,7 +10,10 @@
 import { LuUser, LuBox, LuArrowRight, LuRectangleVertical } from 'react-icons/lu';
 import { ToolType, type Toolset } from '@/entities/tool';
 import { ShapeType } from '@/entities/shape/model/types';
-import { activeTheme } from '@/app/theme';
+import { getActiveTheme } from '@/app/themes/theme-registry';
+
+// Get theme colors for toolset initialization
+const activeTheme = getActiveTheme();
 
 /**
  * Sequence Diagram Toolset

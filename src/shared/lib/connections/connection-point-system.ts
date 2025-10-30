@@ -8,8 +8,8 @@
 import type { Position, Dimensions } from '@/entities/diagram-entity';
 import type { AnchorPosition } from '@/entities/connector/model/types';
 import type { Shape } from '@/entities/shape';
-import { CANVAS_COLORS, CONNECTION_POINT_CONFIG } from '@/shared/config/canvas-config';
-import { activeTheme } from '@/app/theme';
+import { CANVAS_COLORS, CONNECTION_POINT_CONFIG, getCanvasColors } from '@/shared/config/canvas-config';
+import { getThemeCSSVar } from '@/app/themes/theme-css-vars';
 
 // ============================================================================
 // GEOMETRY UTILITIES
@@ -487,13 +487,14 @@ export class ConnectionPointSystem {
       ctx.arc(position.x, position.y, pointRadius, 0, Math.PI * 2);
 
       // Fill
+      const colors = getCanvasColors();
       ctx.fillStyle = isHighlighted
-        ? CANVAS_COLORS.connectionPointHover
-        : CANVAS_COLORS.connectionPoint;
+        ? colors.connectionPointHover
+        : colors.connectionPoint;
       ctx.fill();
 
       // Stroke (border for visibility)
-      ctx.strokeStyle = activeTheme.canvas.connectionPoints.border;
+      ctx.strokeStyle = getThemeCSSVar("--theme-canvas-connection-points-border") || "#ffffff";
       ctx.lineWidth = strokeWidth;
       ctx.stroke();
     });

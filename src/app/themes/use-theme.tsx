@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import type { ThemeConfig } from "./types";
 import { getTheme, getThemeIds } from "./theme-registry";
+import { injectThemeCSSVars } from "./theme-css-vars";
 
 interface ThemeContextValue {
   /** Current active theme */
@@ -45,6 +46,9 @@ interface ThemeProviderProps {
  *
  * Provides theme context and allows runtime theme switching.
  * Persists theme selection to localStorage.
+ *
+ * Theme changes are applied instantly via CSS variable injection,
+ * eliminating the need for page reloads.
  */
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [themeId, setThemeId] = useState<string>(getInitialThemeId);
@@ -58,6 +62,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const currentTheme = getTheme(themeId);
   const availableThemeIds = getThemeIds();
 
+  // Inject theme CSS variables whenever the theme changes
+  useEffect(() => {
+    if (!mounted) return;
+
+    // Inject the new theme's CSS variables
+    injectThemeCSSVars(currentTheme);
+  }, [themeId, mounted, currentTheme]);
+
   const handleSetTheme = (newThemeId: string) => {
     setThemeId(newThemeId);
 
@@ -66,11 +78,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       localStorage.setItem(THEME_STORAGE_KEY, newThemeId);
     }
 
-    // Force a page reload to apply the new theme
-    // This is necessary because theme colors are loaded at build time
-    if (typeof window !== "undefined") {
-      window.location.reload();
-    }
+    // No page reload needed! CSS variables update instantly.
   };
 
   const value: ThemeContextValue = {

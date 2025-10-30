@@ -1,4 +1,4 @@
-import { activeTheme } from "@/app/theme";
+import { getThemeCSSVar } from "@/app/themes/theme-css-vars";
 
 /**
  * Canvas Configuration
@@ -6,7 +6,7 @@ import { activeTheme } from "@/app/theme";
  * Centralized configuration for all canvas-related settings including zoom, grid, colors, and defaults.
  * This provides a single source of truth for canvas behavior and theming.
  *
- * Colors are now loaded from the active theme system.
+ * Colors are loaded dynamically from CSS variables to support runtime theme switching.
  */
 
 // ============================================================================
@@ -65,11 +65,13 @@ export interface GridConfig {
 
 /**
  * Default grid configuration
+ *
+ * Note: gridColor is a fallback. Use getCanvasColors().gridMinor for runtime theme support.
  */
 export const DEFAULT_GRID_CONFIG: GridConfig = {
   minorGridSize: 20,
   majorGridSize: 100,
-  gridColor: activeTheme.canvas.grid.minor,
+  gridColor: "#CED8F7", // Fallback color
   minorLineWidth: 0.5,
   majorLineWidth: 1,
 } as const;
@@ -89,38 +91,95 @@ export const GRID_EPSILON = 0.01;
 // ============================================================================
 
 /**
- * Canvas color palette for consistent theming
- * All colors are now loaded from the active theme system.
+ * Canvas color palette interface
  */
-export const CANVAS_COLORS = {
+export interface CanvasColors {
   // Background
-  background: activeTheme.canvas.background,
+  background: string;
 
   // Grid
-  gridMinor: activeTheme.canvas.grid.minor,
-  gridMajor: activeTheme.canvas.grid.major,
+  gridMinor: string;
+  gridMajor: string;
 
   // Selection
-  selectionBorder: activeTheme.canvas.selection.border,
-  selectionFill: activeTheme.canvas.selection.fill,
+  selectionBorder: string;
+  selectionFill: string;
 
   // Selection Box (multi-select)
-  selectionBoxBorder: activeTheme.canvas.selectionBox.border,
-  selectionBoxFill: activeTheme.canvas.selectionBox.fill,
+  selectionBoxBorder: string;
+  selectionBoxFill: string;
 
   // Default Shape Colors
-  defaultShapeFill: activeTheme.canvas.shapes.fill,
-  defaultShapeStroke: activeTheme.canvas.shapes.stroke,
+  defaultShapeFill: string;
+  defaultShapeStroke: string;
 
   // Connector Colors
-  connectorStroke: activeTheme.canvas.connectors.default,
-  connectorStrokeSelected: activeTheme.canvas.connectors.selected,
-  connectorStrokeHover: activeTheme.canvas.connectors.hover,
+  connectorStroke: string;
+  connectorStrokeSelected: string;
+  connectorStrokeHover: string;
 
   // Connection Point Colors
-  connectionPoint: activeTheme.canvas.connectionPoints.default,
-  connectionPointHover: activeTheme.canvas.connectionPoints.hover,
-} as const;
+  connectionPoint: string;
+  connectionPointHover: string;
+}
+
+/**
+ * Get current canvas colors from CSS variables
+ *
+ * This function reads theme colors dynamically from CSS variables,
+ * allowing canvas rendering to respond to theme changes without reloads.
+ *
+ * Call this function each time you need canvas colors to ensure you
+ * get the current theme's values.
+ *
+ * @returns Canvas color palette with current theme values
+ *
+ * @example
+ * ```tsx
+ * const colors = getCanvasColors();
+ * ctx.fillStyle = colors.background;
+ * ctx.strokeStyle = colors.selectionBorder;
+ * ```
+ */
+export function getCanvasColors(): CanvasColors {
+  return {
+    // Background
+    background: getThemeCSSVar("--theme-canvas-background") || "#f7f7f7",
+
+    // Grid
+    gridMinor: getThemeCSSVar("--theme-canvas-grid-minor") || "#CED8F7",
+    gridMajor: getThemeCSSVar("--theme-canvas-grid-major") || "#CED8F7",
+
+    // Selection
+    selectionBorder: getThemeCSSVar("--theme-canvas-selection-border") || "#ff6b35",
+    selectionFill: getThemeCSSVar("--theme-canvas-selection-fill") || "rgba(255, 107, 53, 0.1)",
+
+    // Selection Box (multi-select)
+    selectionBoxBorder: getThemeCSSVar("--theme-canvas-selection-box-border") || "#3b82f6",
+    selectionBoxFill: getThemeCSSVar("--theme-canvas-selection-box-fill") || "rgba(59, 130, 246, 0.1)",
+
+    // Default Shape Colors
+    defaultShapeFill: getThemeCSSVar("--theme-canvas-shapes-fill") || "#ffffff",
+    defaultShapeStroke: getThemeCSSVar("--theme-canvas-shapes-stroke") || "#000000",
+
+    // Connector Colors
+    connectorStroke: getThemeCSSVar("--theme-canvas-connectors-default") || "#000000",
+    connectorStrokeSelected: getThemeCSSVar("--theme-canvas-connectors-selected") || "#ff6b35",
+    connectorStrokeHover: getThemeCSSVar("--theme-canvas-connectors-hover") || "#3b82f6",
+
+    // Connection Point Colors
+    connectionPoint: getThemeCSSVar("--theme-canvas-connection-points-default") || "#3b82f6",
+    connectionPointHover: getThemeCSSVar("--theme-canvas-connection-points-hover") || "#ff6b35",
+  };
+}
+
+/**
+ * Legacy CANVAS_COLORS constant
+ *
+ * @deprecated Use getCanvasColors() instead for dynamic theme support.
+ * This constant is kept for backwards compatibility but returns stale values.
+ */
+export const CANVAS_COLORS = getCanvasColors();
 
 // ============================================================================
 // RENDERING CONSTANTS
