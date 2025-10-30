@@ -9,6 +9,7 @@
  */
 
 import { Shape } from '@/entities/shape';
+import { Connector } from '@/entities/connector';
 import { EntitySystem } from '@/shared/lib/entity-system';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/result';
 import {
@@ -69,10 +70,10 @@ export interface ShapeManagementState {
 export function createShapeManagementSlice(
   initialShapes: Shape[],
   executeCommand: (command: Command) => void,
-  getAllConnectorsForShape: (shapeId: string) => any[],
+  getAllConnectorsForShape: (shapeId: string) => Connector[],
   updateConnectorsForShapeMove: (shapeId: string) => void
 ) {
-  return (set: any, get: any): ShapeManagementState => ({
+  return (set: (fn: Partial<ShapeManagementState> | ((state: ShapeManagementState) => Partial<ShapeManagementState>)) => void, get: () => ShapeManagementState): ShapeManagementState => ({
     // Initial state
     shapes: [...initialShapes],
     editingShapeId: null,
@@ -194,7 +195,7 @@ export function createShapeManagementSlice(
         connectors,
         get()._internalDeleteShape,
         get()._internalAddShape,
-        (connector: any) => {
+        () => {
           // This will be provided by the connector store
           // For now, we'll handle this in the composition layer
         }

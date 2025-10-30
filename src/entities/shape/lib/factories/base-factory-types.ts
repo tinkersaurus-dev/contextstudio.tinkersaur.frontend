@@ -5,7 +5,7 @@
  * Reduces duplication across different shape factories.
  */
 
-import type { PositionReference } from '@/shared/lib/shape-position-utils';
+import type { PositionReference } from '@/shared/lib/geometry';
 
 /**
  * Base options common to all shape creation functions

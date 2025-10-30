@@ -1,38 +1,15 @@
 /**
- * Entity Bounds
+ * Bounds Utilities
  *
- * Defines bounding box interface and utilities for all diagram entities.
- * Provides consistent bounds calculation and manipulation across shapes and connectors.
+ * Comprehensive utilities for bounding box calculations, collision detection,
+ * and spatial queries. Consolidates all bounds-related logic in one place.
  */
 
 import type { DiagramEntity } from '@/entities/diagram-entity';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
 import { getConnectorEndpoints } from '@/entities/connector';
-
-/**
- * Axis-aligned bounding box
- * Represents the rectangular area occupied by an entity
- */
-export interface Bounds {
-  /** Left edge X coordinate */
-  x: number;
-  /** Top edge Y coordinate */
-  y: number;
-  /** Width of the bounding box */
-  width: number;
-  /** Height of the bounding box */
-  height: number;
-}
-
-/**
- * Context for bounds calculation
- * Required for entities that depend on other entities (e.g., connectors need shapes)
- */
-export interface BoundsContext {
-  /** Map of shape IDs to shapes (required for connector bounds) */
-  shapes?: Map<string, Shape>;
-}
+import type { Bounds, BoundsContext } from './types';
 
 /**
  * Get the bounding box for any diagram entity
@@ -191,23 +168,6 @@ export function expandBounds(bounds: Bounds, margin: number): Bounds {
     y: bounds.y - margin,
     width: bounds.width + margin * 2,
     height: bounds.height + margin * 2,
-  };
-}
-
-/**
- * Get the center point of a bounding box
- *
- * @param bounds - Bounding box
- * @returns Center point { x, y }
- *
- * @example
- * const center = getBoundsCenter(bounds);
- * console.log(center); // { x: 160, y: 140 }
- */
-export function getBoundsCenter(bounds: Bounds): { x: number; y: number } {
-  return {
-    x: bounds.x + bounds.width / 2,
-    y: bounds.y + bounds.height / 2,
   };
 }
 

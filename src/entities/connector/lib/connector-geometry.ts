@@ -8,7 +8,7 @@
 import type { Position, Dimensions } from '@/entities/diagram-entity';
 import type { Connector, AnchorPosition } from '../model/types';
 import type { Shape } from '@/entities/shape';
-import { getConnectionPointPosition } from '@/shared/lib/connection-points';
+import { getConnectionPointPosition } from '@/shared/lib/geometry';
 
 /**
  * Calculate actual start and end positions of a connector based on connected shapes

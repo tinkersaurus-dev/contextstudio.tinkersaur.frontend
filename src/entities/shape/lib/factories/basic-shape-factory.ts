@@ -10,7 +10,7 @@ import {
   STROKE_WIDTHS,
 } from '@/shared/config/canvas-config';
 import { generateShapeId } from '@/shared/lib/id-generator';
-import { calculatePosition } from '@/shared/lib/shape-position-utils';
+import { calculatePosition } from '@/shared/lib/geometry';
 import { DiagramEntityType } from '@/entities/diagram-entity';
 import type { RectangleShape } from '../../model/types';
 import type { RectangularShapeOptions } from './base-factory-types';

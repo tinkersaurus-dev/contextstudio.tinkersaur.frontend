@@ -69,7 +69,7 @@ export function createConnectorManagementSlice(
   executeCommand: (command: Command) => void,
   getShapes: () => Shape[]
 ) {
-  return (set: any, get: any): ConnectorManagementState => ({
+  return (set: (fn: Partial<ConnectorManagementState> | ((state: ConnectorManagementState) => Partial<ConnectorManagementState>)) => void, get: () => ConnectorManagementState): ConnectorManagementState => ({
     // Initial state
     connectors: [...initialConnectors],
     isConnectorMode: false,

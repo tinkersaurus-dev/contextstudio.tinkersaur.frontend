@@ -52,7 +52,7 @@ export function createSelectionSlice(
   getShapes: () => Shape[],
   getConnectors: () => Connector[]
 ) {
-  return (set: any, get: any): SelectionState => ({
+  return (set: (fn: Partial<SelectionState> | ((state: SelectionState) => Partial<SelectionState>)) => void, get: () => SelectionState): SelectionState => ({
     // Initial state
     selectedEntityIds: new Set<string>(),
     draggingEntityIds: new Set<string>(),

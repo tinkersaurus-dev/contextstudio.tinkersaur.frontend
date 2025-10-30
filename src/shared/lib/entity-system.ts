@@ -28,7 +28,7 @@ import {
   getShapeBounds,
   getConnectorBounds,
   type Bounds,
-} from './entity-bounds';
+} from './geometry';
 import {
   validateEntity,
   validateShape,

@@ -17,7 +17,7 @@ import {
   getShapesNearPosition,
   anchorForAngle,
   angleFromPoints,
-} from './connection-points';
+} from './geometry';
 import { CANVAS_COLORS, CONNECTION_POINT_CONFIG } from '@/shared/config/canvas-config';
 import { activeTheme } from '@/app/theme';
 

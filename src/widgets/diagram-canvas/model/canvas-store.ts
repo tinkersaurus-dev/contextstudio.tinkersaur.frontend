@@ -87,7 +87,6 @@ export function createCanvasStore(diagram: Diagram) {
     const executeCommand = (command: Command) => get().commandHistory.execute(command);
     const getAllConnectorsForShape = (shapeId: string) => get().getAllConnectorsForShape(shapeId);
     const updateConnectorsForShapeMove = (shapeId: string) => get().updateConnectorsForShapeMove(shapeId);
-    const internalAddConnector = () => get()._internalAddConnector;
 
     // Create store slices
     const selectionSlice = createSelectionSlice(getShapes, getConnectors)(set, get);
@@ -123,6 +122,8 @@ export function createCanvasStore(diagram: Diagram) {
         }
 
         const connectors = get().getAllConnectorsForShape(id);
+        // Use dynamic import to avoid circular dependency
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { DeleteShapeCommand } = require('@/shared/lib/commands');
         const command = new DeleteShapeCommand(
           shape,

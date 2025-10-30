@@ -5,7 +5,7 @@
  * These provide a contract for what operations entities support.
  */
 
-import type { Bounds, BoundsContext } from './entity-bounds';
+import type { Bounds, BoundsContext } from './geometry';
 import type { ValidationResult } from './result';
 
 /**

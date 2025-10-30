@@ -12,7 +12,7 @@ import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
 import type { DiagramEntity } from '@/entities/diagram-entity';
 import { getConnectorEndpoints } from '@/entities/connector';
-import { distanceToLineSegment } from '@/shared/lib/connection-points';
+import { distanceToLineSegment } from '@/shared/lib/geometry';
 import { CONNECTOR_HIT_CONFIG } from '@/shared/config/canvas-config';
 import { createShapeMap } from '@/shared/lib/map-utils';
 

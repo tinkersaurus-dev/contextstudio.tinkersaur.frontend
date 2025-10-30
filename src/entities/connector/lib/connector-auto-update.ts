@@ -7,7 +7,7 @@
 
 import type { Connector, ConnectionPoint } from '../model/types';
 import type { Shape } from '@/entities/shape';
-import { getNearestAnchor } from '@/shared/lib/connection-points';
+import { getNearestAnchor } from '@/shared/lib/geometry';
 
 /**
  * Calculate optimal connection points for a connector based on shape positions
