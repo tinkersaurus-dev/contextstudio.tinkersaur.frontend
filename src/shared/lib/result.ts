@@ -170,64 +170,6 @@ export function andThen<T, U>(
 }
 
 /**
- * Validation result that can contain multiple errors.
- * Useful for validating complex objects where multiple fields may be invalid.
- */
-export type ValidationResult =
-  | { valid: true }
-  | { valid: false; errors: string[] };
-
-/**
- * Creates a successful ValidationResult.
- *
- * @returns A valid ValidationResult
- */
-export function valid(): ValidationResult {
-  return { valid: true };
-}
-
-/**
- * Creates a failed ValidationResult with error messages.
- *
- * @param errors - Array of error messages
- * @returns An invalid ValidationResult
- */
-export function invalid(...errors: string[]): ValidationResult {
-  return { valid: false, errors };
-}
-
-/**
- * Combines multiple ValidationResults into one.
- * If any result is invalid, returns an invalid result with all errors combined.
- *
- * @param results - Array of ValidationResults to combine
- * @returns A combined ValidationResult
- *
- * @example
- * ```typescript
- * const results = combineValidations([
- *   valid(),
- *   invalid('Name is required'),
- *   invalid('Email is invalid')
- * ]);
- * // results = { valid: false, errors: ['Name is required', 'Email is invalid'] }
- * ```
- */
-export function combineValidations(
-  results: ValidationResult[]
-): ValidationResult {
-  const allErrors: string[] = [];
-
-  for (const result of results) {
-    if (!result.valid) {
-      allErrors.push(...result.errors);
-    }
-  }
-
-  return allErrors.length > 0 ? invalid(...allErrors) : valid();
-}
-
-/**
  * Error severity levels for categorizing different types of errors.
  */
 export enum ErrorSeverity {

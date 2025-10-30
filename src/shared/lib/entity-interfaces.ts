@@ -6,7 +6,7 @@
  */
 
 import type { Bounds, BoundsContext } from './geometry';
-import type { ValidationResult } from './result';
+import type { ValidationResult } from './validation-engine';
 
 /**
  * Context for rendering operations
