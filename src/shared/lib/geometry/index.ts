@@ -33,7 +33,7 @@ export {
   calculateShapeCenterForAnchorPosition,
 } from './positions';
 
-// Connection point utilities
+// Connection point utilities (re-exported from connection-point-system for backward compatibility)
 export {
   getConnectionPointPosition,
   STANDARD_ANCHORS,
@@ -44,4 +44,4 @@ export {
   anchorForAngle,
   findConnectionPointAtPosition,
   getShapesNearPosition,
-} from './connection-points';
+} from '../connection-point-system';

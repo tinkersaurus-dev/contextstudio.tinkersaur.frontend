@@ -326,7 +326,7 @@ export function DiagramCanvas({
         }
       },
       getSnapMode: () => snapModeRef.current,
-      shouldSkipDefaultHandlers: () => isHandlingConnectionPoint.current,
+      shouldSkipDefaultHandlers: () => isHandlingConnectionPoint.current.current,
       isConnectionPointAt: (worldX, worldY) => {
         // Don't block native handlers if we're already dragging a connector
         // (we need mouseup to work)
