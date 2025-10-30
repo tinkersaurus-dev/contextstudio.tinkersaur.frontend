@@ -77,11 +77,11 @@ export const darkTheme: ThemeConfig = {
 
   // Canvas-specific colors (optimized for dark mode)
   canvas: {
-    background: "#1a1a1a",
+    background: "#303030",
 
     grid: {
-      minor: "#2a2a2a",
-      major: "#2a2a2a",
+      minor: "#3f4957",
+      major: "#4c5561",
     },
 
     selection: {
@@ -129,7 +129,7 @@ export const darkTheme: ThemeConfig = {
 
     sidebar: {
       bg: "#1f2937",
-      toolbar: "#0055b8",
+      toolbar: "#333f50ff",
       text: "#bfdeff",
     },
 

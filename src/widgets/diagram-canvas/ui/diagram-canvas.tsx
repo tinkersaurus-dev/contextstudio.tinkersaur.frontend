@@ -12,9 +12,11 @@ import { createOrthogonalConnector } from '@/entities/connector';
 import { CanvasControls, ZoomControl } from '@/widgets/canvas-controls';
 import { ToolsetPopover, useToolsetPopoverStore } from '@/widgets/toolset-popover';
 import { TextEditOverlay } from '@/widgets/text-edit-overlay';
-import { MermaidViewer } from '@/widgets/mermaid-viewer';
+import { MermaidViewer, useMermaidViewerStore } from '@/widgets/mermaid-viewer';
+import { AiDiagramPromptCollapsible } from '@/widgets/ai-diagram-prompt';
 import { CanvasTransform } from '@/shared/lib/canvas-transform';
 import { ConnectionPointSystem } from '@/shared/lib/connection-point-system';
+import { getMermaidImporter } from '@/shared/lib/mermaid/mermaid-parser-registry';
 import { useConnectionPointInteraction } from '../hooks/use-connection-point-interaction';
 import { useCanvasRendering } from '../hooks/use-canvas-rendering';
 import type { DiagramType } from '@/shared/types/content-data';
@@ -412,6 +414,39 @@ export function DiagramCanvas({
     [editingShapeId, shapes]
   );
 
+  // Get Mermaid viewer state to calculate AI prompt offset
+  const isMermaidViewerOpen = useMermaidViewerStore((state) => state.isOpen);
+
+  // Memoize the AI-generated Mermaid handler
+  const handleMermaidGenerated = useCallback((mermaid: string) => {
+    // Parse the Mermaid syntax using the importer
+    const importerResult = getMermaidImporter(diagramType);
+    if (!importerResult.ok) {
+      console.error('Failed to get Mermaid importer:', importerResult.error);
+      return;
+    }
+
+    const importer = importerResult.value;
+    const importResult = importer.import(mermaid);
+
+    if (!importResult.ok) {
+      console.error('Failed to parse Mermaid syntax:', importResult.error);
+      return;
+    }
+
+    // Import the parsed shapes and connectors
+    importDiagram(importResult.value.shapes, importResult.value.connectors, 'replace');
+  }, [importDiagram, diagramType]);
+
+  // Calculate top offset for AI prompt based on Mermaid viewer state
+  // When collapsed: header height ~60px, When expanded: estimate ~300-400px
+  const aiPromptTopOffset = useMemo(() => {
+    const baseOffset = 16; // Initial top margin
+    const mermaidHeaderHeight = 60; // Approximate header height
+    const mermaidExpandedEstimate = isMermaidViewerOpen ? 300 : 0; // Estimate when expanded
+    return baseOffset + mermaidHeaderHeight + mermaidExpandedEstimate + 8; // 8px gap between panels
+  }, [isMermaidViewerOpen]);
+
   return (
     <div
       style={{ position: 'relative', width: '100%', height: '100%' }}
@@ -444,6 +479,11 @@ export function DiagramCanvas({
         connectors={connectors}
         diagramType={diagramType}
         onImport={importDiagram}
+      />
+      <AiDiagramPromptCollapsible
+        diagramType={diagramType}
+        onMermaidGenerated={handleMermaidGenerated}
+        topOffset={aiPromptTopOffset}
       />
     </div>
   );

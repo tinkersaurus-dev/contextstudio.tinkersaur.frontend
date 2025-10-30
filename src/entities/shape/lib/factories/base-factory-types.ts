@@ -17,6 +17,8 @@ export interface BaseCreateShapeOptions {
   strokeColor?: string;
   /** Stroke/border width in pixels */
   strokeWidth?: number;
+  /** Text color for shape labels */
+  textColor?: string;
   /** Reference point for the provided coordinates ('center' or 'top-left') */
   reference?: PositionReference;
 }

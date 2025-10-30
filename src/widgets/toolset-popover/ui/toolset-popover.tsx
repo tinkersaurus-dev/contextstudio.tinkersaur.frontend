@@ -157,10 +157,9 @@ export const ToolsetPopover = React.memo(function ToolsetPopover({ diagramType, 
                           minWidth="24px"
                           minHeight="24px"
                           padding={0}
-                          color='white'
+                          color='panel.text'
                           _hover={{
-                            bg: 'white',
-                            color: 'primary.900',
+                            bg: 'tertiary.300',
                           }}
                         >
                           <Icon />
@@ -195,10 +194,9 @@ export const ToolsetPopover = React.memo(function ToolsetPopover({ diagramType, 
                           minWidth="24px"
                           minHeight="24px"
                           padding={0}
-                          color='white'
+                          color='panel.text'
                           _hover={{
-                            bg: 'white',
-                            color: 'primary.900',
+                            bg: 'tertiary.300',
                           }}
                         >
                           <Icon />
@@ -233,10 +231,9 @@ export const ToolsetPopover = React.memo(function ToolsetPopover({ diagramType, 
                           minWidth="24px"
                           minHeight="24px"
                           padding={0}
-                          color='white'
+                          color='panel.text'
                           _hover={{
-                            bg: 'white',
-                            color: 'primary.900',
+                            bg: 'tertiary.300',
                           }}
                         >
                           <Icon />

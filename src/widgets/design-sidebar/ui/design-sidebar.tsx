@@ -34,13 +34,13 @@ export function DesignSidebar({ title }: DesignSidebarProps) {
       direction="column"
       width={`${SIDEBAR_CONFIG.width}px`}
       height="100%"
-      bg="white"
+      bg="panel.bg"
       borderRightWidth="1px"
       borderRightColor="border.muted"
     >
       <DesignSidebarHeader title={title} />
       <DesignSidebarToolbar onCreateFolder={handleCreateFolder} />
-      <Box flex="1" overflowY="auto" p={2} bg="white">
+      <Box flex="1" overflowY="auto" p={2} bg="panel.bg">
         <DesignNavigationTree ref={treeRef} />
       </Box>
     </Flex>

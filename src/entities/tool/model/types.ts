@@ -64,6 +64,9 @@ export interface ShapeConfig {
   /** Stroke width */
   strokeWidth?: number;
 
+  /** Text color for shape labels */
+  textColor?: string;
+
   /** Additional shape-specific properties */
   properties?: Record<string, unknown>;
 }

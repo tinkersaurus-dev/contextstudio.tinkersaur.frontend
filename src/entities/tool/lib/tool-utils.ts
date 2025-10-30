@@ -33,6 +33,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
     fillColor,
     strokeColor,
     strokeWidth,
+    textColor,
     properties = {},
   } = shapeConfig;
 
@@ -48,6 +49,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
+        textColor,
         reference: 'center',
       }));
 
@@ -61,6 +63,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
+        textColor,
         reference: 'center',
       }));
 
@@ -76,6 +79,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
+        textColor,
         reference: 'center',
       }));
 
@@ -87,6 +91,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
+        textColor,
         reference: 'center',
       }));
 
@@ -97,6 +102,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
+        textColor,
         reference: 'center',
       }));
 
@@ -109,6 +115,7 @@ export function createShapeFromTool(tool: SimpleTool, x: number, y: number): Sha
         fillColor,
         strokeColor,
         strokeWidth,
+        textColor,
         reference: 'center',
       }));
   }

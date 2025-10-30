@@ -39,6 +39,7 @@ export const sequenceToolset: Toolset = {
         fillColor: activeTheme.diagrams.sequence.actor.fill,
         strokeColor: activeTheme.diagrams.sequence.actor.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 40,
         },
@@ -57,6 +58,7 @@ export const sequenceToolset: Toolset = {
         fillColor: activeTheme.diagrams.sequence.lifeline.fill,
         strokeColor: activeTheme.diagrams.sequence.lifeline.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 4,
         },
@@ -75,6 +77,7 @@ export const sequenceToolset: Toolset = {
         fillColor: activeTheme.diagrams.sequence.activation.fill,
         strokeColor: activeTheme.diagrams.sequence.activation.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 2,
         },
@@ -93,6 +96,7 @@ export const sequenceToolset: Toolset = {
         fillColor: activeTheme.diagrams.sequence.note.fill,
         strokeColor: activeTheme.diagrams.sequence.note.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 4,
         },

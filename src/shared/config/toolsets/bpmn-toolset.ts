@@ -57,6 +57,7 @@ export const bpmnToolset: Toolset = {
         fillColor: activeTheme.diagrams.bpmn.task.fill,
         strokeColor: activeTheme.diagrams.bpmn.task.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 8,
         },
@@ -76,6 +77,7 @@ export const bpmnToolset: Toolset = {
         fillColor: activeTheme.diagrams.bpmn.task.fill,
         strokeColor: activeTheme.diagrams.bpmn.task.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 8,
         },
@@ -95,6 +97,7 @@ export const bpmnToolset: Toolset = {
         fillColor: activeTheme.diagrams.bpmn.task.fill,
         strokeColor: activeTheme.diagrams.bpmn.task.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 8,
         },
@@ -118,6 +121,7 @@ export const bpmnToolset: Toolset = {
         fillColor: activeTheme.diagrams.bpmn.event.fill,
         strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -134,6 +138,7 @@ export const bpmnToolset: Toolset = {
         fillColor: activeTheme.diagrams.bpmn.event.fill,
         strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -150,6 +155,7 @@ export const bpmnToolset: Toolset = {
         fillColor: activeTheme.diagrams.bpmn.event.fill,
         strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -166,6 +172,7 @@ export const bpmnToolset: Toolset = {
         fillColor: activeTheme.diagrams.bpmn.event.fill,
         strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -182,6 +189,7 @@ export const bpmnToolset: Toolset = {
         fillColor: activeTheme.diagrams.bpmn.event.fill,
         strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -198,6 +206,7 @@ export const bpmnToolset: Toolset = {
         fillColor: activeTheme.diagrams.bpmn.event.fill,
         strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
 
@@ -213,11 +222,12 @@ export const bpmnToolset: Toolset = {
       shapeConfig: {
         shapeType: 'gateway',
         subType: 'exclusive',
-        width: 50,
-        height: 50,
+        width: 40,
+        height: 40,
         fillColor: activeTheme.diagrams.bpmn.gateway.fill,
         strokeColor: activeTheme.diagrams.bpmn.gateway.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -229,11 +239,12 @@ export const bpmnToolset: Toolset = {
       shapeConfig: {
         shapeType: 'gateway',
         subType: 'inclusive',
-        width: 50,
-        height: 50,
+        width: 40,
+        height: 40,
         fillColor: activeTheme.diagrams.bpmn.gateway.fill,
         strokeColor: activeTheme.diagrams.bpmn.gateway.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -245,11 +256,12 @@ export const bpmnToolset: Toolset = {
       shapeConfig: {
         shapeType: 'gateway',
         subType: 'parallel',
-        width: 50,
-        height: 50,
+        width: 40,
+        height: 40,
         fillColor: activeTheme.diagrams.bpmn.gateway.fill,
         strokeColor: activeTheme.diagrams.bpmn.gateway.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
   ],

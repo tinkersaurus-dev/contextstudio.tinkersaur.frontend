@@ -27,7 +27,7 @@ export const TextEditOverlay = React.memo(function TextEditOverlay({
   onCancel,
   style,
 }: TextEditOverlayProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Focus and select text when editing starts
   useEffect(() => {
@@ -51,19 +51,22 @@ export const TextEditOverlay = React.memo(function TextEditOverlay({
     }
   }, [entity, onCommit]);
 
-  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLTextAreaElement>) => {
     handleCommit(e.target.value);
   }, [handleCommit]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      // Enter without shift commits the text
+      e.preventDefault();
       handleCommit(e.currentTarget.value);
     } else if (e.key === 'Escape') {
       onCancel();
     }
+    // Shift+Enter allows new lines in the textarea
   }, [handleCommit, onCancel]);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLInputElement>) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLTextAreaElement>) => {
     // Prevent event from bubbling to canvas handlers
     e.stopPropagation();
   }, []);
@@ -78,27 +81,34 @@ export const TextEditOverlay = React.memo(function TextEditOverlay({
   const centerY = entity.position.y + entity.dimensions.height / 2;
   const screenPos = transform.worldToScreen(centerX, centerY);
 
+  // Calculate rows based on maxLines property (default to 3)
+  const maxLines = entity.maxLines || 3;
+
   const defaultStyle: React.CSSProperties = {
     position: 'absolute',
     left: `${screenPos.x}px`,
     top: `${screenPos.y}px`,
     transform: 'translate(-50%, -50%)',
     minWidth: `${entity.dimensions.width * transform.scale}px`,
-    minHeight: '20px',
+    width: `${entity.dimensions.width * transform.scale}px`,
     fontSize: `${(entity.fontSize || 14) * transform.scale}px`,
     textAlign: 'center',
     border: '1px solid #0066cc',
     outline: 'none',
     background: 'white',
-    padding: '2px 4px',
+    padding: '4px 8px',
     zIndex: 1000,
+    resize: 'none',
+    overflow: 'hidden',
+    fontFamily: '"Nunito Sans Variable", "Nunito Sans", sans-serif',
+    lineHeight: entity.lineHeight || 1.2,
     ...style, // Allow custom style overrides
   };
 
   return (
-    <input
+    <textarea
       ref={inputRef}
-      type="text"
+      rows={maxLines}
       defaultValue={entity.text || ''}
       style={defaultStyle}
       onBlur={handleBlur}

@@ -27,6 +27,7 @@ import type {
 } from './base-factory-types';
 import { Result, ok, err } from '@/shared/lib/result';
 import { validateShape } from '@/shared/lib/entity-validation';
+import { getDefaultTextConfig } from '@/shared/lib/text-wrapping-utils';
 
 // ============================================================================
 // BPMN Task Shape
@@ -63,10 +64,14 @@ export function createTask(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
+    textColor,
     reference = 'center',
   } = options;
 
   const position = calculatePosition(x, y, width, height, { reference });
+
+  // Get default text configuration for this shape type
+  const textConfig = getDefaultTextConfig('task');
 
   const shape: TaskShape = {
     id: generateShapeId(),
@@ -79,7 +84,13 @@ export function createTask(
     fillColor,
     strokeColor,
     strokeWidth,
+    textColor,
     text: '',
+    textWrap: true,
+    maxLines: textConfig.maxLines,
+    textTruncation: 'ellipsis',
+    textPlacement: textConfig.placement,
+    lineHeight: textConfig.lineHeight,
   };
 
   const validationResult = validateShape(shape);
@@ -121,10 +132,14 @@ export function createEvent(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
+    textColor,
     reference = 'center',
   } = options;
 
   const position = calculatePosition(x, y, diameter, diameter, { reference });
+
+  // Get default text configuration for this shape type
+  const textConfig = getDefaultTextConfig('event');
 
   const shape: EventShape = {
     id: generateShapeId(),
@@ -136,7 +151,13 @@ export function createEvent(
     fillColor,
     strokeColor,
     strokeWidth,
+    textColor,
     text: '',
+    textWrap: true,
+    maxLines: textConfig.maxLines,
+    textTruncation: 'ellipsis',
+    textPlacement: textConfig.placement,
+    lineHeight: textConfig.lineHeight,
   };
 
   const validationResult = validateShape(shape);
@@ -217,15 +238,19 @@ export function createGateway(
   options: CreateGatewayOptions = {}
 ): Result<GatewayShape> {
   const {
-    size = 50,
+    size = 40,
     subType,
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
+    textColor,
     reference = 'center',
   } = options;
 
   const position = calculatePosition(x, y, size, size, { reference });
+
+  // Get default text configuration for this shape type
+  const textConfig = getDefaultTextConfig('gateway');
 
   const shape: GatewayShape = {
     id: generateShapeId(),
@@ -237,7 +262,13 @@ export function createGateway(
     fillColor,
     strokeColor,
     strokeWidth,
+    textColor,
     text: '',
+    textWrap: true,
+    maxLines: textConfig.maxLines,
+    textTruncation: 'ellipsis',
+    textPlacement: textConfig.placement,
+    lineHeight: textConfig.lineHeight,
   };
 
   const validationResult = validateShape(shape);
@@ -276,10 +307,14 @@ export function createPool(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
+    textColor,
     reference = 'center',
   } = options;
 
   const position = calculatePosition(x, y, width, height, { reference });
+
+  // Get default text configuration for this shape type
+  const textConfig = getDefaultTextConfig('pool');
 
   const shape: PoolShape = {
     id: generateShapeId(),
@@ -290,7 +325,13 @@ export function createPool(
     fillColor,
     strokeColor,
     strokeWidth,
+    textColor,
     text: '',
+    textWrap: true,
+    maxLines: textConfig.maxLines,
+    textTruncation: 'ellipsis',
+    textPlacement: textConfig.placement,
+    lineHeight: textConfig.lineHeight,
   };
 
   const validationResult = validateShape(shape);

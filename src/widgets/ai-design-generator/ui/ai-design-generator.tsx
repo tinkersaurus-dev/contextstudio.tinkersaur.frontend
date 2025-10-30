@@ -159,7 +159,13 @@ export function AIDesignGenerator() {
         });
 
         // Add right-click listener
-        previewRef.current.addEventListener('contextmenu', handleContextMenu);
+        const currentPreview = previewRef.current;
+        currentPreview.addEventListener('contextmenu', handleContextMenu);
+
+        // Return cleanup function with captured ref
+        return () => {
+          currentPreview.removeEventListener('contextmenu', handleContextMenu);
+        };
       } catch (err) {
         console.error('Error rendering generated HTML:', err);
         if (previewRef.current) {
@@ -171,12 +177,6 @@ export function AIDesignGenerator() {
         }
       }
     }
-
-    return () => {
-      if (previewRef.current) {
-        previewRef.current.removeEventListener('contextmenu', handleContextMenu);
-      }
-    };
   }, [generatedCode]);
 
   // Close context menu on click outside

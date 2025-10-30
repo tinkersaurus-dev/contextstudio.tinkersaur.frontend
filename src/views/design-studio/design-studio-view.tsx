@@ -22,6 +22,7 @@ export function DesignStudioView() {
       width="100vw"
       height={`calc(100vh - ${HEADER_HEIGHT}px)`}
       overflow="hidden"
+      bg="panel.bg"
     >
       {/* Sidebar */}
       <DesignSidebar />

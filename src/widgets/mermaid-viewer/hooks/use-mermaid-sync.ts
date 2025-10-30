@@ -42,9 +42,16 @@ export function useMermaidSync({
       return;
     }
 
+    // Handle empty diagrams - clear syntax and error to show friendly message
+    if (shapes.length === 0) {
+      setSyntax('');
+      setError(null);
+      return;
+    }
+
     // Get the appropriate exporter for this diagram type with metadata enabled
     const exporterResult = getMermaidExporter(diagramType, {
-      includeMetadata: true,
+      includeMetadata: false,
       includeComments: false,
     });
 
@@ -63,7 +70,8 @@ export function useMermaidSync({
       return;
     }
 
-    // Update the store with the generated syntax
+    // Clear any previous errors and update the store with the generated syntax
+    setError(null);
     setSyntax(exportResult.value.syntax);
   }, [shapes, connectors, diagramType, enabled, setSyntax, setError]);
 

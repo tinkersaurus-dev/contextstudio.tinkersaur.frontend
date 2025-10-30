@@ -16,6 +16,7 @@ import type { RectangleShape } from '../../model/types';
 import type { RectangularShapeOptions } from './base-factory-types';
 import { Result, ok, err } from '@/shared/lib/result';
 import { validateShape } from '@/shared/lib/entity-validation';
+import { getDefaultTextConfig } from '@/shared/lib/text-wrapping-utils';
 
 // ============================================================================
 // Rectangle Shape
@@ -62,11 +63,15 @@ export function createRectangle(
     fillColor = CANVAS_COLORS.defaultShapeFill,
     strokeColor = CANVAS_COLORS.defaultShapeStroke,
     strokeWidth = STROKE_WIDTHS.shape,
+    textColor,
     reference = 'center',
   } = options;
 
   // Calculate position using utility function
   const position = calculatePosition(x, y, width, height, { reference });
+
+  // Get default text configuration for this shape type
+  const textConfig = getDefaultTextConfig('rectangle');
 
   const shape: RectangleShape = {
     id: generateShapeId(),
@@ -80,7 +85,13 @@ export function createRectangle(
     fillColor,
     strokeColor,
     strokeWidth,
+    textColor,
     text: '',
+    textWrap: true,
+    maxLines: textConfig.maxLines,
+    textTruncation: 'ellipsis',
+    textPlacement: textConfig.placement,
+    lineHeight: textConfig.lineHeight,
   };
 
   // Validate the created shape

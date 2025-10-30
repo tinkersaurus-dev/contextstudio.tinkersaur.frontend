@@ -31,10 +31,7 @@ export class BpmnMermaidExporter implements MermaidExporter {
   }
 
   validate(shapes: Shape[], connectors: Connector[]): Result<void> {
-    // Check for empty diagram
-    if (shapes.length === 0) {
-      return err('Cannot export empty diagram');
-    }
+    // Empty diagrams are valid - they just export the diagram type declaration
 
     // Validate all connectors reference existing shapes
     const shapeIds = new Set(shapes.map(s => s.id));

@@ -39,6 +39,7 @@ export const dataFlowToolset: Toolset = {
         fillColor: activeTheme.diagrams.dataFlow.process.fill,
         strokeColor: activeTheme.diagrams.dataFlow.process.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -54,6 +55,7 @@ export const dataFlowToolset: Toolset = {
         fillColor: activeTheme.diagrams.dataFlow.dataStore.fill,
         strokeColor: activeTheme.diagrams.dataFlow.dataStore.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 4,
         },
@@ -72,6 +74,7 @@ export const dataFlowToolset: Toolset = {
         fillColor: activeTheme.diagrams.dataFlow.entity.fill,
         strokeColor: activeTheme.diagrams.dataFlow.entity.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 2,
         },
@@ -90,6 +93,7 @@ export const dataFlowToolset: Toolset = {
         fillColor: activeTheme.diagrams.dataFlow.subprocess.fill,
         strokeColor: activeTheme.diagrams.dataFlow.subprocess.stroke,
         strokeWidth: 0.5,
+        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 8,
         },

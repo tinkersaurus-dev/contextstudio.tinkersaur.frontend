@@ -1,5 +1,12 @@
 import { BaseShape } from '../model/types';
 import { renderSelectionIndicator } from '@/shared/lib/canvas-rendering-utils';
+import { getCanvasFontString } from '@/shared/lib/font-loader';
+import {
+  wrapText,
+  getDefaultTextConfig,
+  type TextTruncation,
+  type TextPlacement,
+} from '@/shared/lib/text-wrapping-utils';
 
 export interface BaseShapeProps {
   shape: BaseShape;
@@ -44,7 +51,7 @@ export function renderBaseShape(
 }
 
 /**
- * Renders text centered within a shape
+ * Renders text within or below a shape with optional wrapping
  * @param scale - Currently unused but available for future font size scaling based on zoom
  */
 function renderShapeText(
@@ -54,19 +61,84 @@ function renderShapeText(
 ): void {
   if (!shape.text) return;
 
-  const fontSize = shape.fontSize || 14;
+  const fontSize = shape.fontSize || 12;
   const textColor = shape.textColor || '#000000';
 
+  // Get default config for this shape type
+  const defaultConfig = getDefaultTextConfig(shape.shapeType);
+
+  // Determine text wrapping settings (with shape-specific defaults)
+  const textWrap = shape.textWrap !== undefined ? shape.textWrap : true;
+  const maxLines = shape.maxLines || defaultConfig.maxLines;
+  const truncation: TextTruncation = shape.textTruncation || 'ellipsis';
+  const placement: TextPlacement = shape.textPlacement || defaultConfig.placement;
+  const lineHeight = shape.lineHeight || defaultConfig.lineHeight;
+
   ctx.save();
-  ctx.font = `${fontSize}px Arial`;
+
+  // Use the application font for consistency
+  ctx.font = getCanvasFontString(fontSize, 400);
   ctx.fillStyle = textColor;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  // Center text in shape
-  const centerX = shape.position.x + shape.dimensions.width / 2;
-  const centerY = shape.position.y + shape.dimensions.height / 2;
+  // If text wrapping is disabled, use legacy single-line rendering
+  if (!textWrap) {
+    const centerX = shape.position.x + shape.dimensions.width / 2;
+    const centerY = shape.position.y + shape.dimensions.height / 2;
+    ctx.fillText(shape.text, centerX, centerY);
+    ctx.restore();
+    return;
+  }
 
-  ctx.fillText(shape.text, centerX, centerY);
+  // Calculate available width for text (with padding)
+  const horizontalPadding = 8;
+  let maxWidth = shape.dimensions.width - horizontalPadding * 2;
+
+  // For text placed below the shape, use a minimum width to prevent very short lines
+  // This is especially important for small shapes like events (40px) and gateways (40px)
+  if (placement === 'below') {
+    const minTextWidth = 120; // Minimum width for readable text
+    maxWidth = Math.max(maxWidth, minTextWidth);
+  }
+
+  // Wrap the text into multiple lines
+  const wrappedResult = wrapText(ctx, shape.text, {
+    maxWidth,
+    maxLines,
+    truncation,
+    lineHeight,
+  });
+
+  if (wrappedResult.lines.length === 0) {
+    ctx.restore();
+    return;
+  }
+
+  const lineHeightPx = fontSize * lineHeight;
+  const centerX = shape.position.x + shape.dimensions.width / 2;
+
+  // Calculate starting Y position based on placement
+  let startY: number;
+
+  if (placement === 'below') {
+    // Position text below the shape
+    const strokeWidth = shape.strokeWidth || 1;
+    const belowOffset = 5; // pixels below the shape
+    startY = shape.position.y + shape.dimensions.height + strokeWidth + belowOffset;
+  } else {
+    // Position text inside the shape (centered vertically)
+    const totalTextHeight = wrappedResult.totalHeight;
+    const shapeHeight = shape.dimensions.height;
+    startY = shape.position.y + (shapeHeight - totalTextHeight) / 2;
+  }
+
+  // Render each line
+  for (let i = 0; i < wrappedResult.lines.length; i++) {
+    const line = wrappedResult.lines[i];
+    const lineY = startY + i * lineHeightPx + lineHeightPx / 2;
+    ctx.fillText(line, centerX, lineY);
+  }
+
   ctx.restore();
 }

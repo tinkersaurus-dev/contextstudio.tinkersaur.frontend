@@ -7,8 +7,9 @@
  * Handles window resize events and ensures the canvas is redrawn appropriately.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { renderCanvas } from '../lib/canvas-renderer';
+import { ensureFontsLoaded } from '@/shared/lib/font-loader';
 import type { CanvasTransform } from '@/shared/lib/canvas-transform';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
@@ -54,6 +55,7 @@ export interface UseCanvasRenderingOptions {
  * Custom hook to manage canvas rendering
  *
  * Sets up an effect that:
+ * - Ensures fonts are loaded before rendering
  * - Renders the canvas whenever relevant state changes
  * - Handles window resize events to trigger re-renders
  * - Cleans up resize listener on unmount
@@ -76,10 +78,24 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
     connectorDragEnd,
   } = options;
 
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  // Ensure fonts are loaded on mount
+  useEffect(() => {
+    ensureFontsLoaded().then(() => {
+      setFontsLoaded(true);
+    });
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) {
       console.warn('[useCanvasRendering] No canvas ref available');
+      return;
+    }
+
+    // Don't render until fonts are loaded
+    if (!fontsLoaded) {
       return;
     }
 
@@ -134,5 +150,6 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
     hasMovedDuringDrag,
     connectorDragStart,
     connectorDragEnd,
+    fontsLoaded,
   ]);
 }

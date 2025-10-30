@@ -96,9 +96,11 @@ export const MermaidViewer = React.memo(function MermaidViewer({
                 transition="transform 0.2s"
                 _open={{ transform: 'rotate(180deg)' }}
               >
-                <LuChevronDown />
+                <Box color="panel.text">
+                  <LuChevronDown />
+                </Box>
               </Collapsible.Indicator>
-              <Text fontWeight="medium" fontSize="sm">
+              <Text fontWeight="bold" fontSize="sm" color="panel.text">
                 Mermaid Syntax
               </Text>
             </HStack>
@@ -113,7 +115,9 @@ export const MermaidViewer = React.memo(function MermaidViewer({
                 onClick={openImportDialog}
                 title="Import Mermaid diagram"
               >
+                <Box color="panel.text">
                 <LuDownload />
+                </Box>
               </IconButton>
               <IconButton
                 aria-label="Copy to clipboard"
@@ -123,7 +127,9 @@ export const MermaidViewer = React.memo(function MermaidViewer({
                 disabled={!mermaidSyntax || !!errorMessage}
                 title="Copy Mermaid syntax"
               >
+                <Box color="panel.text">
                 {copied ? <LuCheck /> : <LuCopy />}
+                </Box>
               </IconButton>
             </HStack>
           )}
@@ -180,7 +186,7 @@ export const MermaidViewer = React.memo(function MermaidViewer({
                   color: 'gray.400',
                 }}
               >
-                <Text>No diagram to export</Text>
+                <Text>Mermaid syntax will generate when you add shapes</Text>
               </Box>
             )}
           </Box>

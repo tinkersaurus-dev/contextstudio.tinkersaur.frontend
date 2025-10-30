@@ -7,7 +7,7 @@
 
 "use client";
 
-import { HStack } from "@chakra-ui/react";
+import { HStack, Box } from "@chakra-ui/react";
 import { IconButton } from "@/shared/ui";
 import { LuFolderPlus } from "react-icons/lu";
 
@@ -39,7 +39,9 @@ export function DesignSidebarToolbar({
         size="sm"
         variant="ghost"
       >
+        <Box color="panel.text">
         <LuFolderPlus />
+        </Box>
       </IconButton>
     </HStack>
   );

@@ -24,7 +24,7 @@ export function SolutionManagementView() {
           </Text>
         </Box>
 
-        <Box bg="white" _dark={{ bg: "gray.800" }} borderRadius="lg" p={6} shadow="sm">
+        <Box bg="panel.bg" borderRadius="lg" p={6} shadow="sm">
           <SolutionTable />
         </Box>
       </Container>

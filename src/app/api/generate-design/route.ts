@@ -15,13 +15,6 @@ import type {
 // Initialize Bedrock client with Bearer Token authentication
 const bearerToken = process.env.AWS_BEARER_TOKEN_BEDROCK;
 
-// Custom credential provider for Bearer Token
-const tokenProvider = {
-  async getToken() {
-    return { token: bearerToken || '' };
-  },
-};
-
 const client = new BedrockRuntimeClient({
   region: process.env.AWS_REGION || 'us-east-1',
   ...(bearerToken

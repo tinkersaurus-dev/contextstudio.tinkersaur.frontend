@@ -90,6 +90,21 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
       rootNode: rootContent,
     }), [rootContent]);
 
+    // Get all node IDs for expanding all branches
+    const getAllNodeIds = useCallback((node: ContentNode): string[] => {
+      const ids: string[] = [];
+      if (node.type === 'folder' && node.children) {
+        ids.push(node.id);
+        node.children.forEach(child => {
+          ids.push(...getAllNodeIds(child));
+        });
+      }
+      return ids;
+    }, []);
+
+    // Memoize all expanded node IDs
+    const allExpandedIds = useMemo(() => getAllNodeIds(rootContent), [rootContent, getAllNodeIds]);
+
     // Expose methods via ref
     useImperativeHandle(ref, () => ({
       createFolder,
@@ -153,6 +168,7 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
       <>
         <TreeView.Root
           collection={collection}
+          defaultExpandedValue={allExpandedIds}
           size="xs"
           color="sidebar.text"
           css={{
@@ -162,7 +178,7 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
           }}
         >
           <TreeView.Label srOnly>Project Navigation</TreeView.Label>
-          <TreeView.Tree gap="0">
+          <TreeView.Tree gap="0" bg="panel.bg">
             <TreeView.Node
               render={({ node, nodeState }) =>
                 nodeState.isBranch ? (

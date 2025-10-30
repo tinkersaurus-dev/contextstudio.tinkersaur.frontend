@@ -22,6 +22,10 @@ export interface EditableEntity {
     width: number;
     height: number;
   };
+  /** Maximum number of lines for text wrapping */
+  maxLines?: number;
+  /** Line height multiplier for multi-line text */
+  lineHeight?: number;
 }
 
 /**

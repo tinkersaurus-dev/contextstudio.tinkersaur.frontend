@@ -78,6 +78,16 @@ export interface BaseShape extends DiagramEntity {
   text?: string;
   fontSize?: number;
   textColor?: string;
+  /** Enable/disable text wrapping (default: true) */
+  textWrap?: boolean;
+  /** Maximum number of lines to display (default: varies by shape type) */
+  maxLines?: number;
+  /** How to truncate text that exceeds maxLines (default: 'ellipsis') */
+  textTruncation?: 'ellipsis' | 'clip' | 'none';
+  /** Where to place text relative to shape (default: varies by shape type) */
+  textPlacement?: 'inside' | 'below';
+  /** Line height multiplier for multi-line text (default: 1.2) */
+  lineHeight?: number;
 }
 
 export interface RectangleShape extends BaseShape {
