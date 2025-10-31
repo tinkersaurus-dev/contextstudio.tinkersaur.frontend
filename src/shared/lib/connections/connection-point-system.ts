@@ -8,8 +8,8 @@
 import type { Position, Dimensions } from '@/entities/diagram-entity';
 import type { AnchorPosition } from '@/entities/connector/model/types';
 import type { Shape } from '@/entities/shape';
-import { CANVAS_COLORS, CONNECTION_POINT_CONFIG, getCanvasColors } from '@/shared/config/canvas-config';
-import { getThemeCSSVar } from '@/app/themes/theme-css-vars';
+import { CONNECTION_POINT_CONFIG, getCanvasColors, STROKE_WIDTHS, DASH_PATTERNS } from '@/shared/config/canvas-config';
+import { getScaledLineWidth, getScaledDashPattern } from '@/shared/lib/rendering/canvas-utils';
 
 // ============================================================================
 // GEOMETRY UTILITIES
@@ -494,7 +494,7 @@ export class ConnectionPointSystem {
       ctx.fill();
 
       // Stroke (border for visibility)
-      ctx.strokeStyle = getThemeCSSVar("--theme-canvas-connection-points-border") || "#ffffff";
+      ctx.strokeStyle = colors.connectionPointBorder;
       ctx.lineWidth = strokeWidth;
       ctx.stroke();
     });
@@ -541,14 +541,16 @@ export class ConnectionPointSystem {
     endY: number,
     scale: number
   ): void {
+    const colors = getCanvasColors();
+
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(endX, endY);
 
     // Dashed line for preview
-    ctx.setLineDash([8 / scale, 4 / scale]);
-    ctx.strokeStyle = CANVAS_COLORS.connectionPoint;
-    ctx.lineWidth = 2 / scale;
+    ctx.setLineDash(getScaledDashPattern(DASH_PATTERNS.connectionPoint, scale));
+    ctx.strokeStyle = colors.connectionPoint;
+    ctx.lineWidth = getScaledLineWidth(STROKE_WIDTHS.connectionPoint, scale);
     ctx.stroke();
 
     // Reset line dash

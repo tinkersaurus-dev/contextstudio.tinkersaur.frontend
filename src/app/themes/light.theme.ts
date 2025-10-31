@@ -79,10 +79,7 @@ export const lightTheme: ThemeConfig = {
   canvas: {
     background: "#f7f7f7",
 
-    grid: {
-      minor: "#CED8F7",
-      major: "#CED8F7",
-    },
+    grid: "#CED8F7",
 
     selection: {
       border: "#ff6b35",

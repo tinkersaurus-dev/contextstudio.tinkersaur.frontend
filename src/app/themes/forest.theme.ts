@@ -79,10 +79,7 @@ export const forestTheme: ThemeConfig = {
   canvas: {
     background: "#fafaf9", // Warm light background
 
-    grid: {
-      minor: "#d6d3d1", // Light brown
-      major: "#d6d3d1",
-    },
+    grid: "#d6d3d1", // Light brown
 
     selection: {
       border: "#f97316", // Tertiary.500 (orange)

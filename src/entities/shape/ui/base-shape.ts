@@ -7,6 +7,7 @@ import {
   type TextTruncation,
   type TextPlacement,
 } from '@/shared/lib/rendering';
+import { getCanvasColors } from '@/shared/config/canvas-config';
 
 export interface BaseShapeProps {
   shape: BaseShape;
@@ -61,8 +62,9 @@ function renderShapeText(
 ): void {
   if (!shape.text) return;
 
+  const colors = getCanvasColors();
   const fontSize = shape.fontSize || 12;
-  const textColor = shape.textColor || '#000000';
+  const textColor = shape.textColor ?? colors.shapeText;
 
   // Get default config for this shape type
   const defaultConfig = getDefaultTextConfig(shape.shapeType);

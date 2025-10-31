@@ -13,7 +13,7 @@ import { CanvasTransform } from '@/shared/lib/rendering';
 import type { SelectionBox } from './selection-box-renderer';
 import type { Shape } from '@/entities/shape';
 import type { Connector, AnchorPosition } from '@/entities/connector';
-import { CANVAS_COLORS } from '@/shared/config/canvas-config';
+import { getCanvasColors } from '@/shared/config/canvas-config';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/core/result';
 
 export interface CanvasRenderContext {
@@ -112,7 +112,8 @@ export function renderCanvas(context: CanvasRenderContext): void {
     }
 
     // Fill canvas with background color
-    ctx.fillStyle = CANVAS_COLORS.background;
+    const colors = getCanvasColors();
+    ctx.fillStyle = colors.background;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Apply transform to context

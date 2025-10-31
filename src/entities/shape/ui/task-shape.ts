@@ -5,6 +5,8 @@
  */
 
 import type { BaseShape, TaskShape } from '../model/types';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { getCanvasColors } from '@/shared/config/canvas-config';
 
 /**
  * Render a BPMN Task shape (rounded rectangle)
@@ -20,18 +22,21 @@ export function renderTask(
   isSelected: boolean,
   scale: number
 ): void {
+  const colors = getCanvasColors();
   const taskShape = shape as TaskShape;
   const {
     position,
     dimensions,
     cornerRadius = 8,
-    fillColor = '#ffffff',
-    strokeColor = '#000000',
     strokeWidth = 0.5,
   } = taskShape;
 
   const { x, y } = position;
   const { width, height } = dimensions;
+
+  // Use theme colors as fallback if shape doesn't have custom colors
+  const fillColor = taskShape.fillColor ?? colors.defaultShapeFill;
+  const strokeColor = taskShape.strokeColor ?? colors.defaultShapeStroke;
 
   // Draw rounded rectangle
   ctx.beginPath();
@@ -52,6 +57,6 @@ export function renderTask(
 
   // Stroke
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.stroke();
 }

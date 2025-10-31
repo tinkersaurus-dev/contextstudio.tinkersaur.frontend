@@ -11,6 +11,7 @@ import {
   DEFAULT_GRID_CONFIG,
   ZOOM_THRESHOLDS,
   type GridConfig,
+  getCanvasColors,
 } from '@/shared/config/canvas-config';
 import type { GridRenderContext } from './types';
 
@@ -186,13 +187,14 @@ export class GridSystem {
    */
   static render(context: GridRenderContext): void {
     const { ctx, width, height, scale: zoom, panX, panY, config = DEFAULT_GRID_CONFIG } = context;
-    const { gridColor, minorLineWidth, majorLineWidth } = config;
+    const { minorLineWidth, majorLineWidth } = config;
 
     // Get grid sizes based on zoom level
     const { minor: minorGridSize, major: majorGridSize } = this.getGridSizeForZoom(zoom);
 
-    // Set grid color
-    ctx.strokeStyle = gridColor;
+    // Get grid color from theme (dynamic theme support)
+    const colors = getCanvasColors();
+    ctx.strokeStyle = colors.grid;
 
     // Calculate bounds based on the smallest grid unit to keep lines anchored
     const startX = Math.floor(-panX / zoom / BASE_GRID) * BASE_GRID;

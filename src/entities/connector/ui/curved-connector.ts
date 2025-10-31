@@ -16,6 +16,7 @@ import {
   getConnectorStrokeColor,
   getConnectorStrokeWidth,
 } from './connector-rendering-utils';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
 
 /**
  * Render a curved (bezier) connector
@@ -64,7 +65,7 @@ export function renderCurvedConnector(
   ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
 
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.stroke();
 
   // Calculate angle at the end of the curve for arrowhead

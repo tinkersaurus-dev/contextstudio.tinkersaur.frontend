@@ -5,6 +5,8 @@
  */
 
 import type { BaseShape, EventShape } from '../model/types';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { getCanvasColors } from '@/shared/config/canvas-config';
 
 /**
  * Render a BPMN Event shape
@@ -21,15 +23,18 @@ export function renderEvent(
   isSelected: boolean,
   scale: number
 ): void {
+  const colors = getCanvasColors();
   const eventShape = shape as EventShape;
   const {
     position,
     dimensions,
-    fillColor = '#ffffff',
-    strokeColor = '#000000',
     strokeWidth = 0.5,
     subType,
   } = eventShape;
+
+  // Use theme colors as fallback if shape doesn't have custom colors
+  const fillColor = eventShape.fillColor ?? colors.defaultShapeFill;
+  const strokeColor = eventShape.strokeColor ?? colors.defaultShapeStroke;
 
   const { x, y } = position;
   const { width } = dimensions;
@@ -48,7 +53,7 @@ export function renderEvent(
 
   // Stroke outer circle
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.stroke();
 
   // Render subType-specific variations
@@ -60,7 +65,7 @@ export function renderEvent(
       ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
       ctx.closePath();
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = (strokeWidth * 1.5) / scale;
+      ctx.lineWidth = getScaledLineWidth(strokeWidth * 1.5, scale);
       ctx.stroke();
       break;
 
@@ -71,7 +76,7 @@ export function renderEvent(
       ctx.arc(centerX, centerY, intermediateRadius, 0, Math.PI * 2);
       ctx.closePath();
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = strokeWidth / scale;
+      ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
       ctx.stroke();
       break;
 

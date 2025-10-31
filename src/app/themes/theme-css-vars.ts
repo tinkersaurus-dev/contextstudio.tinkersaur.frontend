@@ -63,8 +63,7 @@ export function generateThemeCSSVars(
 
   // Canvas colors
   vars["--theme-canvas-background"] = theme.canvas.background;
-  vars["--theme-canvas-grid-minor"] = theme.canvas.grid.minor;
-  vars["--theme-canvas-grid-major"] = theme.canvas.grid.major;
+  vars["--theme-canvas-grid"] = theme.canvas.grid;
   vars["--theme-canvas-selection-border"] = theme.canvas.selection.border;
   vars["--theme-canvas-selection-fill"] = theme.canvas.selection.fill;
   vars["--theme-canvas-selection-box-border"] =

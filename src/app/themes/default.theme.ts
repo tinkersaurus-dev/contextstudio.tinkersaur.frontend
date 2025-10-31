@@ -79,10 +79,7 @@ export const defaultTheme: ThemeConfig = {
   canvas: {
     background: "#f7f7f7",
 
-    grid: {
-      minor: "#CED8F7", // Light purple-blue
-      major: "#CED8F7",
-    },
+    grid: "#CED8F7", // Light purple-blue
 
     selection: {
       border: "#ff6b35", // Tertiary.500 (orange)

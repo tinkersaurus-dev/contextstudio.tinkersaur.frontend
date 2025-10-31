@@ -14,6 +14,7 @@ import {
   getConnectorStrokeColor,
   getConnectorStrokeWidth,
 } from './connector-rendering-utils';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
 
 /**
  * Render an orthogonal (right-angle) connector
@@ -75,7 +76,7 @@ export function renderOrthogonalConnector(
   }
 
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.stroke();
 
   // Calculate angle for arrowheads based on last segment

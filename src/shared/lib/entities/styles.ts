@@ -15,7 +15,8 @@
 
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
-import { CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+import { getCanvasColors, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
 
 // ============================================================================
 // STYLE INTERFACES
@@ -125,24 +126,26 @@ export function resolveConnectorStyle(
   connector: Connector,
   state: StyleState = StyleState.Normal
 ): ConnectorStyle {
+  const colors = getCanvasColors();
+
   // Determine stroke color based on state
   let strokeColor: string;
   let strokeWidth: number;
 
   switch (state) {
     case StyleState.Selected:
-      strokeColor = CANVAS_COLORS.connectorStrokeSelected;
+      strokeColor = colors.connectorStrokeSelected;
       strokeWidth = STROKE_WIDTHS.connectorSelected;
       break;
 
     case StyleState.Hover:
-      strokeColor = CANVAS_COLORS.connectorStrokeHover;
+      strokeColor = colors.connectorStrokeHover;
       strokeWidth = STROKE_WIDTHS.connectorSelected; // Same width as selected
       break;
 
     case StyleState.Normal:
     default:
-      strokeColor = connector.strokeColor ?? CANVAS_COLORS.connectorStroke;
+      strokeColor = connector.strokeColor ?? colors.connectorStroke;
       strokeWidth = connector.strokeWidth ?? STROKE_WIDTHS.connector;
       break;
   }
@@ -263,7 +266,7 @@ export function applyConnectorStyle(
   scale: number
 ): void {
   ctx.strokeStyle = style.strokeColor;
-  ctx.lineWidth = style.strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(style.strokeWidth, scale);
 
   if (style.opacity !== undefined && style.opacity !== 1.0) {
     ctx.globalAlpha = style.opacity;
@@ -299,7 +302,7 @@ export function applyShapeStyle(
   }
 
   if (style.strokeWidth !== undefined) {
-    ctx.lineWidth = style.strokeWidth / scale;
+    ctx.lineWidth = getScaledLineWidth(style.strokeWidth, scale);
   }
 
   if (style.opacity !== undefined && style.opacity !== 1.0) {

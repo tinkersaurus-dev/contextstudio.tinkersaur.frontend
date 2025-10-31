@@ -79,10 +79,7 @@ export const darkTheme: ThemeConfig = {
   canvas: {
     background: "#303030",
 
-    grid: {
-      minor: "#3f4957",
-      major: "#4c5561",
-    },
+    grid: "#4c5561",
 
     selection: {
       border: "#ff6b35",

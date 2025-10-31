@@ -13,6 +13,7 @@ import {
   getConnectorStrokeColor,
   getConnectorStrokeWidth,
 } from './connector-rendering-utils';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
 
 /**
  * Render a straight line connector
@@ -57,7 +58,7 @@ export function renderStraightConnector(
   ctx.lineTo(end.x, end.y);
 
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.stroke();
 
   // Calculate angle for arrowheads

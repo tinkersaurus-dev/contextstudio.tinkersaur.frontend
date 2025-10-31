@@ -5,6 +5,7 @@
  */
 
 import type { BaseShape } from '../model/types';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
 
 /**
  * Render a BPMN End Event shape (double circle)
@@ -46,7 +47,7 @@ export function renderEndEvent(
 
   // Stroke outer circle
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.stroke();
 
   // Draw inner circle (no fill, just stroke)
@@ -54,6 +55,6 @@ export function renderEndEvent(
   ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
   ctx.closePath();
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = (strokeWidth * 1.5) / scale; // Slightly thicker inner circle
+  ctx.lineWidth = getScaledLineWidth(strokeWidth * 1.5, scale); // Slightly thicker inner circle
   ctx.stroke();
 }

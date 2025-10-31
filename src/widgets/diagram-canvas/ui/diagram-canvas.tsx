@@ -18,6 +18,7 @@ import { ConnectionPointSystem } from '@/shared/lib/connections';
 import { getMermaidImporter } from '@/shared/lib/mermaid/mermaid-parser-registry';
 import { useConnectionPointInteraction } from '../hooks/use-connection-point-interaction';
 import { useCanvasRendering } from '../hooks/use-canvas-rendering';
+import { useTheme } from '@/app/themes';
 import type { DiagramType } from '@/shared/types/content-data';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
@@ -99,6 +100,9 @@ export function DiagramCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [transform, setTransform] = useState<CanvasTransform>(CanvasTransform.identity());
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
+
+  // Get current theme ID to trigger canvas re-render on theme change
+  const { currentThemeId } = useTheme();
 
   // Use a ref to always have access to current transform without recreating handlers
   const transformRef = useRef(transform);
@@ -392,6 +396,7 @@ export function DiagramCanvas({
     hasMovedDuringDrag: connectionPointState.hasMovedDuringDrag,
     connectorDragStart: connectionPointState.connectorDragStart,
     connectorDragEnd: connectionPointState.connectorDragEnd,
+    currentThemeId,
   });
 
   // Handler to reset zoom to 100%

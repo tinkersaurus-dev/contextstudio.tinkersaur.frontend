@@ -6,7 +6,7 @@
 
 import type { Position } from '@/entities/diagram-entity';
 import type { Connector } from '../model/types';
-import { ARROWHEAD_CONFIG, CANVAS_COLORS, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+import { ARROWHEAD_CONFIG, getCanvasColors, STROKE_WIDTHS } from '@/shared/config/canvas-config';
 
 /**
  * Render an arrowhead at a specific position and angle
@@ -50,43 +50,6 @@ export function renderArrowhead(
 }
 
 /**
- * Render connection points on a shape
- * Used to show available connection anchors when creating connectors
- *
- * @param ctx - Canvas rendering context
- * @param points - Array of connection point positions
- * @param radius - Radius of connection point circles
- * @param scale - Current canvas scale
- * @param fillColor - Fill color for connection points
- * @param strokeColor - Stroke color for connection points
- */
-export function renderConnectionPoints(
-  ctx: CanvasRenderingContext2D,
-  points: Position[],
-  radius: number,
-  scale: number,
-  fillColor: string,
-  strokeColor: string
-): void {
-  const scaledRadius = radius / scale;
-  const scaledStrokeWidth = 1.5 / scale;
-
-  points.forEach((point) => {
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, scaledRadius, 0, Math.PI * 2);
-
-    // Fill
-    ctx.fillStyle = fillColor;
-    ctx.fill();
-
-    // Stroke
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = scaledStrokeWidth;
-    ctx.stroke();
-  });
-}
-
-/**
  * Calculate the position along a line at a specific distance from the end
  * Used for positioning arrowheads slightly back from the endpoint
  *
@@ -127,9 +90,10 @@ export function getConnectorStrokeColor(
   connector: Connector,
   isSelected: boolean
 ): string {
+  const colors = getCanvasColors();
   return isSelected
-    ? CANVAS_COLORS.connectorStrokeSelected
-    : (connector.strokeColor ?? CANVAS_COLORS.connectorStroke);
+    ? colors.connectorStrokeSelected
+    : (connector.strokeColor ?? colors.connectorStroke);
 }
 
 /**

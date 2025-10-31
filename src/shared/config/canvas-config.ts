@@ -66,7 +66,7 @@ export interface GridConfig {
 /**
  * Default grid configuration
  *
- * Note: gridColor is a fallback. Use getCanvasColors().gridMinor for runtime theme support.
+ * Note: gridColor is a fallback. Use getCanvasColors().grid for runtime theme support.
  */
 export const DEFAULT_GRID_CONFIG: GridConfig = {
   minorGridSize: 20,
@@ -98,8 +98,7 @@ export interface CanvasColors {
   background: string;
 
   // Grid
-  gridMinor: string;
-  gridMajor: string;
+  grid: string;
 
   // Selection
   selectionBorder: string;
@@ -112,6 +111,7 @@ export interface CanvasColors {
   // Default Shape Colors
   defaultShapeFill: string;
   defaultShapeStroke: string;
+  shapeText: string;
 
   // Connector Colors
   connectorStroke: string;
@@ -121,6 +121,7 @@ export interface CanvasColors {
   // Connection Point Colors
   connectionPoint: string;
   connectionPointHover: string;
+  connectionPointBorder: string;
 }
 
 /**
@@ -147,8 +148,7 @@ export function getCanvasColors(): CanvasColors {
     background: getThemeCSSVar("--theme-canvas-background") || "#f7f7f7",
 
     // Grid
-    gridMinor: getThemeCSSVar("--theme-canvas-grid-minor") || "#CED8F7",
-    gridMajor: getThemeCSSVar("--theme-canvas-grid-major") || "#CED8F7",
+    grid: getThemeCSSVar("--theme-canvas-grid") || "#CED8F7",
 
     // Selection
     selectionBorder: getThemeCSSVar("--theme-canvas-selection-border") || "#ff6b35",
@@ -161,6 +161,7 @@ export function getCanvasColors(): CanvasColors {
     // Default Shape Colors
     defaultShapeFill: getThemeCSSVar("--theme-canvas-shapes-fill") || "#ffffff",
     defaultShapeStroke: getThemeCSSVar("--theme-canvas-shapes-stroke") || "#000000",
+    shapeText: getThemeCSSVar("--theme-canvas-shapes-text") || "#000000",
 
     // Connector Colors
     connectorStroke: getThemeCSSVar("--theme-canvas-connectors-default") || "#000000",
@@ -170,16 +171,9 @@ export function getCanvasColors(): CanvasColors {
     // Connection Point Colors
     connectionPoint: getThemeCSSVar("--theme-canvas-connection-points-default") || "#3b82f6",
     connectionPointHover: getThemeCSSVar("--theme-canvas-connection-points-hover") || "#ff6b35",
+    connectionPointBorder: getThemeCSSVar("--theme-canvas-connection-points-border") || "#ffffff",
   };
 }
-
-/**
- * Legacy CANVAS_COLORS constant
- *
- * @deprecated Use getCanvasColors() instead for dynamic theme support.
- * This constant is kept for backwards compatibility but returns stale values.
- */
-export const CANVAS_COLORS = getCanvasColors();
 
 // ============================================================================
 // RENDERING CONSTANTS
@@ -194,6 +188,7 @@ export const STROKE_WIDTHS = {
   selectionBox: 1,
   connector: 2,
   connectorSelected: 3,
+  connectionPoint: 2, // For connection point preview lines
 } as const;
 
 /**
@@ -202,6 +197,7 @@ export const STROKE_WIDTHS = {
 export const DASH_PATTERNS = {
   selection: [8, 4], // [dash length, gap length]
   selectionBox: [5, 5],
+  connectionPoint: [8, 4], // For connection point preview lines
 } as const;
 
 /**

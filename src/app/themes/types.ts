@@ -33,13 +33,8 @@ export interface CanvasColors {
   /** Canvas background color */
   background: string;
 
-  /** Grid line colors */
-  grid: {
-    /** Minor grid lines (dense) */
-    minor: string;
-    /** Major grid lines (sparse/emphasized) */
-    major: string;
-  };
+  /** Grid line color */
+  grid: string;
 
   /** Selected entity colors */
   selection: {

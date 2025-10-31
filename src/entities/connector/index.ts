@@ -65,6 +65,5 @@ export { renderOrthogonalConnector } from './ui/orthogonal-connector';
 export { renderCurvedConnector } from './ui/curved-connector';
 export {
   renderArrowhead,
-  renderConnectionPoints,
   getPointAlongLine,
 } from './ui/connector-rendering-utils';

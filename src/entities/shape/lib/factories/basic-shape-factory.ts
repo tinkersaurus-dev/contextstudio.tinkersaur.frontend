@@ -5,10 +5,7 @@
  * These are fundamental shapes used across all diagram types.
  */
 
-import {
-  CANVAS_COLORS,
-  STROKE_WIDTHS,
-} from '@/shared/config/canvas-config';
+import { STROKE_WIDTHS } from '@/shared/config/canvas-config';
 import { generateShapeId } from '@/shared/lib/core/id-generator';
 import { calculatePosition } from '@/shared/lib/geometry';
 import { DiagramEntityType } from '@/entities/diagram-entity';
@@ -60,8 +57,8 @@ export function createRectangle(
   const {
     width = 120,
     height = 80,
-    fillColor = CANVAS_COLORS.defaultShapeFill,
-    strokeColor = CANVAS_COLORS.defaultShapeStroke,
+    fillColor,
+    strokeColor,
     strokeWidth = STROKE_WIDTHS.shape,
     textColor,
     reference = 'center',

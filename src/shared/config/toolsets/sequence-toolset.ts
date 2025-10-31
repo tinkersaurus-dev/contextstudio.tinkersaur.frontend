@@ -4,16 +4,12 @@
  * Defines the toolset for sequence diagrams showing interactions
  * between entities over time.
  *
- * Colors are loaded from the active theme system.
+ * Shapes use theme colors dynamically - no colors are set at initialization.
  */
 
 import { LuUser, LuBox, LuArrowRight, LuRectangleVertical } from 'react-icons/lu';
 import { ToolType, type Toolset } from '@/entities/tool';
 import { ShapeType } from '@/entities/shape/model/types';
-import { getActiveTheme } from '@/app/themes/theme-registry';
-
-// Get theme colors for toolset initialization
-const activeTheme = getActiveTheme();
 
 /**
  * Sequence Diagram Toolset
@@ -39,10 +35,7 @@ export const sequenceToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 80,
         height: 80,
-        fillColor: activeTheme.diagrams.sequence.actor.fill,
-        strokeColor: activeTheme.diagrams.sequence.actor.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 40,
         },
@@ -58,10 +51,7 @@ export const sequenceToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 80,
         height: 100,
-        fillColor: activeTheme.diagrams.sequence.lifeline.fill,
-        strokeColor: activeTheme.diagrams.sequence.lifeline.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 4,
         },
@@ -77,10 +67,7 @@ export const sequenceToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 20,
         height: 60,
-        fillColor: activeTheme.diagrams.sequence.activation.fill,
-        strokeColor: activeTheme.diagrams.sequence.activation.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 2,
         },
@@ -96,10 +83,7 @@ export const sequenceToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 120,
         height: 60,
-        fillColor: activeTheme.diagrams.sequence.note.fill,
-        strokeColor: activeTheme.diagrams.sequence.note.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 4,
         },

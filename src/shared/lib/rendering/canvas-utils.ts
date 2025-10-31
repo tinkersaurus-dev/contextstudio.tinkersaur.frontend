@@ -5,10 +5,10 @@
  * scale-adjusted line widths, dash patterns, and consistent styling.
  */
 
-import { CANVAS_COLORS, STROKE_WIDTHS, DASH_PATTERNS } from '@/shared/config/canvas-config';
+import { getCanvasColors, STROKE_WIDTHS, DASH_PATTERNS } from '@/shared/config/canvas-config';
 
 // Re-export constants for convenience
-export { CANVAS_COLORS, STROKE_WIDTHS, DASH_PATTERNS };
+export { STROKE_WIDTHS, DASH_PATTERNS };
 
 /**
  * Get scale-adjusted line width
@@ -60,7 +60,8 @@ export function applySelectionStyle(
   ctx: CanvasRenderingContext2D,
   scale: number
 ): void {
-  ctx.strokeStyle = CANVAS_COLORS.selectionBorder;
+  const colors = getCanvasColors();
+  ctx.strokeStyle = colors.selectionBorder;
   ctx.lineWidth = getScaledLineWidth(STROKE_WIDTHS.selection, scale);
   ctx.setLineDash(getScaledDashPattern(DASH_PATTERNS.selection, scale));
 }
@@ -79,7 +80,8 @@ export function applySelectionBoxStyle(
   ctx: CanvasRenderingContext2D,
   scale: number
 ): void {
-  ctx.strokeStyle = CANVAS_COLORS.selectionBoxBorder;
+  const colors = getCanvasColors();
+  ctx.strokeStyle = colors.selectionBoxBorder;
   ctx.lineWidth = getScaledLineWidth(STROKE_WIDTHS.selectionBox, scale);
   ctx.setLineDash(getScaledDashPattern(DASH_PATTERNS.selectionBox, scale));
 }
@@ -150,8 +152,10 @@ export function renderSelectionBoxRect(
 ): void {
   ctx.save();
 
+  const colors = getCanvasColors();
+
   // Fill with semi-transparent color
-  ctx.fillStyle = CANVAS_COLORS.selectionBoxFill;
+  ctx.fillStyle = colors.selectionBoxFill;
   ctx.fillRect(x, y, width, height);
 
   // Border with dashed line
@@ -178,9 +182,10 @@ export function applyGridLineStyle(
   ctx: CanvasRenderingContext2D,
   lineWidth: number,
   scale: number,
-  color: string = CANVAS_COLORS.gridMinor
+  color?: string
 ): void {
-  ctx.strokeStyle = color;
+  const colors = getCanvasColors();
+  ctx.strokeStyle = color ?? colors.grid;
   ctx.lineWidth = lineWidth / scale;
 }
 

@@ -49,6 +49,8 @@ export interface UseCanvasRenderingOptions {
   } | null;
   /** Current end point of connector drag */
   connectorDragEnd: { x: number; y: number } | null;
+  /** Current theme ID (for triggering re-render on theme change) */
+  currentThemeId: string;
 }
 
 /**
@@ -76,6 +78,7 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
     hasMovedDuringDrag,
     connectorDragStart,
     connectorDragEnd,
+    currentThemeId,
   } = options;
 
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -151,5 +154,6 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
     connectorDragStart,
     connectorDragEnd,
     fontsLoaded,
+    currentThemeId,
   ]);
 }

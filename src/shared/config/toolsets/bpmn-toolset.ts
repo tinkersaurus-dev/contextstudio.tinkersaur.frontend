@@ -4,7 +4,7 @@
  * Defines the BPMN (Business Process Model and Notation) toolset
  * with basic shapes for process modeling.
  *
- * Colors are loaded from the active theme system.
+ * Shapes use theme colors dynamically - no colors are set at initialization.
  */
 
 import {
@@ -25,10 +25,6 @@ import {
   LuColumns2,
 } from 'react-icons/lu';
 import { ToolType, type Toolset } from '@/entities/tool';
-import { getActiveTheme } from '@/app/themes/theme-registry';
-
-// Get theme colors for toolset initialization
-const activeTheme = getActiveTheme();
 
 /**
  * BPMN Toolset
@@ -57,10 +53,7 @@ export const bpmnToolset: Toolset = {
         subType: 'user',
         width: 120,
         height: 80,
-        fillColor: activeTheme.diagrams.bpmn.task.fill,
-        strokeColor: activeTheme.diagrams.bpmn.task.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 8,
         },
@@ -77,10 +70,7 @@ export const bpmnToolset: Toolset = {
         subType: 'service',
         width: 120,
         height: 80,
-        fillColor: activeTheme.diagrams.bpmn.task.fill,
-        strokeColor: activeTheme.diagrams.bpmn.task.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 8,
         },
@@ -97,10 +87,7 @@ export const bpmnToolset: Toolset = {
         subType: 'script',
         width: 120,
         height: 80,
-        fillColor: activeTheme.diagrams.bpmn.task.fill,
-        strokeColor: activeTheme.diagrams.bpmn.task.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 8,
         },
@@ -121,10 +108,7 @@ export const bpmnToolset: Toolset = {
         subType: 'start',
         width: 40,
         height: 40,
-        fillColor: activeTheme.diagrams.bpmn.event.fill,
-        strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -138,10 +122,7 @@ export const bpmnToolset: Toolset = {
         subType: 'end',
         width: 40,
         height: 40,
-        fillColor: activeTheme.diagrams.bpmn.event.fill,
-        strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -155,10 +136,7 @@ export const bpmnToolset: Toolset = {
         subType: 'timer',
         width: 40,
         height: 40,
-        fillColor: activeTheme.diagrams.bpmn.event.fill,
-        strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -172,10 +150,7 @@ export const bpmnToolset: Toolset = {
         subType: 'error',
         width: 40,
         height: 40,
-        fillColor: activeTheme.diagrams.bpmn.event.fill,
-        strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -189,10 +164,7 @@ export const bpmnToolset: Toolset = {
         subType: 'intermediate',
         width: 40,
         height: 40,
-        fillColor: activeTheme.diagrams.bpmn.event.fill,
-        strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -206,10 +178,7 @@ export const bpmnToolset: Toolset = {
         subType: 'intermediate',
         width: 40,
         height: 40,
-        fillColor: activeTheme.diagrams.bpmn.event.fill,
-        strokeColor: activeTheme.diagrams.bpmn.event.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
 
@@ -227,10 +196,7 @@ export const bpmnToolset: Toolset = {
         subType: 'exclusive',
         width: 40,
         height: 40,
-        fillColor: activeTheme.diagrams.bpmn.gateway.fill,
-        strokeColor: activeTheme.diagrams.bpmn.gateway.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -244,10 +210,7 @@ export const bpmnToolset: Toolset = {
         subType: 'inclusive',
         width: 40,
         height: 40,
-        fillColor: activeTheme.diagrams.bpmn.gateway.fill,
-        strokeColor: activeTheme.diagrams.bpmn.gateway.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -261,10 +224,7 @@ export const bpmnToolset: Toolset = {
         subType: 'parallel',
         width: 40,
         height: 40,
-        fillColor: activeTheme.diagrams.bpmn.gateway.fill,
-        strokeColor: activeTheme.diagrams.bpmn.gateway.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
   ],

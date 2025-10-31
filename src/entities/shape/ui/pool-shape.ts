@@ -6,6 +6,8 @@
  */
 
 import type { BaseShape } from '../model/types';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { getCanvasColors } from '@/shared/config/canvas-config';
 
 /**
  * Render a BPMN Pool shape (large rectangle for process grouping)
@@ -21,13 +23,16 @@ export function renderPool(
   isSelected: boolean,
   scale: number
 ): void {
+  const colors = getCanvasColors();
   const {
     position,
     dimensions,
-    fillColor = '#ffffff',
-    strokeColor = '#000000',
     strokeWidth = 0.5,
   } = shape;
+
+  // Use theme colors as fallback if shape doesn't have custom colors
+  const fillColor = shape.fillColor ?? colors.defaultShapeFill;
+  const strokeColor = shape.strokeColor ?? colors.defaultShapeStroke;
 
   const { x, y } = position;
   const { width, height } = dimensions;
@@ -38,7 +43,7 @@ export function renderPool(
 
   // Stroke
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.strokeRect(x, y, width, height);
 
   // Draw vertical divider line on left side (20px from left)
@@ -48,6 +53,6 @@ export function renderPool(
   ctx.moveTo(dividerX, y);
   ctx.lineTo(dividerX, y + height);
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.stroke();
 }

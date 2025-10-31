@@ -5,6 +5,7 @@
  */
 
 import type { BaseShape } from '../model/types';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
 
 /**
  * Render a BPMN Start Event shape (circle)
@@ -45,6 +46,6 @@ export function renderStartEvent(
 
   // Stroke
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.stroke();
 }

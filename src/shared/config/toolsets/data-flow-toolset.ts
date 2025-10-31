@@ -4,16 +4,12 @@
  * Defines the toolset for data flow diagrams showing how data
  * moves through a system.
  *
- * Colors are loaded from the active theme system.
+ * Shapes use theme colors dynamically - no colors are set at initialization.
  */
 
 import { LuCircle, LuSquare, LuDatabase, LuArrowRight } from 'react-icons/lu';
 import { ToolType, type Toolset } from '@/entities/tool';
 import { ShapeType } from '@/entities/shape/model/types';
-import { getActiveTheme } from '@/app/themes/theme-registry';
-
-// Get theme colors for toolset initialization
-const activeTheme = getActiveTheme();
 
 /**
  * Data Flow Diagram Toolset
@@ -39,10 +35,7 @@ export const dataFlowToolset: Toolset = {
         shapeType: ShapeType.StartEvent,
         width: 100,
         height: 100,
-        fillColor: activeTheme.diagrams.dataFlow.process.fill,
-        strokeColor: activeTheme.diagrams.dataFlow.process.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
       },
     },
     {
@@ -55,10 +48,7 @@ export const dataFlowToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 140,
         height: 60,
-        fillColor: activeTheme.diagrams.dataFlow.dataStore.fill,
-        strokeColor: activeTheme.diagrams.dataFlow.dataStore.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 4,
         },
@@ -74,10 +64,7 @@ export const dataFlowToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 100,
         height: 80,
-        fillColor: activeTheme.diagrams.dataFlow.entity.fill,
-        strokeColor: activeTheme.diagrams.dataFlow.entity.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 2,
         },
@@ -93,10 +80,7 @@ export const dataFlowToolset: Toolset = {
         shapeType: ShapeType.Task,
         width: 120,
         height: 80,
-        fillColor: activeTheme.diagrams.dataFlow.subprocess.fill,
-        strokeColor: activeTheme.diagrams.dataFlow.subprocess.stroke,
         strokeWidth: 0.5,
-        textColor: activeTheme.canvas.shapes.text,
         properties: {
           cornerRadius: 8,
         },

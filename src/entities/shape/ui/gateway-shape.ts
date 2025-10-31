@@ -5,6 +5,8 @@
  */
 
 import type { BaseShape } from '../model/types';
+import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { getCanvasColors } from '@/shared/config/canvas-config';
 
 /**
  * Render a BPMN Gateway shape (diamond)
@@ -20,13 +22,16 @@ export function renderGateway(
   isSelected: boolean,
   scale: number
 ): void {
+  const colors = getCanvasColors();
   const {
     position,
     dimensions,
-    fillColor = '#ffffff',
-    strokeColor = '#000000',
     strokeWidth = 0.5,
   } = shape;
+
+  // Use theme colors as fallback if shape doesn't have custom colors
+  const fillColor = shape.fillColor ?? colors.defaultShapeFill;
+  const strokeColor = shape.strokeColor ?? colors.defaultShapeStroke;
 
   const { x, y } = position;
   const { width, height } = dimensions;
@@ -49,6 +54,6 @@ export function renderGateway(
 
   // Stroke
   ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = strokeWidth / scale;
+  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.stroke();
 }
