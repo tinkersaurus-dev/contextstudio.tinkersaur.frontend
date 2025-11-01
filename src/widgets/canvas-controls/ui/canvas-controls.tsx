@@ -28,7 +28,6 @@ export const CanvasControls = React.memo(function CanvasControls({ snapMode, set
 
   // Memoize handlers to prevent child re-renders
   const handleBackgroundOpenChange = useCallback((e: { open: boolean }) => {
-    console.log('[CanvasControls] Background popover open change:', e.open);
     if (e.open) {
       openBackgroundPanel();
     } else {
@@ -37,7 +36,6 @@ export const CanvasControls = React.memo(function CanvasControls({ snapMode, set
   }, [openBackgroundPanel, closeAllPanels]);
 
   const handleInteractionsOpenChange = useCallback((e: { open: boolean }) => {
-    console.log('[CanvasControls] Interactions popover open change:', e.open);
     if (e.open) {
       openInteractionsPanel();
     } else {
@@ -48,8 +46,6 @@ export const CanvasControls = React.memo(function CanvasControls({ snapMode, set
   const handleSnapModeChange = useCallback((mode: SnapMode) => {
     setSnapMode(mode);
   }, [setSnapMode]);
-
-  console.log('[CanvasControls] Render - isBackgroundOpen:', isBackgroundOpen, 'isInteractionsOpen:', isInteractionsOpen);
 
   return (
     <div
@@ -72,7 +68,6 @@ export const CanvasControls = React.memo(function CanvasControls({ snapMode, set
             aria-label="Background Settings"
             size="xs"
             variant="ghost"
-            onClick={() => console.log('[CanvasControls] Background button clicked')}
           >
             <LuGrid2X2 />
           </IconButton>
@@ -96,7 +91,6 @@ export const CanvasControls = React.memo(function CanvasControls({ snapMode, set
             aria-label="Interactions Settings"
             size="xs"
             variant="ghost"
-            onClick={() => console.log('[CanvasControls] Interactions button clicked')}
           >
             <LuFocus />
           </IconButton>

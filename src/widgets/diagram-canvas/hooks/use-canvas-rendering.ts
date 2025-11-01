@@ -93,7 +93,6 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) {
-      console.warn('[useCanvasRendering] No canvas ref available');
       return;
     }
 

@@ -274,17 +274,6 @@ export const DEFAULT_SHAPE_DIMENSIONS = {
   height: 80,
 } as const;
 
-/**
- * Offset for centering shapes on creation point
- * Deprecated: Use calculateShapeCenterOffset() utility function instead.
- * This constant is kept for backwards compatibility but should not be used for new code.
- * @deprecated
- */
-export const SHAPE_CREATION_OFFSET = {
-  x: 60, // Half of default width (120 / 2)
-  y: 40, // Half of default height (80 / 2)
-} as const;
-
 // ============================================================================
 // LAYOUT CONSTANTS
 // ============================================================================

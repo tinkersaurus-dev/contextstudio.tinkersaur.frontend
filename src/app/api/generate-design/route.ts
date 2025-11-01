@@ -98,9 +98,6 @@ export async function POST(request: NextRequest) {
     // Parse the response
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
 
-    // Log the response structure for debugging
-    console.log('Bedrock response structure:', JSON.stringify(responseBody, null, 2));
-
     // Extract generated code from response
     // Messages API format returns choices with message content
     const generatedCode =

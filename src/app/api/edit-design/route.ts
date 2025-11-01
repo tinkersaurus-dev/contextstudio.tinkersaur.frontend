@@ -125,9 +125,6 @@ Return the complete modified component:`;
     // Parse the response
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
 
-    // Log the response structure for debugging
-    console.log('Bedrock edit response structure:', JSON.stringify(responseBody, null, 2));
-
     // Extract generated code from response
     const generatedCode =
       responseBody.choices?.[0]?.message?.content ||

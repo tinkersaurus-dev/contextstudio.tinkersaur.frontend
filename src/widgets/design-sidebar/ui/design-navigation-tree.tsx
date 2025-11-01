@@ -19,19 +19,6 @@ import { useContentStore } from "../model/content-store";
 import type { DiagramType } from "@/shared/types/content-data";
 
 /**
- * Empty root node structure reference
- *
- * Note: The actual root content is now managed by the Zustand store (useContentStore).
- * This constant is kept as documentation of the root node structure.
- */
-// const initialContentData: ContentNode = {
-//   id: "ROOT",
-//   name: "",
-//   type: "folder",
-//   children: [],
-// };
-
-/**
  * Get icon for content type
  */
 function getContentIcon(type: ContentNode["type"]) {
@@ -123,10 +110,6 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
 
     // Handle opening the diagram dialog
     const handleOpenDiagramDialog = useCallback((folderId: string) => {
-      console.log('[DesignNavigationTree] Opening diagram dialog for folder:', {
-        folderId,
-        timestamp: new Date().toISOString()
-      });
       setSelectedFolderId(folderId);
       setIsDialogOpen(true);
     }, []);
@@ -134,11 +117,6 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
     // Handle creating a diagram from the dialog
     const handleCreateDiagram = useCallback((name: string, diagramType: DiagramType) => {
       if (!selectedFolderId) {
-        console.error('[DesignNavigationTree] handleCreateDiagram called with null selectedFolderId', {
-          name,
-          diagramType,
-          timestamp: new Date().toISOString(),
-        });
         setIsDialogOpen(false);
         setSelectedFolderId(null);
         return;

@@ -42,46 +42,10 @@ export async function ensureFontsLoaded(): Promise<void> {
   // Create new loading promise
   fontLoadingPromise = (async () => {
     try {
-      console.log('[FontLoader] Waiting for fonts to load...');
-
       // Wait for fonts to be ready
       await document.fonts.ready;
 
-      console.log('[FontLoader] document.fonts.ready resolved');
-      console.log('[FontLoader] Available fonts:', Array.from(document.fonts.values()).map(f => f.family));
-
-      // Check various possible font names
-      const possibleFontNames = [
-        '__Nunito_Sans_Variable_f5a75d',
-        'Nunito Sans Variable',
-        '__Nunito_Sans_Variable',
-        'Nunito Sans',
-      ];
-
-      let nunitoSansLoaded = false;
-      for (const fontName of possibleFontNames) {
-        if (document.fonts.check(`14px "${fontName}"`)) {
-          console.log(`[FontLoader] Found font: ${fontName}`);
-          nunitoSansLoaded = true;
-          break;
-        }
-      }
-
-      if (!nunitoSansLoaded) {
-        console.warn('[FontLoader] Nunito Sans not detected, checking CSS variable...');
-
-        // Try to get the actual font family from CSS variable
-        const testElement = document.createElement('div');
-        testElement.style.fontFamily = 'var(--font-nunito-sans), system-ui';
-        document.body.appendChild(testElement);
-        const computedFont = window.getComputedStyle(testElement).fontFamily;
-        document.body.removeChild(testElement);
-
-        console.log('[FontLoader] Computed font family from CSS variable:', computedFont);
-      }
-
       fontsReady = true;
-      console.log('[FontLoader] Fonts marked as ready');
     } catch (error) {
       console.error('[FontLoader] Error loading fonts:', error);
       // Mark as ready anyway to avoid blocking rendering
@@ -141,10 +105,8 @@ function resolveActualFontFamily(): string {
 
     if (computedFont && computedFont !== 'system-ui') {
       resolvedFontFamily = computedFont;
-      console.log('[FontLoader] Resolved font family:', resolvedFontFamily);
     } else {
       resolvedFontFamily = '"Nunito Sans", system-ui, -apple-system, sans-serif';
-      console.warn('[FontLoader] Could not resolve CSS variable, using fallback');
     }
   } catch (error) {
     console.error('[FontLoader] Error resolving font family:', error);
