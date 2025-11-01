@@ -70,13 +70,19 @@ interface CanvasState extends SelectionState, ShapeManagementState, ConnectorMan
   // Hit detection
   findEntityAtPoint: (x: number, y: number) => DiagramEntity | null;
   getAllEntities: () => DiagramEntity[];
+
+  // Initialization
+  initialize: (diagram: Diagram) => void;
 }
 
 /**
  * Create a new canvas store instance for a specific diagram.
  * This factory pattern ensures each diagram has isolated state.
+ *
+ * @param diagramId - The unique identifier for this diagram
+ * @returns A Zustand store instance for canvas state management
  */
-export function createCanvasStore(diagram: Diagram) {
+export function createCanvasStore(diagramId: string) {
   return create<CanvasState>((set, get) => {
     // Initialize command history
     const commandHistory = new CommandHistory({ maxHistorySize: 50 });
@@ -88,23 +94,23 @@ export function createCanvasStore(diagram: Diagram) {
     const getAllConnectorsForShape = (shapeId: string) => get().getAllConnectorsForShape(shapeId);
     const updateConnectorsForShapeMove = (shapeId: string) => get().updateConnectorsForShapeMove(shapeId);
 
-    // Create store slices
+    // Create store slices with empty initial data
     const selectionSlice = createSelectionSlice(getShapes, getConnectors)(set, get);
     const shapeSlice = createShapeManagementSlice(
-      diagram.shapes,
+      [], // Empty shapes initially
       executeCommand,
       getAllConnectorsForShape,
       updateConnectorsForShapeMove
     )(set, get);
     const connectorSlice = createConnectorManagementSlice(
-      diagram.connectors,
+      [], // Empty connectors initially
       executeCommand,
       getShapes
     )(set, get);
 
     return {
       // Core state
-      diagramId: diagram.id,
+      diagramId,
       commandHistory,
       snapMode: 'none' as SnapMode,
 
@@ -282,6 +288,15 @@ export function createCanvasStore(diagram: Diagram) {
           }
         );
         get().executeCommand(command);
+      },
+
+      // Initialize store with diagram data
+      // This is separate from creation to allow proper React dependency management
+      initialize: (diagram: Diagram) => {
+        set({
+          shapes: [...diagram.shapes],
+          connectors: [...diagram.connectors],
+        });
       },
     };
   });

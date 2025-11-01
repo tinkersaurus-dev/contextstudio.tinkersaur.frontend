@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useStore } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import { EntityInteractionCallbacks } from '../lib/mouse-input-types';
-import { setupKeyboardInput, KeyboardInteractionCallbacks } from '../lib/keyboard-input';
 import { SelectionBox } from '../lib/selection-box-renderer';
 import { createCanvasStore, type CanvasStore } from '../model/canvas-store';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
@@ -17,6 +16,7 @@ import { ConnectionPointSystem } from '@/shared/lib/connections';
 import { getMermaidImporter } from '@/shared/lib/mermaid/mermaid-parser-registry';
 import { useConnectionPointInteraction } from '../hooks/use-connection-point-interaction';
 import { useMouseInteraction } from '../hooks/use-mouse-interaction';
+import { useKeyboardInteraction } from '../hooks/use-keyboard-interaction';
 import { useCanvasRendering } from '../hooks/use-canvas-rendering';
 import { useTheme } from '@/app/themes';
 import type { DiagramType } from '@/shared/types/content-data';
@@ -98,6 +98,7 @@ export function DiagramCanvas({
   onDiagramChange
 }: DiagramCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const [transform, setTransform] = useState<CanvasTransform>(CanvasTransform.identity());
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
 
@@ -111,20 +112,8 @@ export function DiagramCanvas({
   }, [transform]);
 
   // Create internal store instance for this diagram (isolated per diagram ID)
-  const store = useMemo(() => {
-    return createCanvasStore({
-      id: diagramId,
-      name: 'Diagram', // Name not used by canvas, just required by Diagram type
-      shapes: initialShapes,
-      connectors: initialConnectors,
-      diagramType,
-      metadata: {
-        createdAt: new Date(),
-        modifiedAt: new Date(),
-      },
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diagramId]); // Only recreate if diagram ID changes (ignore shape/connector changes as they're synced separately)
+  // Store is only recreated when the diagram ID changes (new diagram loaded)
+  const store = useMemo(() => createCanvasStore(diagramId), [diagramId]);
 
   // Create isolated toolset popover store for this canvas instance
   // Note: We intentionally recreate on diagramId change to ensure complete isolation
@@ -133,20 +122,36 @@ export function DiagramCanvas({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diagramId]); // Recreate when diagram ID changes to ensure isolation
 
-  // Sync props to internal store when they change externally
-  useEffect(() => {
-    const currentState = store.getState();
-    const hasChanges =
-      currentState.shapes.length !== initialShapes.length ||
-      currentState.connectors.length !== initialConnectors.length;
+  // Track which diagram ID has been initialized to prevent re-initialization
+  // This is critical to avoid circular updates: canvas changes -> parent saves ->
+  // props update -> canvas would reinitialize with stale data
+  const initializedDiagramIdRef = useRef<string | null>(null);
 
-    if (hasChanges) {
-      store.setState({
-        shapes: [...initialShapes],
-        connectors: [...initialConnectors],
+  // Initialize store with diagram data ONLY ONCE per diagram ID
+  // After initialization, the canvas store becomes the single source of truth.
+  // The parent component saves changes via onDiagramChange callback, but those
+  // changes should NOT flow back down as props (that would create a feedback loop).
+  useEffect(() => {
+    // Only initialize if this is a new diagram (different ID than last initialized)
+    if (initializedDiagramIdRef.current !== diagramId) {
+      store.getState().initialize({
+        id: diagramId,
+        name: 'Diagram', // Name not used by canvas, just required by Diagram type
+        shapes: initialShapes,
+        connectors: initialConnectors,
+        diagramType,
+        metadata: {
+          createdAt: new Date(),
+          modifiedAt: new Date(),
+        },
       });
+      initializedDiagramIdRef.current = diagramId;
     }
-  }, [store, initialShapes, initialConnectors, diagramId]);
+    // NOTE: We intentionally exclude initialShapes, initialConnectors, and diagramType
+    // from dependencies to prevent re-initialization when parent state updates.
+    // The canvas store is the source of truth after initial load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, diagramId]);
 
   // Notify parent when diagram changes (for auto-save)
   useEffect(() => {
@@ -232,6 +237,20 @@ export function DiagramCanvas({
   useEffect(() => {
     connectionPointHandlers.clearPendingConnector();
   }, [isPopoverOpen, connectionPointHandlers]);
+
+  // Auto-focus wrapper on mount and when switching diagrams
+  // This ensures keyboard shortcuts work immediately without requiring a manual click
+  useEffect(() => {
+    wrapperRef.current?.focus();
+  }, [diagramId]);
+
+  // Restore focus to wrapper after popover closes
+  // This ensures keyboard shortcuts continue working after interactions with the popover
+  useEffect(() => {
+    if (!isPopoverOpen) {
+      wrapperRef.current?.focus();
+    }
+  }, [isPopoverOpen]);
 
   // Setup mouse interaction callbacks
   // Memoize callbacks to avoid recreating them on every render
@@ -324,23 +343,17 @@ export function DiagramCanvas({
     callbacks: entityCallbacks,
   });
 
-  // Setup keyboard input handlers with canvas ref for visibility-aware event handling
-  useEffect(() => {
-    // Keyboard interaction callbacks
-    const keyboardCallbacks: KeyboardInteractionCallbacks = {
+  // Use keyboard interaction hook (replaces setupKeyboardInput)
+  const keyboardHandlers = useKeyboardInteraction({
+    callbacks: {
       getAllSelectedEntities,
       deleteSelectedEntities,
       undo,
       redo,
       canUndo,
       canRedo,
-    };
-
-    // Setup keyboard input with canvas ref so only visible canvases process keyboard events
-    const cleanup = setupKeyboardInput(keyboardCallbacks, canvasRef);
-
-    return cleanup;
-  }, [getAllSelectedEntities, deleteSelectedEntities, undo, redo, canUndo, canRedo]);
+    },
+  });
 
   // Use canvas rendering hook
   useCanvasRendering({
@@ -404,8 +417,11 @@ export function DiagramCanvas({
 
   return (
     <div
-      style={{ position: 'relative', width: '100%', height: '100%' }}
+      ref={wrapperRef}
+      tabIndex={0}
+      onKeyDown={keyboardHandlers.handleKeyDown}
       onContextMenu={(e) => e.preventDefault()}
+      style={{ position: 'relative', width: '100%', height: '100%', outline: 'none' }}
     >
       <canvas
         ref={canvasRef}
