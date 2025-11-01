@@ -6,7 +6,7 @@
 
 import type { BaseShape, EventShape } from '../model/types';
 import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
-import { getCanvasColors } from '@/shared/config/canvas-config';
+import { getCanvasColors, SHAPE_RENDERING_CONFIG } from '@/shared/config/canvas-config';
 
 /**
  * Render a BPMN Event shape
@@ -60,7 +60,7 @@ export function renderEvent(
   switch (subType) {
     case 'end':
       // Draw inner circle for end events (double circle)
-      const innerRadius = radius - 3;
+      const innerRadius = radius - SHAPE_RENDERING_CONFIG.event.endEventInnerGap;
       ctx.beginPath();
       ctx.arc(centerX, centerY, innerRadius, 0, Math.PI * 2);
       ctx.closePath();
@@ -71,7 +71,7 @@ export function renderEvent(
 
     case 'intermediate':
       // Draw double outline for intermediate events
-      const intermediateRadius = radius - 2;
+      const intermediateRadius = radius - SHAPE_RENDERING_CONFIG.event.intermediateEventInnerGap;
       ctx.beginPath();
       ctx.arc(centerX, centerY, intermediateRadius, 0, Math.PI * 2);
       ctx.closePath();
@@ -88,30 +88,4 @@ export function renderEvent(
 
   // Future: Icon rendering based on subType will go here
   // For example: timer icon, message icon, error icon, etc.
-}
-
-/**
- * @deprecated Use renderEvent instead
- * Legacy renderer for start events
- */
-export function renderStartEvent(
-  ctx: CanvasRenderingContext2D,
-  shape: BaseShape,
-  isSelected: boolean,
-  scale: number
-): void {
-  renderEvent(ctx, shape, isSelected, scale);
-}
-
-/**
- * @deprecated Use renderEvent instead
- * Legacy renderer for end events
- */
-export function renderEndEvent(
-  ctx: CanvasRenderingContext2D,
-  shape: BaseShape,
-  isSelected: boolean,
-  scale: number
-): void {
-  renderEvent(ctx, shape, isSelected, scale);
 }

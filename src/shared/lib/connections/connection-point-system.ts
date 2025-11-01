@@ -9,7 +9,7 @@ import type { Position, Dimensions } from '@/entities/diagram-entity';
 import type { AnchorPosition } from '@/entities/connector/model/types';
 import type { Shape } from '@/entities/shape';
 import { CONNECTION_POINT_CONFIG, getCanvasColors, STROKE_WIDTHS, DASH_PATTERNS } from '@/shared/config/canvas-config';
-import { getScaledLineWidth, getScaledDashPattern } from '@/shared/lib/rendering/canvas-utils';
+import { getScaledLineWidth, getScaledDashPattern, getScaledRadius } from '@/shared/lib/rendering/canvas-utils';
 
 // ============================================================================
 // GEOMETRY UTILITIES
@@ -479,8 +479,8 @@ export class ConnectionPointSystem {
       );
 
       const isHighlighted = anchor === highlightAnchor;
-      const pointRadius = (isHighlighted ? hoverRadius : radius) / scale;
-      const strokeWidth = (isHighlighted ? 2 : 1.5) / scale;
+      const pointRadius = getScaledRadius(isHighlighted ? hoverRadius : radius, scale);
+      const strokeWidth = getScaledLineWidth(isHighlighted ? 2 : 1.5, scale);
 
       // Draw connection point circle
       ctx.beginPath();

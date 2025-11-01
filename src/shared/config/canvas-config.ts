@@ -234,6 +234,24 @@ export const SHAPE_PROXIMITY_CONFIG = {
   defaultDistance: 50, // Default distance to consider shapes "near" in world units
 } as const;
 
+/**
+ * Shape rendering configuration
+ * Constants for shape-specific rendering details like event circles and text layout
+ */
+export const SHAPE_RENDERING_CONFIG = {
+  // Event shape rendering
+  event: {
+    endEventInnerGap: 3,          // Gap (pixels) between outer and inner circles for end events (double circle)
+    intermediateEventInnerGap: 2, // Gap (pixels) between outer and inner circles for intermediate events (double circle)
+  },
+  // Text rendering within and around shapes
+  text: {
+    horizontalPadding: 8,   // Horizontal padding (pixels) for text within shapes
+    minBelowWidth: 120,     // Minimum width (pixels) for text placed below small shapes (e.g., events, gateways)
+    belowOffset: 5,         // Vertical offset (pixels) between shape bottom and text when placed below
+  },
+} as const;
+
 // ============================================================================
 // CANVAS DEFAULTS
 // ============================================================================

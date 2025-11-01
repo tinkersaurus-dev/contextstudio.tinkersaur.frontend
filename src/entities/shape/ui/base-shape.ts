@@ -7,7 +7,7 @@ import {
   type TextTruncation,
   type TextPlacement,
 } from '@/shared/lib/rendering';
-import { getCanvasColors } from '@/shared/config/canvas-config';
+import { getCanvasColors, SHAPE_RENDERING_CONFIG } from '@/shared/config/canvas-config';
 
 export interface BaseShapeProps {
   shape: BaseShape;
@@ -94,14 +94,13 @@ function renderShapeText(
   }
 
   // Calculate available width for text (with padding)
-  const horizontalPadding = 8;
+  const horizontalPadding = SHAPE_RENDERING_CONFIG.text.horizontalPadding;
   let maxWidth = shape.dimensions.width - horizontalPadding * 2;
 
   // For text placed below the shape, use a minimum width to prevent very short lines
   // This is especially important for small shapes like events (40px) and gateways (40px)
   if (placement === 'below') {
-    const minTextWidth = 120; // Minimum width for readable text
-    maxWidth = Math.max(maxWidth, minTextWidth);
+    maxWidth = Math.max(maxWidth, SHAPE_RENDERING_CONFIG.text.minBelowWidth);
   }
 
   // Wrap the text into multiple lines
@@ -126,8 +125,7 @@ function renderShapeText(
   if (placement === 'below') {
     // Position text below the shape
     const strokeWidth = shape.strokeWidth || 1;
-    const belowOffset = 5; // pixels below the shape
-    startY = shape.position.y + shape.dimensions.height + strokeWidth + belowOffset;
+    startY = shape.position.y + shape.dimensions.height + strokeWidth + SHAPE_RENDERING_CONFIG.text.belowOffset;
   } else {
     // Position text inside the shape (centered vertically)
     const totalTextHeight = wrappedResult.totalHeight;

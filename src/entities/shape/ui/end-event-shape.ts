@@ -6,6 +6,7 @@
 
 import type { BaseShape } from '../model/types';
 import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { SHAPE_RENDERING_CONFIG } from '@/shared/config/canvas-config';
 
 /**
  * Render a BPMN End Event shape (double circle)
@@ -34,7 +35,7 @@ export function renderEndEvent(
   const radius = width / 2;
   const centerX = x + radius;
   const centerY = y + radius;
-  const innerRadius = radius - 3; // Gap between circles
+  const innerRadius = radius - SHAPE_RENDERING_CONFIG.event.endEventInnerGap;
 
   // Draw outer circle
   ctx.beginPath();

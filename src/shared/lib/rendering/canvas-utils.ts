@@ -47,6 +47,24 @@ export function getScaledDashPattern(
 }
 
 /**
+ * Get scale-adjusted radius
+ *
+ * When zoomed in/out, radius values need to be adjusted to maintain consistent
+ * visual appearance. This function calculates the appropriate radius.
+ *
+ * @param baseRadius - The desired visual radius at 1:1 scale
+ * @param scale - Current canvas scale/zoom level
+ * @returns Adjusted radius for current scale
+ *
+ * @example
+ * const radius = getScaledRadius(CONNECTION_POINT_CONFIG.radius, zoomState.scale);
+ * ctx.arc(x, y, radius, 0, Math.PI * 2);
+ */
+export function getScaledRadius(baseRadius: number, scale: number): number {
+  return baseRadius / scale;
+}
+
+/**
  * Apply selection styling to canvas context
  *
  * @param ctx - Canvas rendering context
