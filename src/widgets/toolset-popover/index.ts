@@ -1,2 +1,2 @@
 export { ToolsetPopover } from './ui/toolset-popover';
-export { useToolsetPopoverStore } from './model/toolset-popover-store';
+export { createToolsetPopoverStore, type ToolsetPopoverStore } from './model/toolset-popover-store';

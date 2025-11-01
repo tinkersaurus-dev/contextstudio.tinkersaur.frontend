@@ -9,6 +9,7 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { Box, VStack, HStack } from '@chakra-ui/react';
+import { useStore } from 'zustand';
 import {
   PopoverRoot,
   PopoverContent,
@@ -16,7 +17,7 @@ import {
   IconButton,
   Tooltip,
 } from '@/shared/ui';
-import { useToolsetPopoverStore } from '../model/toolset-popover-store';
+import type { ToolsetPopoverStore } from '../model/toolset-popover-store';
 import { getToolsetForDiagramType } from '@/shared/config/toolsets';
 import { createShapeFromTool, isSimpleTool } from '@/entities/tool/lib';
 import type { SimpleTool } from '@/entities/tool';
@@ -33,6 +34,8 @@ export interface ToolsetPopoverProps {
   addShape: (shape: Shape) => void;
   /** Callback to add a connector to the canvas */
   addConnector: (connector: Connector) => void;
+  /** The toolset popover store instance for this canvas */
+  popoverStore: ToolsetPopoverStore;
 }
 
 /**
@@ -41,9 +44,9 @@ export interface ToolsetPopoverProps {
  * Renders a context menu-style popover with tools based on the diagram type.
  * Opens on right-click at the cursor position.
  */
-export const ToolsetPopover = React.memo(function ToolsetPopover({ diagramType, addShape, addConnector }: ToolsetPopoverProps) {
+export const ToolsetPopover = React.memo(function ToolsetPopover({ diagramType, addShape, addConnector, popoverStore }: ToolsetPopoverProps) {
   const { isOpen, screenPosition, worldPosition, pendingConnector, close } =
-    useToolsetPopoverStore();
+    useStore(popoverStore);
 
   // Get the appropriate toolset based on diagram type
   // Memoize toolset calculation based on diagram type

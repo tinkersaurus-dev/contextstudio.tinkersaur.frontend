@@ -10,7 +10,7 @@ import { createCanvasStore, type CanvasStore } from '../model/canvas-store';
 import { createRectangleAtPoint } from '@/entities/shape/lib/shape-factory';
 import { createOrthogonalConnector } from '@/entities/connector';
 import { CanvasControls, CanvasTextControls, ZoomControl } from '@/widgets/canvas-controls';
-import { ToolsetPopover, useToolsetPopoverStore } from '@/widgets/toolset-popover';
+import { ToolsetPopover, createToolsetPopoverStore } from '@/widgets/toolset-popover';
 import { TextEditOverlay } from '@/widgets/text-edit-overlay';
 import { CanvasTransform } from '@/shared/lib/rendering';
 import { ConnectionPointSystem } from '@/shared/lib/connections';
@@ -126,6 +126,13 @@ export function DiagramCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diagramId]); // Only recreate if diagram ID changes (ignore shape/connector changes as they're synced separately)
 
+  // Create isolated toolset popover store for this canvas instance
+  // Note: We intentionally recreate on diagramId change to ensure complete isolation
+  const popoverStore = useMemo(() => {
+    return createToolsetPopoverStore();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diagramId]); // Recreate when diagram ID changes to ensure isolation
+
   // Sync props to internal store when they change externally
   useEffect(() => {
     const currentState = store.getState();
@@ -203,8 +210,8 @@ export function DiagramCanvas({
     shapesRef.current = shapes;
   }, [snapMode, shapes]);
 
-  // Get toolset popover store
-  const { open: openToolsetPopover, isOpen: isPopoverOpen } = useToolsetPopoverStore();
+  // Get toolset popover methods from the isolated store instance
+  const { open: openToolsetPopover, isOpen: isPopoverOpen } = useStore(popoverStore);
 
   // Use connection point interaction hook
   const {
@@ -317,7 +324,7 @@ export function DiagramCanvas({
     callbacks: entityCallbacks,
   });
 
-  // Setup keyboard input handlers (only once)
+  // Setup keyboard input handlers with canvas ref for visibility-aware event handling
   useEffect(() => {
     // Keyboard interaction callbacks
     const keyboardCallbacks: KeyboardInteractionCallbacks = {
@@ -329,8 +336,8 @@ export function DiagramCanvas({
       canRedo,
     };
 
-    // Setup keyboard input
-    const cleanup = setupKeyboardInput(keyboardCallbacks);
+    // Setup keyboard input with canvas ref so only visible canvases process keyboard events
+    const cleanup = setupKeyboardInput(keyboardCallbacks, canvasRef);
 
     return cleanup;
   }, [getAllSelectedEntities, deleteSelectedEntities, undo, redo, canUndo, canRedo]);
@@ -434,7 +441,7 @@ export function DiagramCanvas({
       />
       <CanvasControls snapMode={snapMode} setSnapMode={setSnapMode} />
       <ZoomControl zoom={transform.scale} onReset={handleResetZoom} />
-      <ToolsetPopover diagramType={diagramType} addShape={addShape} addConnector={addConnector} />
+      <ToolsetPopover diagramType={diagramType} addShape={addShape} addConnector={addConnector} popoverStore={popoverStore} />
       <TextEditOverlay
         entity={editingShape}
         transform={transform}

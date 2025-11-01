@@ -3,8 +3,12 @@
  *
  * Sets up keyboard event listeners for canvas interaction.
  * Handler logic is extracted to separate files for better testability.
+ *
+ * IMPORTANT: Keyboard handlers now check canvas visibility to prevent
+ * hidden canvases (in inactive tabs) from processing keyboard events.
  */
 
+import type React from 'react';
 import type { KeyboardInteractionCallbacks } from './keyboard-input-types';
 import * as handlers from './keyboard-handlers';
 import type { KeyboardHandlerContext } from './keyboard-handlers';
@@ -14,13 +18,37 @@ export type { KeyboardInteractionCallbacks } from './keyboard-input-types';
 
 /**
  * Build keydown event handler
+ *
+ * @param context - Handler context with callbacks
+ * @param canvasRef - Optional ref to the canvas element (for visibility check)
  */
-function buildKeyDownHandler(context: KeyboardHandlerContext) {
+function buildKeyDownHandler(
+  context: KeyboardHandlerContext,
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>
+) {
   return (event: KeyboardEvent) => {
     // Don't handle keyboard shortcuts if user is typing in an input/textarea
     const target = event.target as HTMLElement;
     if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
       return;
+    }
+
+    // ISOLATION FIX: If canvas ref is provided, only process events if the canvas
+    // is visible and not hidden via CSS. This prevents hidden canvases (in inactive tabs)
+    // from processing keyboard events when multiple canvas instances are mounted.
+    if (canvasRef?.current) {
+      const canvas = canvasRef.current;
+      const computedStyle = window.getComputedStyle(canvas);
+
+      // Skip if canvas is hidden (visibility: hidden or display: none)
+      if (computedStyle.visibility === 'hidden' || computedStyle.display === 'none') {
+        return;
+      }
+
+      // Skip if canvas has pointer-events: none (indicates it's not the active tab)
+      if (computedStyle.pointerEvents === 'none') {
+        return;
+      }
     }
 
     // Check for platform-specific modifier key
@@ -78,18 +106,20 @@ function createCleanupFunction(
  * Setup keyboard input handlers for the canvas
  *
  * @param callbacks - Callbacks for entity interaction (selection, deletion)
+ * @param canvasRef - Optional ref to the canvas element (for visibility-aware event handling)
  * @returns Cleanup function to remove all event listeners
  */
 export function setupKeyboardInput(
-  callbacks: KeyboardInteractionCallbacks
+  callbacks: KeyboardInteractionCallbacks,
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>
 ): () => void {
   // Build handler context
   const context: KeyboardHandlerContext = {
     callbacks,
   };
 
-  // Build event handler
-  const keydownHandler = buildKeyDownHandler(context);
+  // Build event handler with optional canvas ref for visibility checks
+  const keydownHandler = buildKeyDownHandler(context, canvasRef);
 
   // Attach listener
   attachEventListeners(keydownHandler);
