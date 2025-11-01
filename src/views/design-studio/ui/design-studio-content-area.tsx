@@ -93,6 +93,9 @@ export function DesignStudioContentArea() {
               height="100%"
               pt={0}
               position="relative"
+              // TODO: Fix core issue that requires this conditional rendering workaround.
+              // The CSS hiding + conditional rendering is masking an underlying problem.
+              // Remove both the style prop and {isActive && ...} wrapper once fixed.
               style={{
                 pointerEvents: isActive ? 'auto' : 'none',
                 visibility: isActive ? 'visible' : 'hidden'

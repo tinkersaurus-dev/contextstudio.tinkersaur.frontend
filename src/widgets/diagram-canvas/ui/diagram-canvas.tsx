@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useStore } from 'zustand';
 import { useShallow } from 'zustand/shallow';
-import { MouseInteractionManager } from '../lib/mouse-interaction-manager';
 import { EntityInteractionCallbacks } from '../lib/mouse-input-types';
 import { setupKeyboardInput, KeyboardInteractionCallbacks } from '../lib/keyboard-input';
 import { SelectionBox } from '../lib/selection-box-renderer';
@@ -17,6 +16,7 @@ import { CanvasTransform } from '@/shared/lib/rendering';
 import { ConnectionPointSystem } from '@/shared/lib/connections';
 import { getMermaidImporter } from '@/shared/lib/mermaid/mermaid-parser-registry';
 import { useConnectionPointInteraction } from '../hooks/use-connection-point-interaction';
+import { useMouseInteraction } from '../hooks/use-mouse-interaction';
 import { useCanvasRendering } from '../hooks/use-canvas-rendering';
 import { useTheme } from '@/app/themes';
 import type { DiagramType } from '@/shared/types/content-data';
@@ -226,18 +226,10 @@ export function DiagramCanvas({
     connectionPointHandlers.clearPendingConnector();
   }, [isPopoverOpen, connectionPointHandlers]);
 
-  // Setup mouse input handlers
-  // The effect re-runs only when the stable store methods change (which happens
-  // when the store itself is recreated, i.e., when diagramId changes)
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Entity interaction callbacks
-    // Store methods are stable (don't change between renders), so it's safe
-    // to use them directly. We use refs only for frequently-changing state
-    // values (snapMode, shapes) to avoid recreating callbacks on every change.
-    const entityCallbacks: EntityInteractionCallbacks = {
+  // Setup mouse interaction callbacks
+  // Memoize callbacks to avoid recreating them on every render
+  const entityCallbacks: EntityInteractionCallbacks = useMemo(
+    () => ({
       findEntityAtPoint,
       isSelected,
       getAllSelectedEntities,
@@ -295,42 +287,35 @@ export function DiagramCanvas({
       },
       startEditingText: setEditingShape,
       getAllShapes: () => shapesRef.current,
-    };
+    }),
+    [
+      connectionPointState.isDraggingConnector,
+      isHandlingConnectionPoint,
+      findEntityAtPoint,
+      isSelected,
+      getAllSelectedEntities,
+      setSelectedEntities,
+      addToSelection,
+      toggleSelection,
+      clearSelection,
+      selectEntitiesInBox,
+      setDraggingEntities,
+      clearDraggingEntities,
+      updateShapePositionInternal,
+      finalizeShapeMove,
+      addShape,
+      setEditingShape,
+      openToolsetPopover,
+    ]
+  );
 
-    // Create mouse interaction manager
-    const mouseManager = new MouseInteractionManager(
-      canvas,
-      () => transformRef.current,
-      setTransform,
-      entityCallbacks
-    );
-
-    // Setup event listeners and get cleanup function
-    const cleanup = mouseManager.setup();
-
-    return cleanup;
-    // Store methods are stable and only change when the store is recreated (diagramId change).
-    // connectionPointState.isDraggingConnector is used inside callbacks, so we include it.
-  }, [
-    connectionPointState.isDraggingConnector,
-    isHandlingConnectionPoint,
-    // Store methods (stable, only change when store recreates):
-    findEntityAtPoint,
-    isSelected,
-    getAllSelectedEntities,
-    setSelectedEntities,
-    addToSelection,
-    toggleSelection,
-    clearSelection,
-    selectEntitiesInBox,
-    setDraggingEntities,
-    clearDraggingEntities,
-    updateShapePositionInternal,
-    finalizeShapeMove,
-    addShape,
-    setEditingShape,
-    openToolsetPopover,
-  ]);
+  // Use mouse interaction hook (replaces MouseInteractionManager)
+  const mouseHandlers = useMouseInteraction({
+    canvasRef,
+    transform,
+    setTransform,
+    callbacks: entityCallbacks,
+  });
 
   // Setup keyboard input handlers (only once)
   useEffect(() => {
@@ -417,15 +402,34 @@ export function DiagramCanvas({
     >
       <canvas
         ref={canvasRef}
-        onMouseMove={connectionPointHandlers.handleMouseMove}
-        onMouseDown={connectionPointHandlers.handleMouseDown}
-        onMouseUp={connectionPointHandlers.handleMouseUp}
+        onWheel={mouseHandlers.handleWheel}
+        onMouseDown={(e) => {
+          // Connection point handlers have priority
+          connectionPointHandlers.handleMouseDown(e);
+          // Mouse interaction handlers respect shouldSkipDefaultHandlers
+          mouseHandlers.handleMouseDown(e);
+        }}
+        onMouseMove={(e) => {
+          // Connection point handlers have priority
+          connectionPointHandlers.handleMouseMove(e);
+          // Mouse interaction handlers (will check internal state)
+          mouseHandlers.handleMouseMove(e);
+        }}
+        onMouseUp={(e) => {
+          // Connection point handlers have priority
+          connectionPointHandlers.handleMouseUp(e);
+          // Mouse interaction handlers
+          mouseHandlers.handleMouseUp(e);
+        }}
+        onMouseLeave={mouseHandlers.handleMouseUp}
         onContextMenu={(e) => e.preventDefault()}
         style={{
           width: '100%',
           height: '100%',
           display: 'block',
-          cursor: connectionPointHandlers.getCursorStyle(),
+          cursor: connectionPointHandlers.getCursorStyle() !== 'default'
+            ? connectionPointHandlers.getCursorStyle()
+            : mouseHandlers.getCursor(),
         }}
       />
       <CanvasControls snapMode={snapMode} setSnapMode={setSnapMode} />
