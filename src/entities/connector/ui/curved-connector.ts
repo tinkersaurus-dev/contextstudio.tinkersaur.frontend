@@ -7,16 +7,8 @@
 import type { Connector } from '../model/types';
 import { isCurvedConnector } from '../model/types';
 import type { Shape } from '@/entities/shape';
-import {
-  getConnectorEndpoints,
-  generateCurveControlPoints,
-} from '../lib/connector-geometry';
-import {
-  renderArrowhead,
-  getConnectorStrokeColor,
-  getConnectorStrokeWidth,
-} from './connector-rendering-utils';
-import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { generateCurveControlPoints } from '../lib/connector-geometry';
+import { renderConnectorBase } from './base-connector-renderer';
 
 /**
  * Render a curved (bezier) connector
@@ -36,53 +28,39 @@ export function renderCurvedConnector(
   scale: number,
   themeStrokeColor?: string
 ): void {
-  if (!isCurvedConnector(connector)) {
-    console.error('renderCurvedConnector called with non-curved connector:', connector);
-    return;
-  }
+  renderConnectorBase(
+    ctx,
+    connector,
+    shapes,
+    isSelected,
+    scale,
+    themeStrokeColor,
+    isCurvedConnector,
+    'curved',
+    ({ ctx, connector, start, end }) => {
+      // Type assertion is safe because renderConnectorBase validates the type
+      const curvedConnector = connector as Extract<
+        typeof connector,
+        { connectorType: 'curved' }
+      >;
 
-  const curvedConnector = connector;
+      // Generate control points for bezier curve
+      const curvature = curvedConnector.curvature ?? 1.0;
+      const [cp1, cp2] = generateCurveControlPoints(start, end, curvature);
 
-  // Get actual endpoints from connected shapes
-  const endpoints = getConnectorEndpoints(curvedConnector, shapes);
+      // Draw the bezier curve
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
+      ctx.stroke();
 
-  if (!endpoints) {
-    // Cannot render if shapes are missing
-    return;
-  }
+      // Calculate angles at the curve endpoints for arrowheads
+      // Use the tangent at the endpoint (derivative of bezier curve at t=1)
+      const endAngle = Math.atan2(end.y - cp2.y, end.x - cp2.x);
+      // Calculate angle at the start of the curve (derivative at t=0)
+      const startAngle = Math.atan2(cp1.y - start.y, cp1.x - start.x) + Math.PI;
 
-  const { start, end } = endpoints;
-
-  // Generate control points for bezier curve
-  const curvature = curvedConnector.curvature ?? 1.0;
-  const [cp1, cp2] = generateCurveControlPoints(start, end, curvature);
-
-  // Determine stroke color and width with theme colors
-  const strokeColor = getConnectorStrokeColor(curvedConnector, isSelected, themeStrokeColor);
-  const strokeWidth = getConnectorStrokeWidth(curvedConnector, isSelected);
-
-  // Draw the bezier curve
-  ctx.beginPath();
-  ctx.moveTo(start.x, start.y);
-  ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
-
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
-  ctx.stroke();
-
-  // Calculate angle at the end of the curve for arrowhead
-  // Use the tangent at the endpoint (derivative of bezier curve at t=1)
-  const endAngle = Math.atan2(end.y - cp2.y, end.x - cp2.x);
-
-  // Render arrowhead at end if specified
-  if (curvedConnector.arrowEnd) {
-    renderArrowhead(ctx, end, endAngle, scale, strokeColor);
-  }
-
-  // Render arrowhead at start if specified
-  if (curvedConnector.arrowStart) {
-    // Calculate angle at the start of the curve (derivative at t=0)
-    const startAngle = Math.atan2(cp1.y - start.y, cp1.x - start.x);
-    renderArrowhead(ctx, start, startAngle + Math.PI, scale, strokeColor);
-  }
+      return { endAngle, startAngle };
+    }
+  );
 }

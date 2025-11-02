@@ -5,7 +5,7 @@
  */
 
 import type { BaseShape, TaskShape } from '../model/types';
-import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { setupShapeContext, renderFilledAndStrokedPath } from './base-shape-renderer';
 
 /**
  * Render a BPMN Task shape (rounded rectangle)
@@ -23,39 +23,23 @@ export function renderTask(
   themeColors?: { fill: string; stroke: string; text: string }
 ): void {
   const taskShape = shape as TaskShape;
-  const {
-    position,
-    dimensions,
-    cornerRadius = 8,
-    strokeWidth = 0.5,
-  } = taskShape;
-
+  const { position, dimensions, cornerRadius = 8 } = taskShape;
   const { x, y } = position;
   const { width, height } = dimensions;
 
-  // Use shape colors if specified, otherwise fallback to theme colors
-  const fillColor = taskShape.fillColor ?? themeColors?.fill ?? '#F3F4F6';
-  const strokeColor = taskShape.strokeColor ?? themeColors?.stroke ?? '#1F2937';
+  // Setup canvas context with proper colors and line width
+  setupShapeContext(ctx, taskShape, scale, themeColors);
 
-  // Draw rounded rectangle
-  ctx.beginPath();
-  ctx.moveTo(x + cornerRadius, y);
-  ctx.lineTo(x + width - cornerRadius, y);
-  ctx.arcTo(x + width, y, x + width, y + cornerRadius, cornerRadius);
-  ctx.lineTo(x + width, y + height - cornerRadius);
-  ctx.arcTo(x + width, y + height, x + width - cornerRadius, y + height, cornerRadius);
-  ctx.lineTo(x + cornerRadius, y + height);
-  ctx.arcTo(x, y + height, x, y + height - cornerRadius, cornerRadius);
-  ctx.lineTo(x, y + cornerRadius);
-  ctx.arcTo(x, y, x + cornerRadius, y, cornerRadius);
-  ctx.closePath();
-
-  // Fill
-  ctx.fillStyle = fillColor;
-  ctx.fill();
-
-  // Stroke
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
-  ctx.stroke();
+  // Draw rounded rectangle path and render
+  renderFilledAndStrokedPath(ctx, () => {
+    ctx.moveTo(x + cornerRadius, y);
+    ctx.lineTo(x + width - cornerRadius, y);
+    ctx.arcTo(x + width, y, x + width, y + cornerRadius, cornerRadius);
+    ctx.lineTo(x + width, y + height - cornerRadius);
+    ctx.arcTo(x + width, y + height, x + width - cornerRadius, y + height, cornerRadius);
+    ctx.lineTo(x + cornerRadius, y + height);
+    ctx.arcTo(x, y + height, x, y + height - cornerRadius, cornerRadius);
+    ctx.lineTo(x, y + cornerRadius);
+    ctx.arcTo(x, y, x + cornerRadius, y, cornerRadius);
+  });
 }

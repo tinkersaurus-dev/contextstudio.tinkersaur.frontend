@@ -5,15 +5,12 @@
  * These are fundamental shapes used across all diagram types.
  */
 
-import { STROKE_WIDTHS } from '@/shared/config/canvas-config';
 import { generateShapeId } from '@/shared/lib/core/id-generator';
-import { calculatePosition } from '@/shared/lib/geometry';
-import { DiagramEntityType } from '@/entities/diagram-entity';
 import type { RectangleShape } from '../../model/types';
 import type { RectangularShapeOptions } from './base-factory-types';
 import { Result, ok, err } from '@/shared/lib/core/result';
 import { validateShape } from '@/shared/lib/entities';
-import { getDefaultTextConfig } from '@/shared/lib/rendering';
+import { createShapeBase, rectangularDimensions } from './base-shape-factory-utils';
 
 // ============================================================================
 // Rectangle Shape
@@ -54,50 +51,17 @@ export function createRectangle(
   y: number,
   options: CreateRectangleOptions = {}
 ): Result<RectangleShape> {
-  const {
-    width = 120,
-    height = 80,
-    fillColor,
-    strokeColor,
-    strokeWidth = STROKE_WIDTHS.shape,
-    textColor,
-    reference = 'center',
-  } = options;
+  const { width, height } = rectangularDimensions(options.width, options.height);
 
-  // Calculate position using utility function
-  const position = calculatePosition(x, y, width, height, { reference });
-
-  // Get default text configuration for this shape type
-  const textConfig = getDefaultTextConfig('rectangle');
-
-  const shape: RectangleShape = {
-    id: generateShapeId(),
-    type: DiagramEntityType.Shape,
+  return createShapeBase<RectangleShape>({
+    x,
+    y,
+    width,
+    height,
     shapeType: 'rectangle',
-    position,
-    dimensions: {
-      width,
-      height,
-    },
-    fillColor,
-    strokeColor,
-    strokeWidth,
-    textColor,
-    text: '',
-    textWrap: true,
-    maxLines: textConfig.maxLines,
-    textTruncation: 'ellipsis',
-    textPlacement: textConfig.placement,
-    lineHeight: textConfig.lineHeight,
-  };
-
-  // Validate the created shape
-  const validationResult = validateShape(shape);
-  if (!validationResult.valid) {
-    return err(`Rectangle validation failed: ${validationResult.errors.join(', ')}`);
-  }
-
-  return ok(shape);
+    options,
+    shapeSpecificProps: {},
+  });
 }
 
 /**

@@ -8,13 +8,8 @@ import type { Connector } from '../model/types';
 import { isOrthogonalConnector } from '../model/types';
 import type { Shape } from '@/entities/shape';
 import type { Position } from '@/entities/diagram-entity';
-import { getConnectorEndpoints, generateOrthogonalPath } from '../lib/connector-geometry';
-import {
-  renderArrowhead,
-  getConnectorStrokeColor,
-  getConnectorStrokeWidth,
-} from './connector-rendering-utils';
-import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { generateOrthogonalPath } from '../lib/connector-geometry';
+import { renderConnectorBase } from './base-connector-renderer';
 
 /**
  * Render an orthogonal (right-angle) connector
@@ -34,81 +29,69 @@ export function renderOrthogonalConnector(
   scale: number,
   themeStrokeColor?: string
 ): void {
-  if (!isOrthogonalConnector(connector)) {
-    console.error('renderOrthogonalConnector called with non-orthogonal connector:', connector);
-    return;
-  }
+  renderConnectorBase(
+    ctx,
+    connector,
+    shapes,
+    isSelected,
+    scale,
+    themeStrokeColor,
+    isOrthogonalConnector,
+    'orthogonal',
+    ({ ctx, connector, start, end }) => {
+      // Type assertion is safe because renderConnectorBase validates the type
+      const orthogonalConnector = connector as Extract<
+        typeof connector,
+        { connectorType: 'orthogonal' }
+      >;
 
-  const orthogonalConnector = connector;
+      // Generate path (use custom waypoints if specified, otherwise auto-generate)
+      let path: Position[];
+      if (orthogonalConnector.waypoints && orthogonalConnector.waypoints.length > 0) {
+        path = [start, ...orthogonalConnector.waypoints, end];
+      } else {
+        // Pass anchor information for intelligent routing
+        path = generateOrthogonalPath(
+          start,
+          end,
+          orthogonalConnector.source.anchor,
+          orthogonalConnector.target.anchor
+        );
+      }
 
-  // Get actual endpoints from connected shapes
-  const endpoints = getConnectorEndpoints(orthogonalConnector, shapes);
+      // Draw the path
+      ctx.beginPath();
+      ctx.moveTo(path[0].x, path[0].y);
 
-  if (!endpoints) {
-    // Cannot render if shapes are missing
-    return;
-  }
+      for (let i = 1; i < path.length; i++) {
+        ctx.lineTo(path[i].x, path[i].y);
+      }
 
-  const { start, end } = endpoints;
+      ctx.stroke();
 
-  // Generate path (use custom waypoints if specified, otherwise auto-generate)
-  let path: Position[];
-  if (orthogonalConnector.waypoints && orthogonalConnector.waypoints.length > 0) {
-    path = [start, ...orthogonalConnector.waypoints, end];
-  } else {
-    // Pass anchor information for intelligent routing
-    path = generateOrthogonalPath(
-      start,
-      end,
-      orthogonalConnector.source.anchor,
-      orthogonalConnector.target.anchor
-    );
-  }
+      // Calculate angles for arrowheads based on first and last segments
+      const lastSegment = {
+        start: path[path.length - 2],
+        end: path[path.length - 1],
+      };
 
-  // Determine stroke color and width with theme colors
-  const strokeColor = getConnectorStrokeColor(orthogonalConnector, isSelected, themeStrokeColor);
-  const strokeWidth = getConnectorStrokeWidth(orthogonalConnector, isSelected);
+      const endAngle = Math.atan2(
+        lastSegment.end.y - lastSegment.start.y,
+        lastSegment.end.x - lastSegment.start.x
+      );
 
-  // Draw the path
-  ctx.beginPath();
-  ctx.moveTo(path[0].x, path[0].y);
+      const firstSegment = {
+        start: path[0],
+        end: path[1],
+      };
 
-  for (let i = 1; i < path.length; i++) {
-    ctx.lineTo(path[i].x, path[i].y);
-  }
+      const startAngle =
+        Math.atan2(
+          firstSegment.end.y - firstSegment.start.y,
+          firstSegment.end.x - firstSegment.start.x
+        ) + Math.PI;
 
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
-  ctx.stroke();
-
-  // Calculate angle for arrowheads based on last segment
-  const lastSegment = {
-    start: path[path.length - 2],
-    end: path[path.length - 1],
-  };
-
-  const endAngle = Math.atan2(
-    lastSegment.end.y - lastSegment.start.y,
-    lastSegment.end.x - lastSegment.start.x
+      return { endAngle, startAngle };
+    }
   );
-
-  // Render arrowhead at end if specified
-  if (orthogonalConnector.arrowEnd) {
-    renderArrowhead(ctx, end, endAngle, scale, strokeColor);
-  }
-
-  // Render arrowhead at start if specified
-  if (orthogonalConnector.arrowStart) {
-    const firstSegment = {
-      start: path[0],
-      end: path[1],
-    };
-
-    const startAngle = Math.atan2(
-      firstSegment.end.y - firstSegment.start.y,
-      firstSegment.end.x - firstSegment.start.x
-    );
-
-    renderArrowhead(ctx, start, startAngle + Math.PI, scale, strokeColor);
-  }
 }

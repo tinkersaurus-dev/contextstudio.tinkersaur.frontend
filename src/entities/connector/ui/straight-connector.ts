@@ -7,13 +7,7 @@
 import type { Connector } from '../model/types';
 import { isStraightConnector } from '../model/types';
 import type { Shape } from '@/entities/shape';
-import { getConnectorEndpoints } from '../lib/connector-geometry';
-import {
-  renderArrowhead,
-  getConnectorStrokeColor,
-  getConnectorStrokeWidth,
-} from './connector-rendering-utils';
-import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { renderConnectorBase } from './base-connector-renderer';
 
 /**
  * Render a straight line connector
@@ -33,46 +27,29 @@ export function renderStraightConnector(
   scale: number,
   themeStrokeColor?: string
 ): void {
-  if (!isStraightConnector(connector)) {
-    console.error('renderStraightConnector called with non-straight connector:', connector);
-    return;
-  }
+  renderConnectorBase(
+    ctx,
+    connector,
+    shapes,
+    isSelected,
+    scale,
+    themeStrokeColor,
+    isStraightConnector,
+    'straight',
+    ({ ctx, start, end }) => {
+      // Draw the straight line
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
 
-  const straightConnector = connector;
+      // Calculate angle for arrowheads
+      const angle = Math.atan2(end.y - start.y, end.x - start.x);
 
-  // Get actual endpoints from connected shapes
-  const endpoints = getConnectorEndpoints(straightConnector, shapes);
-
-  if (!endpoints) {
-    // Cannot render if shapes are missing
-    return;
-  }
-
-  const { start, end } = endpoints;
-
-  // Determine stroke color and width with theme colors
-  const strokeColor = getConnectorStrokeColor(straightConnector, isSelected, themeStrokeColor);
-  const strokeWidth = getConnectorStrokeWidth(straightConnector, isSelected);
-
-  // Draw the line
-  ctx.beginPath();
-  ctx.moveTo(start.x, start.y);
-  ctx.lineTo(end.x, end.y);
-
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
-  ctx.stroke();
-
-  // Calculate angle for arrowheads
-  const angle = Math.atan2(end.y - start.y, end.x - start.x);
-
-  // Render arrowhead at end if specified
-  if (straightConnector.arrowEnd) {
-    renderArrowhead(ctx, end, angle, scale, strokeColor);
-  }
-
-  // Render arrowhead at start if specified
-  if (straightConnector.arrowStart) {
-    renderArrowhead(ctx, start, angle + Math.PI, scale, strokeColor);
-  }
+      return {
+        endAngle: angle,
+        startAngle: angle + Math.PI,
+      };
+    }
+  );
 }

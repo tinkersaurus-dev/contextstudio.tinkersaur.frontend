@@ -5,10 +5,6 @@
  * These shapes are used for process modeling and workflow diagrams.
  */
 
-import { STROKE_WIDTHS } from '@/shared/config/canvas-config';
-import { generateShapeId } from '@/shared/lib/core/id-generator';
-import { calculatePosition } from '@/shared/lib/geometry';
-import { DiagramEntityType } from '@/entities/diagram-entity';
 import type {
   TaskShape,
   EventShape,
@@ -25,9 +21,13 @@ import type {
   CircularShapeOptions,
   SquareShapeOptions,
 } from './base-factory-types';
-import { Result, ok, err } from '@/shared/lib/core/result';
-import { validateShape } from '@/shared/lib/entities';
-import { getDefaultTextConfig } from '@/shared/lib/rendering';
+import { Result } from '@/shared/lib/core/result';
+import {
+  createShapeBase,
+  rectangularDimensions,
+  circularDimensions,
+  squareDimensions,
+} from './base-shape-factory-utils';
 
 // ============================================================================
 // BPMN Task Shape
@@ -56,49 +56,21 @@ export function createTask(
   y: number,
   options: CreateTaskOptions = {}
 ): Result<TaskShape> {
-  const {
-    width = 120,
-    height = 80,
-    cornerRadius = 8,
-    subType,
-    fillColor,
-    strokeColor,
-    strokeWidth = STROKE_WIDTHS.shape,
-    textColor,
-    reference = 'center',
-  } = options;
+  const { width, height } = rectangularDimensions(options.width, options.height);
+  const { cornerRadius = 8, subType } = options;
 
-  const position = calculatePosition(x, y, width, height, { reference });
-
-  // Get default text configuration for this shape type
-  const textConfig = getDefaultTextConfig('task');
-
-  const shape: TaskShape = {
-    id: generateShapeId(),
-    type: DiagramEntityType.Shape,
+  return createShapeBase<TaskShape>({
+    x,
+    y,
+    width,
+    height,
     shapeType: 'task',
-    subType,
-    position,
-    dimensions: { width, height },
-    cornerRadius,
-    fillColor,
-    strokeColor,
-    strokeWidth,
-    textColor,
-    text: '',
-    textWrap: true,
-    maxLines: textConfig.maxLines,
-    textTruncation: 'ellipsis',
-    textPlacement: textConfig.placement,
-    lineHeight: textConfig.lineHeight,
-  };
-
-  const validationResult = validateShape(shape);
-  if (!validationResult.valid) {
-    return err(`Task shape validation failed: ${validationResult.errors.join(', ')}`);
-  }
-
-  return ok(shape);
+    options,
+    shapeSpecificProps: {
+      cornerRadius,
+      subType,
+    },
+  });
 }
 
 // ============================================================================
@@ -126,46 +98,19 @@ export function createEvent(
   y: number,
   options: CreateEventOptions
 ): Result<EventShape> {
-  const {
-    diameter = 40,
-    subType,
-    fillColor,
-    strokeColor,
-    strokeWidth = STROKE_WIDTHS.shape,
-    textColor,
-    reference = 'center',
-  } = options;
+  const { diameter } = circularDimensions(options.diameter);
+  const { subType } = options;
 
-  const position = calculatePosition(x, y, diameter, diameter, { reference });
-
-  // Get default text configuration for this shape type
-  const textConfig = getDefaultTextConfig('event');
-
-  const shape: EventShape = {
-    id: generateShapeId(),
-    type: DiagramEntityType.Shape,
+  return createShapeBase<EventShape>({
+    x,
+    y,
+    diameter,
     shapeType: 'event',
-    subType,
-    position,
-    dimensions: { width: diameter, height: diameter },
-    fillColor,
-    strokeColor,
-    strokeWidth,
-    textColor,
-    text: '',
-    textWrap: true,
-    maxLines: textConfig.maxLines,
-    textTruncation: 'ellipsis',
-    textPlacement: textConfig.placement,
-    lineHeight: textConfig.lineHeight,
-  };
-
-  const validationResult = validateShape(shape);
-  if (!validationResult.valid) {
-    return err(`Event shape validation failed: ${validationResult.errors.join(', ')}`);
-  }
-
-  return ok(shape);
+    options,
+    shapeSpecificProps: {
+      subType,
+    },
+  });
 }
 
 /**
@@ -237,46 +182,19 @@ export function createGateway(
   y: number,
   options: CreateGatewayOptions = {}
 ): Result<GatewayShape> {
-  const {
-    size = 40,
-    subType,
-    fillColor,
-    strokeColor,
-    strokeWidth = STROKE_WIDTHS.shape,
-    textColor,
-    reference = 'center',
-  } = options;
+  const { size } = squareDimensions(options.size);
+  const { subType } = options;
 
-  const position = calculatePosition(x, y, size, size, { reference });
-
-  // Get default text configuration for this shape type
-  const textConfig = getDefaultTextConfig('gateway');
-
-  const shape: GatewayShape = {
-    id: generateShapeId(),
-    type: DiagramEntityType.Shape,
+  return createShapeBase<GatewayShape>({
+    x,
+    y,
+    size,
     shapeType: 'gateway',
-    subType,
-    position,
-    dimensions: { width: size, height: size },
-    fillColor,
-    strokeColor,
-    strokeWidth,
-    textColor,
-    text: '',
-    textWrap: true,
-    maxLines: textConfig.maxLines,
-    textTruncation: 'ellipsis',
-    textPlacement: textConfig.placement,
-    lineHeight: textConfig.lineHeight,
-  };
-
-  const validationResult = validateShape(shape);
-  if (!validationResult.valid) {
-    return err(`Gateway shape validation failed: ${validationResult.errors.join(', ')}`);
-  }
-
-  return ok(shape);
+    options,
+    shapeSpecificProps: {
+      subType,
+    },
+  });
 }
 
 // ============================================================================
@@ -301,43 +219,17 @@ export function createPool(
   y: number,
   options: CreatePoolOptions = {}
 ): Result<PoolShape> {
-  const {
-    width = 600,
-    height = 200,
-    fillColor,
-    strokeColor,
-    strokeWidth = STROKE_WIDTHS.shape,
-    textColor,
-    reference = 'center',
-  } = options;
+  // Pools have larger default dimensions
+  const width = options.width ?? 600;
+  const height = options.height ?? 200;
 
-  const position = calculatePosition(x, y, width, height, { reference });
-
-  // Get default text configuration for this shape type
-  const textConfig = getDefaultTextConfig('pool');
-
-  const shape: PoolShape = {
-    id: generateShapeId(),
-    type: DiagramEntityType.Shape,
+  return createShapeBase<PoolShape>({
+    x,
+    y,
+    width,
+    height,
     shapeType: 'pool',
-    position,
-    dimensions: { width, height },
-    fillColor,
-    strokeColor,
-    strokeWidth,
-    textColor,
-    text: '',
-    textWrap: true,
-    maxLines: textConfig.maxLines,
-    textTruncation: 'ellipsis',
-    textPlacement: textConfig.placement,
-    lineHeight: textConfig.lineHeight,
-  };
-
-  const validationResult = validateShape(shape);
-  if (!validationResult.valid) {
-    return err(`Pool shape validation failed: ${validationResult.errors.join(', ')}`);
-  }
-
-  return ok(shape);
+    options,
+    shapeSpecificProps: {},
+  });
 }

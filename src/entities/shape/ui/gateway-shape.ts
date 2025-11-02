@@ -5,7 +5,7 @@
  */
 
 import type { BaseShape } from '../model/types';
-import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { setupShapeContext, renderFilledAndStrokedPath } from './base-shape-renderer';
 
 /**
  * Render a BPMN Gateway shape (diamond)
@@ -22,16 +22,7 @@ export function renderGateway(
   scale: number,
   themeColors?: { fill: string; stroke: string; text: string }
 ): void {
-  const {
-    position,
-    dimensions,
-    strokeWidth = 0.5,
-  } = shape;
-
-  // Use shape colors if specified, otherwise fallback to theme colors
-  const fillColor = shape.fillColor ?? themeColors?.fill ?? '#F3F4F6';
-  const strokeColor = shape.strokeColor ?? themeColors?.stroke ?? '#1F2937';
-
+  const { position, dimensions } = shape;
   const { x, y } = position;
   const { width, height } = dimensions;
 
@@ -39,20 +30,14 @@ export function renderGateway(
   const centerX = x + width / 2;
   const centerY = y + height / 2;
 
-  // Draw diamond
-  ctx.beginPath();
-  ctx.moveTo(centerX, y); // Top point
-  ctx.lineTo(x + width, centerY); // Right point
-  ctx.lineTo(centerX, y + height); // Bottom point
-  ctx.lineTo(x, centerY); // Left point
-  ctx.closePath();
+  // Setup canvas context with proper colors and line width
+  setupShapeContext(ctx, shape, scale, themeColors);
 
-  // Fill
-  ctx.fillStyle = fillColor;
-  ctx.fill();
-
-  // Stroke
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
-  ctx.stroke();
+  // Draw diamond path and render
+  renderFilledAndStrokedPath(ctx, () => {
+    ctx.moveTo(centerX, y); // Top point
+    ctx.lineTo(x + width, centerY); // Right point
+    ctx.lineTo(centerX, y + height); // Bottom point
+    ctx.lineTo(x, centerY); // Left point
+  });
 }

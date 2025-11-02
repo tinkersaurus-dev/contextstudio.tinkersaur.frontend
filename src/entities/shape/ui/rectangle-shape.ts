@@ -1,5 +1,5 @@
 import { BaseShape } from '../model/types';
-import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
+import { setupShapeContext } from './base-shape-renderer';
 
 /**
  * Renders a rectangle shape to the canvas
@@ -11,18 +11,12 @@ export function renderRectangle(
   scale: number,
   themeColors?: { fill: string; stroke: string; text: string }
 ): void {
-  const { position, dimensions, strokeWidth = 0.5 } = shape;
+  const { position, dimensions } = shape;
 
-  // Use shape colors if specified, otherwise fallback to theme colors
-  const fillColor = shape.fillColor ?? themeColors?.fill ?? '#F3F4F6';
-  const strokeColor = shape.strokeColor ?? themeColors?.stroke ?? '#1F2937';
+  // Setup canvas context with proper colors and line width
+  setupShapeContext(ctx, shape, scale, themeColors);
 
-  // Fill the rectangle
-  ctx.fillStyle = fillColor;
+  // Fill and stroke the rectangle
   ctx.fillRect(position.x, position.y, dimensions.width, dimensions.height);
-
-  // Stroke the rectangle
-  ctx.strokeStyle = strokeColor;
-  ctx.lineWidth = getScaledLineWidth(strokeWidth, scale);
   ctx.strokeRect(position.x, position.y, dimensions.width, dimensions.height);
 }
