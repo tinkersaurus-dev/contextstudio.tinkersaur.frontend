@@ -69,16 +69,18 @@ export function getScaledRadius(baseRadius: number, scale: number): number {
  *
  * @param ctx - Canvas rendering context
  * @param scale - Current canvas scale/zoom level
+ * @param color - Selection color from theme
  *
  * @example
- * applySelectionStyle(ctx, zoomState.scale);
+ * applySelectionStyle(ctx, zoomState.scale, theme.colors.selection.stroke);
  * ctx.strokeRect(x, y, width, height);
  */
 export function applySelectionStyle(
   ctx: CanvasRenderingContext2D,
-  scale: number
+  scale: number,
+  color?: string
 ): void {
-  ctx.strokeStyle = '#ff6b35'; // Placeholder - will be replaced with canvas theme system
+  ctx.strokeStyle = color ?? '#ff6b35';
   ctx.lineWidth = getScaledLineWidth(STROKE_WIDTHS.selection, scale);
   ctx.setLineDash(getScaledDashPattern(DASH_PATTERNS.selection, scale));
 }
@@ -88,16 +90,18 @@ export function applySelectionStyle(
  *
  * @param ctx - Canvas rendering context
  * @param scale - Current canvas scale/zoom level
+ * @param color - Selection box color from theme
  *
  * @example
- * applySelectionBoxStyle(ctx, zoomState.scale);
+ * applySelectionBoxStyle(ctx, zoomState.scale, theme.colors.selection.box);
  * ctx.strokeRect(x, y, width, height);
  */
 export function applySelectionBoxStyle(
   ctx: CanvasRenderingContext2D,
-  scale: number
+  scale: number,
+  color?: string
 ): void {
-  ctx.strokeStyle = '#3B82F6'; // Placeholder - will be replaced with canvas theme system
+  ctx.strokeStyle = color ?? '#3B82F6';
   ctx.lineWidth = getScaledLineWidth(STROKE_WIDTHS.selectionBox, scale);
   ctx.setLineDash(getScaledDashPattern(DASH_PATTERNS.selectionBox, scale));
 }
@@ -125,10 +129,11 @@ export function clearDashPattern(ctx: CanvasRenderingContext2D): void {
  * @param width - Rectangle width
  * @param height - Rectangle height
  * @param scale - Current canvas scale/zoom level
+ * @param color - Selection color from theme
  *
  * @example
  * renderSelectionIndicator(ctx, shape.position.x, shape.position.y,
- *                         shape.dimensions.width, shape.dimensions.height, scale);
+ *                         shape.dimensions.width, shape.dimensions.height, scale, theme.colors.selection.stroke);
  */
 export function renderSelectionIndicator(
   ctx: CanvasRenderingContext2D,
@@ -136,10 +141,11 @@ export function renderSelectionIndicator(
   y: number,
   width: number,
   height: number,
-  scale: number
+  scale: number,
+  color?: string
 ): void {
   ctx.save();
-  applySelectionStyle(ctx, scale);
+  applySelectionStyle(ctx, scale, color);
   ctx.strokeRect(x, y, width, height);
   clearDashPattern(ctx);
   ctx.restore();
@@ -154,9 +160,11 @@ export function renderSelectionIndicator(
  * @param width - Box width
  * @param height - Box height
  * @param scale - Current canvas scale/zoom level
+ * @param strokeColor - Selection box stroke color from theme
+ * @param fillColor - Selection box fill color from theme
  *
  * @example
- * renderSelectionBox(ctx, minX, minY, width, height, scale);
+ * renderSelectionBox(ctx, minX, minY, width, height, scale, theme.colors.selection.box, theme.colors.selection.boxFill);
  */
 export function renderSelectionBoxRect(
   ctx: CanvasRenderingContext2D,
@@ -164,16 +172,18 @@ export function renderSelectionBoxRect(
   y: number,
   width: number,
   height: number,
-  scale: number
+  scale: number,
+  strokeColor?: string,
+  fillColor?: string
 ): void {
   ctx.save();
 
-  // Fill with semi-transparent color (placeholder - will be replaced with canvas theme system)
-  ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+  // Fill with semi-transparent color from theme
+  ctx.fillStyle = fillColor ?? 'rgba(59, 130, 246, 0.1)';
   ctx.fillRect(x, y, width, height);
 
   // Border with dashed line
-  applySelectionBoxStyle(ctx, scale);
+  applySelectionBoxStyle(ctx, scale, strokeColor);
   ctx.strokeRect(x, y, width, height);
   clearDashPattern(ctx);
 

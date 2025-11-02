@@ -19,7 +19,8 @@ export function renderTask(
   ctx: CanvasRenderingContext2D,
   shape: BaseShape,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeColors?: { fill: string; stroke: string; text: string }
 ): void {
   const taskShape = shape as TaskShape;
   const {
@@ -32,10 +33,9 @@ export function renderTask(
   const { x, y } = position;
   const { width, height } = dimensions;
 
-  // Use placeholder colors as fallback if shape doesn't have custom colors
-  // Will be replaced with canvas theme system
-  const fillColor = taskShape.fillColor ?? '#F3F4F6';
-  const strokeColor = taskShape.strokeColor ?? '#1F2937';
+  // Use shape colors if specified, otherwise fallback to theme colors
+  const fillColor = taskShape.fillColor ?? themeColors?.fill ?? '#F3F4F6';
+  const strokeColor = taskShape.strokeColor ?? themeColors?.stroke ?? '#1F2937';
 
   // Draw rounded rectangle
   ctx.beginPath();

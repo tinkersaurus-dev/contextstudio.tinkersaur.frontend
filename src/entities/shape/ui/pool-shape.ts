@@ -20,7 +20,8 @@ export function renderPool(
   ctx: CanvasRenderingContext2D,
   shape: BaseShape,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeColors?: { fill: string; stroke: string; text: string }
 ): void {
   const {
     position,
@@ -28,10 +29,9 @@ export function renderPool(
     strokeWidth = 0.5,
   } = shape;
 
-  // Use placeholder colors as fallback if shape doesn't have custom colors
-  // Will be replaced with canvas theme system
-  const fillColor = shape.fillColor ?? '#F3F4F6';
-  const strokeColor = shape.strokeColor ?? '#1F2937';
+  // Use shape colors if specified, otherwise fallback to theme colors
+  const fillColor = shape.fillColor ?? themeColors?.fill ?? '#F3F4F6';
+  const strokeColor = shape.strokeColor ?? themeColors?.stroke ?? '#1F2937';
 
   const { x, y } = position;
   const { width, height } = dimensions;

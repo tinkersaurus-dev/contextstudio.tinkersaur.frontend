@@ -14,6 +14,7 @@ import type { SelectionBox } from './selection-box-renderer';
 import type { Shape } from '@/entities/shape';
 import type { Connector, AnchorPosition } from '@/entities/connector';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/core/result';
+import type { CanvasTheme } from '@/shared/lib/theming';
 
 export interface CanvasRenderContext {
   /** Canvas element to render to */
@@ -39,10 +40,8 @@ export interface CanvasRenderContext {
   hoveredShapeIds?: string[];
   /** Specific connection point being hovered */
   hoveredConnectionPoint?: { shapeId: string; anchor: AnchorPosition } | null;
-  /** Color mode (light/dark) */
-  colorMode: string;
-  /** Theme variant (standard/deuteranopia) */
-  variant: string;
+  /** Canvas theme with colors for rendering */
+  theme: CanvasTheme;
 }
 
 /**
@@ -84,8 +83,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
     connectorDragEnd = null,
     hoveredShapeIds = [],
     hoveredConnectionPoint = null,
-    colorMode,
-    variant,
+    theme,
   } = context;
 
   try {
@@ -116,8 +114,8 @@ export function renderCanvas(context: CanvasRenderContext): void {
       return;
     }
 
-    // Fill canvas with background color (placeholder - will be replaced with canvas theme system)
-    ctx.fillStyle = '#f7f7f7';
+    // Fill canvas with theme background color
+    ctx.fillStyle = theme.colors.background;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Apply transform to context
@@ -125,7 +123,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
     transform.applyToContext(ctx);
 
     try {
-      // Render grid (placeholder - will be replaced with canvas theme system)
+      // Render grid with theme colors
       GridSystem.render({
         ctx,
         width: canvas.width,
@@ -134,6 +132,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
         panX: transform.panX,
         panY: transform.panY,
         config: gridConfig,
+        colors: theme.colors.grid,
       });
     } catch (err) {
       const error = createError(
@@ -149,8 +148,8 @@ export function renderCanvas(context: CanvasRenderContext): void {
     }
 
     try {
-      // Render all shapes with selection and selection box (placeholder - will be replaced with canvas theme system)
-      renderShapes(ctx, shapes, selectedEntityIds, transform.scale, selectionBox);
+      // Render all shapes with theme colors
+      renderShapes(ctx, shapes, selectedEntityIds, transform.scale, selectionBox, theme.colors.shape);
     } catch (err) {
       const error = createError(
         'Error rendering shapes',
@@ -166,8 +165,8 @@ export function renderCanvas(context: CanvasRenderContext): void {
     }
 
     try {
-      // Render all connectors (placeholder - will be replaced with canvas theme system)
-      renderConnectors(ctx, connectors, shapes, selectedEntityIds, transform.scale);
+      // Render all connectors with theme colors
+      renderConnectors(ctx, connectors, shapes, selectedEntityIds, transform.scale, theme.colors.connector.stroke);
     } catch (err) {
       const error = createError(
         'Error rendering connectors',
@@ -183,7 +182,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
     }
 
     try {
-      // Render connection points for hovered shapes
+      // Render connection points for hovered shapes with theme colors
       if (hoveredShapeIds.length > 0) {
         const hoveredShapes = shapes.filter((s) => hoveredShapeIds.includes(s.id));
 
@@ -195,11 +194,12 @@ export function renderCanvas(context: CanvasRenderContext): void {
           ConnectionPointSystem.renderConnectionPoints(ctx, shape, {
             scale: transform.scale,
             highlightAnchor,
+            colors: theme.colors.connectionPoint,
           });
         });
       }
 
-      // Show preview line if dragging connector (placeholder - will be replaced with canvas theme system)
+      // Show preview line if dragging connector with theme color
       if (connectorDragStart && connectorDragEnd) {
         ConnectionPointSystem.renderConnectorPreview(
           ctx,
@@ -207,7 +207,8 @@ export function renderCanvas(context: CanvasRenderContext): void {
           connectorDragStart.y,
           connectorDragEnd.x,
           connectorDragEnd.y,
-          transform.scale
+          transform.scale,
+          theme.colors.connectionPoint.preview
         );
       }
     } catch (err) {

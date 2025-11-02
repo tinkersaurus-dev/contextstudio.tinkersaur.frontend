@@ -21,7 +21,8 @@ export type ShapeRenderer = (
   ctx: CanvasRenderingContext2D,
   shape: BaseShape,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeColors?: { fill: string; stroke: string; text: string }
 ) => void;
 
 /**
@@ -216,20 +217,22 @@ export const shapeRegistry = new ShapeRegistry();
  * @param shape - Shape to render
  * @param isSelected - Whether the shape is selected
  * @param scale - Current canvas scale
+ * @param themeColors - Optional theme colors for default rendering
  *
  * @example
- * renderShapeFromRegistry(ctx, shape, isSelected, scale);
+ * renderShapeFromRegistry(ctx, shape, isSelected, scale, themeColors);
  */
 export function renderShapeFromRegistry(
   ctx: CanvasRenderingContext2D,
   shape: BaseShape,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeColors?: { fill: string; stroke: string; text: string }
 ): void {
   const renderer = shapeRegistry.getRendererForShape(shape);
 
   if (renderer) {
-    renderer(ctx, shape, isSelected, scale);
+    renderer(ctx, shape, isSelected, scale, themeColors);
   } else {
     const key = getShapeKey(shape);
     console.warn(`No renderer registered for shape key: ${key}`);

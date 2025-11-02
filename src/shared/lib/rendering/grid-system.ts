@@ -182,17 +182,15 @@ export class GridSystem {
    *   scale: 1.5,
    *   panX: 0,
    *   panY: 0,
+   *   colors: { minor: '#E5E7EB', major: '#D1D5DB' }
    * });
    */
   static render(context: GridRenderContext): void {
-    const { ctx, width, height, scale: zoom, panX, panY, config = DEFAULT_GRID_CONFIG } = context;
+    const { ctx, width, height, scale: zoom, panX, panY, config = DEFAULT_GRID_CONFIG, colors } = context;
     const { minorLineWidth, majorLineWidth } = config;
 
     // Get grid sizes based on zoom level
     const { minor: minorGridSize, major: majorGridSize } = this.getGridSizeForZoom(zoom);
-
-    // Grid color (placeholder - will be replaced with canvas theme system)
-    ctx.strokeStyle = '#CED8F7';
 
     // Calculate bounds based on the smallest grid unit to keep lines anchored
     const startX = Math.floor(-panX / zoom / BASE_GRID) * BASE_GRID;
@@ -201,11 +199,14 @@ export class GridSystem {
     const endY = startY + height / zoom + BASE_GRID;
 
     // Draw minor grid lines (skip major grid line positions)
+    // Use theme colors if provided, otherwise fallback to config color
+    ctx.strokeStyle = colors?.minor ?? config.gridColor;
     ctx.lineWidth = minorLineWidth / zoom;
     this.drawGridLines(ctx, 'x', startX, endX, startY, endY, minorGridSize, majorGridSize, zoom);
     this.drawGridLines(ctx, 'y', startY, endY, startX, endX, minorGridSize, majorGridSize, zoom);
 
     // Draw major grid lines
+    ctx.strokeStyle = colors?.major ?? config.gridColor;
     ctx.lineWidth = majorLineWidth / zoom;
     this.drawGridLines(ctx, 'x', startX, endX, startY, endY, majorGridSize, null, zoom);
     this.drawGridLines(ctx, 'y', startY, endY, startX, endX, majorGridSize, null, zoom);

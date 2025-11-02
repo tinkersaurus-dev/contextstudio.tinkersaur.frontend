@@ -19,8 +19,8 @@ import { createShapeMap } from '@/shared/lib/core/map-utils';
  * @param context - Connector rendering context
  */
 export function renderConnector(context: ConnectorRenderContext): void {
-  const { ctx, connector, shapes, isSelected, scale } = context;
-  renderConnectorFromRegistry(ctx, connector, shapes, isSelected, scale);
+  const { ctx, connector, shapes, isSelected, scale, themeStrokeColor } = context;
+  renderConnectorFromRegistry(ctx, connector, shapes, isSelected, scale, themeStrokeColor);
 }
 
 /**
@@ -34,16 +34,18 @@ export function renderConnector(context: ConnectorRenderContext): void {
  * @param shapes - Array of shapes (needed to resolve connector endpoints)
  * @param selectedEntityIds - Set of selected entity IDs
  * @param scale - Current canvas scale
+ * @param themeStrokeColor - Default stroke color from theme
  *
  * @example
- * renderConnectors(ctx, connectors, shapes, selectedIds, 1.0);
+ * renderConnectors(ctx, connectors, shapes, selectedIds, 1.0, '#1F2937');
  */
 export function renderConnectors(
   ctx: CanvasRenderingContext2D,
   connectors: Connector[],
   shapes: Shape[],
   selectedEntityIds: Set<string>,
-  scale: number
+  scale: number,
+  themeStrokeColor?: string
 ): void {
   // Create a map of shapes for efficient lookup
   const shapesMap = createShapeMap(shapes);
@@ -72,7 +74,7 @@ export function renderConnectors(
       const isSelected = selectedEntityIds.has(connector.id);
 
       // Use standardized rendering context
-      renderConnector({ ctx, connector, shapes: shapesMap, isSelected, scale });
+      renderConnector({ ctx, connector, shapes: shapesMap, isSelected, scale, themeStrokeColor });
     } catch (error) {
       const appError = createError(
         `Error rendering connector ${connector.id}`,

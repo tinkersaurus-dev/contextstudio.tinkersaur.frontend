@@ -24,13 +24,15 @@ import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
  * @param shapes - Map of shape ID to shape object
  * @param isSelected - Whether the connector is selected
  * @param scale - Current canvas scale
+ * @param themeStrokeColor - Optional default stroke color from theme
  */
 export function renderOrthogonalConnector(
   ctx: CanvasRenderingContext2D,
   connector: Connector,
   shapes: Map<string, Shape>,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeStrokeColor?: string
 ): void {
   if (!isOrthogonalConnector(connector)) {
     console.error('renderOrthogonalConnector called with non-orthogonal connector:', connector);
@@ -63,8 +65,8 @@ export function renderOrthogonalConnector(
     );
   }
 
-  // Determine stroke color and width
-  const strokeColor = getConnectorStrokeColor(orthogonalConnector, isSelected);
+  // Determine stroke color and width with theme colors
+  const strokeColor = getConnectorStrokeColor(orthogonalConnector, isSelected, themeStrokeColor);
   const strokeWidth = getConnectorStrokeWidth(orthogonalConnector, isSelected);
 
   // Draw the path

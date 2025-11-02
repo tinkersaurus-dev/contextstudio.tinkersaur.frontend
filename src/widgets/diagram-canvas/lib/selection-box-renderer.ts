@@ -16,11 +16,13 @@ export interface SelectionBox {
 export function renderSelectionBox(
   ctx: CanvasRenderingContext2D,
   selectionBox: SelectionBox,
-  scale: number
+  scale: number,
+  strokeColor?: string,
+  fillColor?: string
 ): void {
   const { startX, startY, endX, endY } = selectionBox;
 
   const box = getBoundingBox(startX, startY, endX, endY);
 
-  renderSelectionBoxRect(ctx, box.minX, box.minY, box.width, box.height, scale);
+  renderSelectionBoxRect(ctx, box.minX, box.minY, box.width, box.height, scale, strokeColor, fillColor);
 }

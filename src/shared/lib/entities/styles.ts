@@ -115,36 +115,37 @@ export enum StyleState {
  *
  * @param connector - The connector to style
  * @param state - The visual state to apply (defaults to Normal)
+ * @param themeColors - Optional theme colors for defaults
  * @returns Computed connector style
  *
  * @example
- * const style = resolveConnectorStyle(connector, StyleState.Selected);
+ * const style = resolveConnectorStyle(connector, StyleState.Selected, { normal: '#1F2937', selected: '#3B82F6' });
  * ctx.strokeStyle = style.strokeColor;
  * ctx.lineWidth = style.strokeWidth;
  */
 export function resolveConnectorStyle(
   connector: Connector,
-  state: StyleState = StyleState.Normal
+  state: StyleState = StyleState.Normal,
+  themeColors?: { normal?: string; selected?: string; hover?: string }
 ): ConnectorStyle {
   // Determine stroke color based on state
   let strokeColor: string;
   let strokeWidth: number;
 
-  // Placeholder colors - will be replaced with canvas theme system
   switch (state) {
     case StyleState.Selected:
-      strokeColor = '#ff6b35';
+      strokeColor = themeColors?.selected ?? '#ff6b35';
       strokeWidth = STROKE_WIDTHS.connectorSelected;
       break;
 
     case StyleState.Hover:
-      strokeColor = '#3B82F6';
+      strokeColor = themeColors?.hover ?? '#3B82F6';
       strokeWidth = STROKE_WIDTHS.connectorSelected; // Same width as selected
       break;
 
     case StyleState.Normal:
     default:
-      strokeColor = connector.strokeColor ?? '#1F2937';
+      strokeColor = connector.strokeColor ?? themeColors?.normal ?? '#1F2937';
       strokeWidth = connector.strokeWidth ?? STROKE_WIDTHS.connector;
       break;
   }

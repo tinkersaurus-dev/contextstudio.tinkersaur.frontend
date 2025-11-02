@@ -19,7 +19,8 @@ export type ConnectorRenderer = (
   connector: Connector,
   shapes: Map<string, Shape>,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeStrokeColor?: string
 ) => void;
 
 /**
@@ -163,21 +164,23 @@ export const connectorRegistry = new ConnectorRegistry();
  * @param shapes - Map of shape ID to shape object
  * @param isSelected - Whether the connector is selected
  * @param scale - Current canvas scale
+ * @param themeStrokeColor - Default stroke color from theme
  *
  * @example
- * renderConnectorFromRegistry(ctx, connector, shapes, isSelected, scale);
+ * renderConnectorFromRegistry(ctx, connector, shapes, isSelected, scale, '#1F2937');
  */
 export function renderConnectorFromRegistry(
   ctx: CanvasRenderingContext2D,
   connector: Connector,
   shapes: Map<string, Shape>,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeStrokeColor?: string
 ): void {
   const renderer = connectorRegistry.getRenderer(connector.connectorType);
 
   if (renderer) {
-    renderer(ctx, connector, shapes, isSelected, scale);
+    renderer(ctx, connector, shapes, isSelected, scale, themeStrokeColor);
   } else {
     console.warn(`No renderer registered for connector type: ${connector.connectorType}`);
   }

@@ -331,6 +331,13 @@ export interface RenderConnectionPointOptions {
   scale: number;
   /** Optional anchor to highlight */
   highlightAnchor?: AnchorPosition;
+  /** Optional theme colors for connection points */
+  colors?: {
+    normal?: string;
+    hover?: string;
+    active?: string;
+    preview?: string;
+  };
 }
 
 /**
@@ -467,7 +474,7 @@ export class ConnectionPointSystem {
     shape: Shape,
     options: RenderConnectionPointOptions
   ): void {
-    const { scale, highlightAnchor } = options;
+    const { scale, highlightAnchor, colors } = options;
     const { radius, hoverRadius } = CONNECTION_POINT_CONFIG;
 
     // Render each standard anchor point
@@ -486,14 +493,14 @@ export class ConnectionPointSystem {
       ctx.beginPath();
       ctx.arc(position.x, position.y, pointRadius, 0, Math.PI * 2);
 
-      // Fill - Placeholder colors will be replaced with canvas theme system
+      // Fill - use theme colors if provided
       ctx.fillStyle = isHighlighted
-        ? '#60A5FA'
-        : '#E5E7EB';
+        ? (colors?.hover ?? '#60A5FA')
+        : (colors?.normal ?? '#E5E7EB');
       ctx.fill();
 
-      // Stroke (border for visibility) - Placeholder
-      ctx.strokeStyle = '#3B82F6';
+      // Stroke (border for visibility)
+      ctx.strokeStyle = colors?.active ?? '#3B82F6';
       ctx.lineWidth = strokeWidth;
       ctx.stroke();
     });
@@ -528,9 +535,10 @@ export class ConnectionPointSystem {
    * @param endX - End X coordinate (e.g., mouse position)
    * @param endY - End Y coordinate (e.g., mouse position)
    * @param scale - Current canvas scale
+   * @param previewColor - Optional preview line color from theme
    *
    * @example
-   * ConnectionPointSystem.renderConnectorPreview(ctx, 100, 100, 200, 200, 1.5);
+   * ConnectionPointSystem.renderConnectorPreview(ctx, 100, 100, 200, 200, 1.5, '#E5E7EB');
    */
   static renderConnectorPreview(
     ctx: CanvasRenderingContext2D,
@@ -538,15 +546,16 @@ export class ConnectionPointSystem {
     startY: number,
     endX: number,
     endY: number,
-    scale: number
+    scale: number,
+    previewColor?: string
   ): void {
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.lineTo(endX, endY);
 
-    // Dashed line for preview - Placeholder color will be replaced with canvas theme system
+    // Dashed line for preview - use theme color if provided
     ctx.setLineDash(getScaledDashPattern(DASH_PATTERNS.connectionPoint, scale));
-    ctx.strokeStyle = '#E5E7EB';
+    ctx.strokeStyle = previewColor ?? '#E5E7EB';
     ctx.lineWidth = getScaledLineWidth(STROKE_WIDTHS.connectionPoint, scale);
     ctx.stroke();
 

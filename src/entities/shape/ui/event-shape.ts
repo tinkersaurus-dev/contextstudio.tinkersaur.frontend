@@ -21,7 +21,8 @@ export function renderEvent(
   ctx: CanvasRenderingContext2D,
   shape: BaseShape,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeColors?: { fill: string; stroke: string; text: string }
 ): void {
   const eventShape = shape as EventShape;
   const {
@@ -31,10 +32,9 @@ export function renderEvent(
     subType,
   } = eventShape;
 
-  // Use placeholder colors as fallback if shape doesn't have custom colors
-  // Will be replaced with canvas theme system
-  const fillColor = eventShape.fillColor ?? '#F3F4F6';
-  const strokeColor = eventShape.strokeColor ?? '#1F2937';
+  // Use shape colors if specified, otherwise fallback to theme colors
+  const fillColor = eventShape.fillColor ?? themeColors?.fill ?? '#F3F4F6';
+  const strokeColor = eventShape.strokeColor ?? themeColors?.stroke ?? '#1F2937';
 
   const { x, y } = position;
   const { width } = dimensions;

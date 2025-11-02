@@ -24,16 +24,17 @@ export function renderBaseShape(
   shape: BaseShape,
   isSelected: boolean,
   scale: number,
-  renderShape: (ctx: CanvasRenderingContext2D, shape: BaseShape, isSelected: boolean, scale: number) => void
+  renderShape: (ctx: CanvasRenderingContext2D, shape: BaseShape, isSelected: boolean, scale: number, themeColors?: { fill: string; stroke: string; text: string }) => void,
+  themeColors?: { fill: string; stroke: string; text: string }
 ): void {
   ctx.save();
 
   // Render the shape using the provided render function
-  renderShape(ctx, shape, isSelected, scale);
+  renderShape(ctx, shape, isSelected, scale, themeColors);
 
   // Render text if present
   if (shape.text) {
-    renderShapeText(ctx, shape, scale);
+    renderShapeText(ctx, shape, scale, themeColors);
   }
 
   // Render selection indicator if selected
@@ -58,12 +59,13 @@ export function renderBaseShape(
 function renderShapeText(
   ctx: CanvasRenderingContext2D,
   shape: BaseShape,
-  scale: number
+  scale: number,
+  themeColors?: { fill: string; stroke: string; text: string }
 ): void {
   if (!shape.text) return;
 
   const fontSize = shape.fontSize || 12;
-  const textColor = shape.textColor ?? '#1F2937'; // Placeholder - will be replaced with canvas theme system
+  const textColor = shape.textColor ?? themeColors?.text ?? '#1F2937';
 
   // Get default config for this shape type
   const defaultConfig = getDefaultTextConfig(shape.shapeType);

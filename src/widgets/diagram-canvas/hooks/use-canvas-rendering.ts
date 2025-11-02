@@ -10,6 +10,7 @@
 import { useEffect, useState } from 'react';
 import { renderCanvas } from '../lib/canvas-renderer';
 import { ensureFontsLoaded } from '@/shared/lib/rendering';
+import { getCanvasTheme } from '@/shared/lib/theming';
 import type { CanvasTransform } from '@/shared/lib/rendering';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
@@ -111,6 +112,9 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
           ? shapes
           : shapes.filter((s) => hoveredShapeIds.includes(s.id));
 
+        // Get canvas theme based on color mode and variant
+        const theme = getCanvasTheme(colorMode, variant);
+
         renderCanvas({
           canvas,
           transform,
@@ -126,8 +130,7 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
           connectorDragEnd: hasMovedDuringDrag ? connectorDragEnd : null,
           hoveredShapeIds,
           hoveredConnectionPoint,
-          colorMode,
-          variant,
+          theme,
         });
       } catch (error) {
         console.error('[useCanvasRendering] Render error:', error);

@@ -84,16 +84,19 @@ export function getPointAlongLine(
  *
  * @param connector - The connector to determine color for
  * @param isSelected - Whether the connector is selected
+ * @param themeStrokeColor - Default stroke color from theme
+ * @param selectionColor - Selection color from theme
  * @returns The stroke color to use
  */
 export function getConnectorStrokeColor(
   connector: Connector,
-  isSelected: boolean
+  isSelected: boolean,
+  themeStrokeColor?: string,
+  selectionColor?: string
 ): string {
-  // Placeholder - will be replaced with canvas theme system
   return isSelected
-    ? '#ff6b35'
-    : (connector.strokeColor ?? '#1F2937');
+    ? (selectionColor ?? '#ff6b35')
+    : (connector.strokeColor ?? themeStrokeColor ?? '#1F2937');
 }
 
 /**

@@ -26,13 +26,15 @@ import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
  * @param shapes - Map of shape ID to shape object
  * @param isSelected - Whether the connector is selected
  * @param scale - Current canvas scale
+ * @param themeStrokeColor - Optional default stroke color from theme
  */
 export function renderCurvedConnector(
   ctx: CanvasRenderingContext2D,
   connector: Connector,
   shapes: Map<string, Shape>,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeStrokeColor?: string
 ): void {
   if (!isCurvedConnector(connector)) {
     console.error('renderCurvedConnector called with non-curved connector:', connector);
@@ -55,8 +57,8 @@ export function renderCurvedConnector(
   const curvature = curvedConnector.curvature ?? 1.0;
   const [cp1, cp2] = generateCurveControlPoints(start, end, curvature);
 
-  // Determine stroke color and width
-  const strokeColor = getConnectorStrokeColor(curvedConnector, isSelected);
+  // Determine stroke color and width with theme colors
+  const strokeColor = getConnectorStrokeColor(curvedConnector, isSelected, themeStrokeColor);
   const strokeWidth = getConnectorStrokeWidth(curvedConnector, isSelected);
 
   // Draw the bezier curve

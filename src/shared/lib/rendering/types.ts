@@ -27,6 +27,12 @@ export interface ShapeRenderContext extends BaseRenderContext {
   shape: Shape;
   /** Whether the shape is selected */
   isSelected: boolean;
+  /** Default colors from theme (used when shape doesn't specify) */
+  themeColors?: {
+    fill: string;
+    stroke: string;
+    text: string;
+  };
 }
 
 /**
@@ -39,6 +45,8 @@ export interface ConnectorRenderContext extends BaseRenderContext {
   shapes: Map<string, Shape>;
   /** Whether the connector is selected */
   isSelected: boolean;
+  /** Default connector stroke color from theme */
+  themeStrokeColor?: string;
 }
 
 /**
@@ -55,6 +63,11 @@ export interface GridRenderContext extends BaseRenderContext {
   panY: number;
   /** Grid configuration */
   config?: GridConfig;
+  /** Grid colors from theme */
+  colors?: {
+    minor: string;
+    major: string;
+  };
 }
 
 /**

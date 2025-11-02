@@ -23,13 +23,15 @@ import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
  * @param shapes - Map of shape ID to shape object
  * @param isSelected - Whether the connector is selected
  * @param scale - Current canvas scale
+ * @param themeStrokeColor - Optional default stroke color from theme
  */
 export function renderStraightConnector(
   ctx: CanvasRenderingContext2D,
   connector: Connector,
   shapes: Map<string, Shape>,
   isSelected: boolean,
-  scale: number
+  scale: number,
+  themeStrokeColor?: string
 ): void {
   if (!isStraightConnector(connector)) {
     console.error('renderStraightConnector called with non-straight connector:', connector);
@@ -48,8 +50,8 @@ export function renderStraightConnector(
 
   const { start, end } = endpoints;
 
-  // Determine stroke color and width
-  const strokeColor = getConnectorStrokeColor(straightConnector, isSelected);
+  // Determine stroke color and width with theme colors
+  const strokeColor = getConnectorStrokeColor(straightConnector, isSelected, themeStrokeColor);
   const strokeWidth = getConnectorStrokeWidth(straightConnector, isSelected);
 
   // Draw the line
