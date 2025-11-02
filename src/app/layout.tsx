@@ -4,6 +4,7 @@ import { Geist_Mono } from "next/font/google";
 import { Provider } from "@/shared/ui/provider";
 import { ColorModeProvider } from "@/shared/ui/color-mode";
 import { ThemeVariantProvider } from "@/app/themes/use-theme-variant";
+import { ThemeErrorBoundary } from "@/shared/ui/theme-error-boundary";
 import { Header } from "@/widgets/header";
 import "./globals.css";
 
@@ -45,14 +46,16 @@ export default function RootLayout({
       <body
         className={`${nunitoSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ColorModeProvider>
-          <Provider>
-            <ThemeVariantProvider>
-              <Header />
-              {children}
-            </ThemeVariantProvider>
-          </Provider>
-        </ColorModeProvider>
+        <ThemeErrorBoundary>
+          <ColorModeProvider>
+            <Provider>
+              <ThemeVariantProvider>
+                <Header />
+                {children}
+              </ThemeVariantProvider>
+            </Provider>
+          </ColorModeProvider>
+        </ThemeErrorBoundary>
       </body>
     </html>
   );

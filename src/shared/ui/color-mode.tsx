@@ -10,7 +10,7 @@ import { ThemeProvider, useTheme } from "next-themes";
  */
 export function ColorModeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider attribute="class" disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
       {children}
     </ThemeProvider>
   );

@@ -18,31 +18,6 @@ const ThemeVariantContext = createContext<ThemeVariantContextValue | undefined>(
 
 const VARIANT_STORAGE_KEY = "theme-variant";
 
-/**
- * Detect if user prefers colorblind-friendly themes
- * Uses system preferences where available
- */
-function detectColorblindPreference(): ThemeVariant {
-  if (typeof window === "undefined") {
-    return "standard";
-  }
-
-  // Check localStorage first (user preference overrides auto-detection)
-  const stored = localStorage.getItem(VARIANT_STORAGE_KEY);
-  if (stored === "standard" || stored === "deuteranopia") {
-    return stored;
-  }
-
-  // Auto-detect from system preferences
-  // Note: There's no standard media query for colorblindness detection yet,
-  // but we can use prefers-contrast as a proxy for accessibility needs
-  if (window.matchMedia?.("(prefers-contrast: more)").matches) {
-    return "deuteranopia";
-  }
-
-  return "standard";
-}
-
 interface ThemeVariantProviderProps {
   children: ReactNode;
 }
@@ -51,19 +26,36 @@ interface ThemeVariantProviderProps {
  * Theme Variant Provider
  *
  * Provides theme variant context (standard/deuteranopia) and manages:
- * - Auto-detection from system preferences
  * - localStorage persistence
  * - Applying data-theme attribute to HTML element
  *
  * This works in conjunction with next-themes for light/dark mode.
+ *
+ * Note: Always initializes with "standard" to prevent SSR hydration mismatches,
+ * then applies stored preference on client mount.
  */
 export function ThemeVariantProvider({ children }: ThemeVariantProviderProps) {
-  const [variant, setVariantState] = useState<ThemeVariant>(detectColorblindPreference);
+  // Always initialize with "standard" for SSR consistency
+  const [variant, setVariantState] = useState<ThemeVariant>("standard");
+  const [mounted, setMounted] = useState(false);
 
-  // Apply data-theme attribute to html element
+  // Load stored preference on client mount
   useEffect(() => {
-    document.documentElement.dataset.theme = variant;
-  }, [variant]);
+    setMounted(true);
+
+    // Check localStorage for user preference
+    const stored = localStorage.getItem(VARIANT_STORAGE_KEY);
+    if (stored === "standard" || stored === "deuteranopia") {
+      setVariantState(stored);
+    }
+  }, []);
+
+  // Apply data-theme attribute to html element whenever variant changes
+  useEffect(() => {
+    if (mounted) {
+      document.documentElement.dataset.theme = variant;
+    }
+  }, [variant, mounted]);
 
   const setVariant = (newVariant: ThemeVariant) => {
     setVariantState(newVariant);

@@ -262,7 +262,7 @@ const config = defineConfig({
         // Sidebar colors
         "sidebar.bg": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#1f1f1f",
           },
         },
@@ -284,13 +284,13 @@ const config = defineConfig({
         },
         "sidebar.borderMain": {
           value: {
-            _light: "{colors.neutral.300}",
+            base: "{colors.neutral.300}",
             _dark: "{colors.neutral.700}",
           },
         },
         "sidebar.borderInternal": {
           value: {
-            _light: "{colors.neutral.200}",
+            base: "{colors.neutral.200}",
             _dark: "{colors.neutral.800}",
           },
         },
@@ -322,19 +322,19 @@ const config = defineConfig({
         // Tabs colors
         "tabs.bg": {
           value: {
-            _light: "{colors.neutral.50}",
+            base: "{colors.neutral.50}",
             _dark: "{colors.neutral.900}",
           },
         },
         "tabs.border": {
           value: {
-            _light: "{colors.neutral.300}",
+            base: "{colors.neutral.300}",
             _dark: "{colors.neutral.700}",
           },
         },
         "tabs.activeBg": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "{colors.neutral.800}",
           },
         },
@@ -348,13 +348,13 @@ const config = defineConfig({
         },
         "tabs.inactiveBg": {
           value: {
-            _light: "{colors.neutral.50}",
+            base: "{colors.neutral.50}",
             _dark: "{colors.neutral.900}",
           },
         },
         "tabs.inactiveText": {
           value: {
-            _light: "{colors.neutral.500}",
+            base: "{colors.neutral.500}",
             _dark: "{colors.neutral.400}",
           },
         },
@@ -378,7 +378,7 @@ const config = defineConfig({
         // Editor colors
         "editor.bg": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#1f1f1f",
           },
         },
@@ -392,19 +392,19 @@ const config = defineConfig({
         },
         "editor.lineNumbers": {
           value: {
-            _light: "{colors.neutral.100}",
+            base: "{colors.neutral.100}",
             _dark: "{colors.neutral.800}",
           },
         },
         "editor.lineNumbersText": {
           value: {
-            _light: "{colors.neutral.500}",
+            base: "{colors.neutral.500}",
             _dark: "{colors.neutral.400}",
           },
         },
         "editor.lineNumbersBorder": {
           value: {
-            _light: "{colors.neutral.300}",
+            base: "{colors.neutral.300}",
             _dark: "{colors.neutral.700}",
           },
         },
@@ -420,49 +420,49 @@ const config = defineConfig({
         // Diagram colors - BPMN
         "diagram.bpmn.task.fill": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#2d2d2d",
           },
         },
         "diagram.bpmn.task.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
         "diagram.bpmn.event.fill": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#2d2d2d",
           },
         },
         "diagram.bpmn.event.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
         "diagram.bpmn.gateway.fill": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#2d2d2d",
           },
         },
         "diagram.bpmn.gateway.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
         "diagram.bpmn.pool.fill": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#2d2d2d",
           },
         },
         "diagram.bpmn.pool.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
@@ -470,49 +470,49 @@ const config = defineConfig({
         // Diagram colors - Sequence
         "diagram.sequence.actor.fill": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#2d2d2d",
           },
         },
         "diagram.sequence.actor.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
         "diagram.sequence.lifeline.fill": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#2d2d2d",
           },
         },
         "diagram.sequence.lifeline.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
         "diagram.sequence.activation.fill": {
           value: {
-            _light: "#e3f2fd",
+            base: "#e3f2fd",
             _dark: "#1e3a5f",
           },
         },
         "diagram.sequence.activation.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
         "diagram.sequence.note.fill": {
           value: {
-            _light: "#fffde7",
+            base: "#fffde7",
             _dark: "#3d3d1f",
           },
         },
         "diagram.sequence.note.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
@@ -520,49 +520,49 @@ const config = defineConfig({
         // Diagram colors - Data Flow
         "diagram.dataFlow.process.fill": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#2d2d2d",
           },
         },
         "diagram.dataFlow.process.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
         "diagram.dataFlow.dataStore.fill": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#2d2d2d",
           },
         },
         "diagram.dataFlow.dataStore.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
         "diagram.dataFlow.entity.fill": {
           value: {
-            _light: "#ffffff",
+            base: "#ffffff",
             _dark: "#2d2d2d",
           },
         },
         "diagram.dataFlow.entity.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
         "diagram.dataFlow.subprocess.fill": {
           value: {
-            _light: "#f5f5f5",
+            base: "#f5f5f5",
             _dark: "#262626",
           },
         },
         "diagram.dataFlow.subprocess.stroke": {
           value: {
-            _light: "#000000",
+            base: "#000000",
             _dark: "#e5e5e5",
           },
         },
@@ -570,25 +570,25 @@ const config = defineConfig({
         // Markdown colors
         "markdown.code.bg": {
           value: {
-            _light: "{colors.neutral.100}",
+            base: "{colors.neutral.100}",
             _dark: "{colors.neutral.800}",
           },
         },
         "markdown.code.border": {
           value: {
-            _light: "{colors.neutral.200}",
+            base: "{colors.neutral.200}",
             _dark: "{colors.neutral.700}",
           },
         },
         "markdown.blockquote.border": {
           value: {
-            _light: "{colors.neutral.200}",
+            base: "{colors.neutral.200}",
             _dark: "{colors.neutral.700}",
           },
         },
         "markdown.blockquote.text": {
           value: {
-            _light: "{colors.neutral.500}",
+            base: "{colors.neutral.500}",
             _dark: "{colors.neutral.400}",
           },
         },
@@ -602,25 +602,25 @@ const config = defineConfig({
         },
         "markdown.table.border": {
           value: {
-            _light: "{colors.neutral.200}",
+            base: "{colors.neutral.200}",
             _dark: "{colors.neutral.700}",
           },
         },
         "markdown.table.headerBg": {
           value: {
-            _light: "{colors.neutral.100}",
+            base: "{colors.neutral.100}",
             _dark: "{colors.neutral.800}",
           },
         },
         "markdown.headingBorder": {
           value: {
-            _light: "{colors.neutral.200}",
+            base: "{colors.neutral.200}",
             _dark: "{colors.neutral.700}",
           },
         },
         "markdown.hr": {
           value: {
-            _light: "{colors.neutral.200}",
+            base: "{colors.neutral.200}",
             _dark: "{colors.neutral.700}",
           },
         },
@@ -630,4 +630,4 @@ const config = defineConfig({
   globalCss: {},
 });
 
-export const system = createSystem(defaultConfig, config);
+export const system = createSystem(config, defaultConfig);
