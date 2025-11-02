@@ -1,54 +1,77 @@
 "use client";
 
-import { useTheme } from "@/app/themes";
-import { NativeSelect } from "@chakra-ui/react";
+import { useThemeVariant } from "@/app/themes/use-theme-variant";
+import { useColorMode } from "@/shared/ui/color-mode";
+import { NativeSelect, Stack } from "@chakra-ui/react";
 
 /**
  * Theme Selector Component
  *
- * Dropdown that allows users to switch between available themes.
- * Theme selection is persisted to localStorage and triggers a page reload
- * to apply the new theme.
+ * Allows users to switch between:
+ * - Theme variants (Standard/Colorblind-Friendly)
+ * - Color modes (Light/Dark)
+ *
+ * Selections are persisted to localStorage and applied instantly.
  */
 export function ThemeSelector() {
-  const { currentThemeId, availableThemeIds, setTheme } = useTheme();
+  const { variant, setVariant } = useThemeVariant();
+  const { colorMode, setColorMode } = useColorMode();
 
-  const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setTheme(event.target.value);
+  const handleVariantChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setVariant(event.target.value as "standard" | "deuteranopia");
   };
 
-  // Format theme ID for display (capitalize first letter, replace hyphens with spaces)
-  const formatThemeName = (themeId: string): string => {
-    return themeId
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+  const handleColorModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setColorMode(event.target.value as "light" | "dark");
   };
 
   return (
-    <NativeSelect.Root size="sm" width="auto" minWidth="120px">
-      <NativeSelect.Field
-        value={currentThemeId}
-        onChange={handleThemeChange}
-        color="header.nav"
-        bg="transparent"
-        borderColor="header.nav"
-        _hover={{
-          borderColor: "header.nav.hover",
-          color: "header.nav.hover",
-        }}
-        _focus={{
-          borderColor: "header.nav.hover",
-          color: "header.nav.hover",
-        }}
-      >
-        {availableThemeIds.map((themeId) => (
-          <option key={themeId} value={themeId}>
-            {formatThemeName(themeId)}
-          </option>
-        ))}
-      </NativeSelect.Field>
-      <NativeSelect.Indicator color="header.nav" />
-    </NativeSelect.Root>
+    <Stack direction="row" gap="2">
+      {/* Theme Variant Selector */}
+      <NativeSelect.Root size="sm" width="auto" minWidth="140px">
+        <NativeSelect.Field
+          value={variant}
+          onChange={handleVariantChange}
+          color="header.nav"
+          bg="transparent"
+          borderColor="header.nav"
+          _hover={{
+            borderColor: "header.nav.hover",
+            color: "header.nav.hover",
+          }}
+          _focus={{
+            borderColor: "header.nav.hover",
+            color: "header.nav.hover",
+          }}
+        >
+          <option value="standard">Standard</option>
+          <option value="deuteranopia">Colorblind-Friendly</option>
+        </NativeSelect.Field>
+        <NativeSelect.Indicator color="header.nav" />
+      </NativeSelect.Root>
+
+      {/* Color Mode Selector */}
+      <NativeSelect.Root size="sm" width="auto" minWidth="100px">
+        <NativeSelect.Field
+          value={colorMode || "light"}
+          onChange={handleColorModeChange}
+          color="header.nav"
+          bg="transparent"
+          borderColor="header.nav"
+          _hover={{
+            borderColor: "header.nav.hover",
+            color: "header.nav.hover",
+          }}
+          _focus={{
+            borderColor: "header.nav.hover",
+            color: "header.nav.hover",
+          }}
+        >
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </NativeSelect.Field>
+        <NativeSelect.Indicator color="header.nav" />
+      </NativeSelect.Root>
+    </Stack>
   );
 }

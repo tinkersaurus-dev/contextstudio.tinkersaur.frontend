@@ -5,7 +5,7 @@
  * scale-adjusted line widths, dash patterns, and consistent styling.
  */
 
-import { getCanvasColors, STROKE_WIDTHS, DASH_PATTERNS } from '@/shared/config/canvas-config';
+import { STROKE_WIDTHS, DASH_PATTERNS } from '@/shared/config/canvas-config';
 
 // Re-export constants for convenience
 export { STROKE_WIDTHS, DASH_PATTERNS };
@@ -78,8 +78,7 @@ export function applySelectionStyle(
   ctx: CanvasRenderingContext2D,
   scale: number
 ): void {
-  const colors = getCanvasColors();
-  ctx.strokeStyle = colors.selectionBorder;
+  ctx.strokeStyle = '#ff6b35'; // Placeholder - will be replaced with canvas theme system
   ctx.lineWidth = getScaledLineWidth(STROKE_WIDTHS.selection, scale);
   ctx.setLineDash(getScaledDashPattern(DASH_PATTERNS.selection, scale));
 }
@@ -98,8 +97,7 @@ export function applySelectionBoxStyle(
   ctx: CanvasRenderingContext2D,
   scale: number
 ): void {
-  const colors = getCanvasColors();
-  ctx.strokeStyle = colors.selectionBoxBorder;
+  ctx.strokeStyle = '#3B82F6'; // Placeholder - will be replaced with canvas theme system
   ctx.lineWidth = getScaledLineWidth(STROKE_WIDTHS.selectionBox, scale);
   ctx.setLineDash(getScaledDashPattern(DASH_PATTERNS.selectionBox, scale));
 }
@@ -170,10 +168,8 @@ export function renderSelectionBoxRect(
 ): void {
   ctx.save();
 
-  const colors = getCanvasColors();
-
-  // Fill with semi-transparent color
-  ctx.fillStyle = colors.selectionBoxFill;
+  // Fill with semi-transparent color (placeholder - will be replaced with canvas theme system)
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
   ctx.fillRect(x, y, width, height);
 
   // Border with dashed line
@@ -202,8 +198,7 @@ export function applyGridLineStyle(
   scale: number,
   color?: string
 ): void {
-  const colors = getCanvasColors();
-  ctx.strokeStyle = color ?? colors.grid;
+  ctx.strokeStyle = color ?? '#CED8F7'; // Placeholder - will be replaced with canvas theme system
   ctx.lineWidth = lineWidth / scale;
 }
 

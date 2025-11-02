@@ -54,6 +54,7 @@ export function DesignStudioContentArea() {
 
   return (
     <Tabs.Root
+      id="design-studio-tabs"
       value={activeTabId ?? 'home'}
       onValueChange={handleTabChange}
       variant="outline"

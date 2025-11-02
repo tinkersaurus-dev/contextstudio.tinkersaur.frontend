@@ -146,6 +146,7 @@ export const DesignNavigationTree = forwardRef<DesignNavigationTreeRef, DesignNa
     return (
       <>
         <TreeView.Root
+          id="design-navigation-tree"
           collection={collection}
           defaultExpandedValue={allExpandedIds}
           size="xs"

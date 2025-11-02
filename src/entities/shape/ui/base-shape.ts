@@ -7,7 +7,7 @@ import {
   type TextTruncation,
   type TextPlacement,
 } from '@/shared/lib/rendering';
-import { getCanvasColors, SHAPE_RENDERING_CONFIG } from '@/shared/config/canvas-config';
+import { SHAPE_RENDERING_CONFIG } from '@/shared/config/canvas-config';
 
 export interface BaseShapeProps {
   shape: BaseShape;
@@ -58,13 +58,12 @@ export function renderBaseShape(
 function renderShapeText(
   ctx: CanvasRenderingContext2D,
   shape: BaseShape,
-  scale: number // eslint-disable-line @typescript-eslint/no-unused-vars
+  scale: number
 ): void {
   if (!shape.text) return;
 
-  const colors = getCanvasColors();
   const fontSize = shape.fontSize || 12;
-  const textColor = shape.textColor ?? colors.shapeText;
+  const textColor = shape.textColor ?? '#1F2937'; // Placeholder - will be replaced with canvas theme system
 
   // Get default config for this shape type
   const defaultConfig = getDefaultTextConfig(shape.shapeType);

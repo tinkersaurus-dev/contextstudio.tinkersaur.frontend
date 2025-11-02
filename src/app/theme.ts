@@ -1,32 +1,48 @@
 import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
+import {
+  standardBluePalette,
+  deuteranopiaAmberPalette,
+  neutralGrayPalette,
+  infoBluePalette,
+  successGreenPalette,
+  warningAmberPalette,
+  dangerRedPalette,
+} from "./themes/color-palettes";
 
 /**
  * Custom theme configuration for the application.
  *
- * This file integrates our custom theme system with Chakra UI's theming.
- * Theme colors are provided via CSS custom properties (CSS variables) that
- * are injected at runtime by the ThemeProvider.
+ * This theme system supports:
+ * - Color modes: light and dark (via next-themes)
+ * - Theme variants: standard and deuteranopia (colorblind-friendly)
  *
- * This approach allows dynamic theme switching without page reloads.
+ * Total combinations: 4 (standard-light, standard-dark, deuteranopia-light, deuteranopia-dark)
  *
- * To change the active theme:
- * - Use the ThemeSelector component in the header
- * - Or call setTheme() from the useTheme() hook
+ * Theme variant is controlled via data-theme attribute on <html>:
+ * - [data-theme="standard"] - Default blue-based theme
+ * - [data-theme="deuteranopia"] - Amber-based colorblind-friendly theme
  *
- * To create a new theme:
- * 1. Create a new theme file in src/app/themes/ (e.g., green.theme.ts)
- * 2. Register it in theme-registry.ts
- * 3. Theme will be available for selection automatically
+ * Color mode is controlled via class on <html>:
+ * - .light - Light mode
+ * - .dark - Dark mode
  */
 
 /**
- * Convert our theme configuration to Chakra UI config format
- *
- * All color values reference CSS custom properties (--theme-*) that are
- * injected dynamically by the ThemeProvider. This allows instant theme
- * switching without page reloads.
+ * Helper to convert color palette object to Chakra token format
  */
+function paletteToTokens(palette: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(palette).map(([key, value]) => [key, { value }])
+  );
+}
+
 const config = defineConfig({
+  // Define custom conditions for theme variants
+  conditions: {
+    standard: '[data-theme="standard"] &',
+    deuteranopia: '[data-theme="deuteranopia"] &',
+  },
+
   theme: {
     tokens: {
       fonts: {
@@ -35,194 +51,583 @@ const config = defineConfig({
         mono: { value: "var(--font-geist-mono), monospace" },
       },
       colors: {
-        // Primary color palette
-        primary: {
-          50: { value: "var(--theme-primary-50)" },
-          100: { value: "var(--theme-primary-100)" },
-          200: { value: "var(--theme-primary-200)" },
-          300: { value: "var(--theme-primary-300)" },
-          400: { value: "var(--theme-primary-400)" },
-          500: { value: "var(--theme-primary-500)" },
-          600: { value: "var(--theme-primary-600)" },
-          700: { value: "var(--theme-primary-700)" },
-          800: { value: "var(--theme-primary-800)" },
-          900: { value: "var(--theme-primary-900)" },
-          950: { value: "var(--theme-primary-950)" },
-        },
-
-        // Secondary color palette
-        secondary: {
-          50: { value: "var(--theme-secondary-50)" },
-          100: { value: "var(--theme-secondary-100)" },
-          200: { value: "var(--theme-secondary-200)" },
-          300: { value: "var(--theme-secondary-300)" },
-          400: { value: "var(--theme-secondary-400)" },
-          500: { value: "var(--theme-secondary-500)" },
-          600: { value: "var(--theme-secondary-600)" },
-          700: { value: "var(--theme-secondary-700)" },
-          800: { value: "var(--theme-secondary-800)" },
-          900: { value: "var(--theme-secondary-900)" },
-          950: { value: "var(--theme-secondary-950)" },
-        },
-
-        // Tertiary color palette
-        tertiary: {
-          50: { value: "var(--theme-tertiary-50)" },
-          100: { value: "var(--theme-tertiary-100)" },
-          200: { value: "var(--theme-tertiary-200)" },
-          300: { value: "var(--theme-tertiary-300)" },
-          400: { value: "var(--theme-tertiary-400)" },
-          500: { value: "var(--theme-tertiary-500)" },
-          600: { value: "var(--theme-tertiary-600)" },
-          700: { value: "var(--theme-tertiary-700)" },
-          800: { value: "var(--theme-tertiary-800)" },
-          900: { value: "var(--theme-tertiary-900)" },
-          950: { value: "var(--theme-tertiary-950)" },
-        },
-
-        // Neutral/gray palette
-        neutral: {
-          50: { value: "var(--theme-neutral-50)" },
-          100: { value: "var(--theme-neutral-100)" },
-          200: { value: "var(--theme-neutral-200)" },
-          300: { value: "var(--theme-neutral-300)" },
-          400: { value: "var(--theme-neutral-400)" },
-          500: { value: "var(--theme-neutral-500)" },
-          600: { value: "var(--theme-neutral-600)" },
-          700: { value: "var(--theme-neutral-700)" },
-          800: { value: "var(--theme-neutral-800)" },
-          900: { value: "var(--theme-neutral-900)" },
-          950: { value: "var(--theme-neutral-950)" },
-        },
-
-        // Status color palettes
-        info: {
-          50: { value: "var(--theme-info-50)" },
-          100: { value: "var(--theme-info-100)" },
-          200: { value: "var(--theme-info-200)" },
-          300: { value: "var(--theme-info-300)" },
-          400: { value: "var(--theme-info-400)" },
-          500: { value: "var(--theme-info-500)" },
-          600: { value: "var(--theme-info-600)" },
-          700: { value: "var(--theme-info-700)" },
-          800: { value: "var(--theme-info-800)" },
-          900: { value: "var(--theme-info-900)" },
-          950: { value: "var(--theme-info-950)" },
-        },
-
-        success: {
-          50: { value: "var(--theme-success-50)" },
-          100: { value: "var(--theme-success-100)" },
-          200: { value: "var(--theme-success-200)" },
-          300: { value: "var(--theme-success-300)" },
-          400: { value: "var(--theme-success-400)" },
-          500: { value: "var(--theme-success-500)" },
-          600: { value: "var(--theme-success-600)" },
-          700: { value: "var(--theme-success-700)" },
-          800: { value: "var(--theme-success-800)" },
-          900: { value: "var(--theme-success-900)" },
-          950: { value: "var(--theme-success-950)" },
-        },
-
-        warning: {
-          50: { value: "var(--theme-warning-50)" },
-          100: { value: "var(--theme-warning-100)" },
-          200: { value: "var(--theme-warning-200)" },
-          300: { value: "var(--theme-warning-300)" },
-          400: { value: "var(--theme-warning-400)" },
-          500: { value: "var(--theme-warning-500)" },
-          600: { value: "var(--theme-warning-600)" },
-          700: { value: "var(--theme-warning-700)" },
-          800: { value: "var(--theme-warning-800)" },
-          900: { value: "var(--theme-warning-900)" },
-          950: { value: "var(--theme-warning-950)" },
-        },
-
-        danger: {
-          50: { value: "var(--theme-danger-50)" },
-          100: { value: "var(--theme-danger-100)" },
-          200: { value: "var(--theme-danger-200)" },
-          300: { value: "var(--theme-danger-300)" },
-          400: { value: "var(--theme-danger-400)" },
-          500: { value: "var(--theme-danger-500)" },
-          600: { value: "var(--theme-danger-600)" },
-          700: { value: "var(--theme-danger-700)" },
-          800: { value: "var(--theme-danger-800)" },
-          900: { value: "var(--theme-danger-900)" },
-          950: { value: "var(--theme-danger-950)" },
-        },
+        // Base color palettes
+        brand: paletteToTokens(standardBluePalette),
+        brandColorblind: paletteToTokens(deuteranopiaAmberPalette),
+        neutral: paletteToTokens(neutralGrayPalette),
+        info: paletteToTokens(infoBluePalette),
+        success: paletteToTokens(successGreenPalette),
+        warning: paletteToTokens(warningAmberPalette),
+        danger: paletteToTokens(dangerRedPalette),
       },
     },
+
     semanticTokens: {
       colors: {
-        // Primary semantic tokens that adapt to light/dark mode
+        // Primary brand color - adapts to both variant and color mode
         primary: {
-          solid: { value: "{colors.primary.500}" },
-          contrast: { value: "{colors.primary.100}" },
-          fg: {
+          solid: {
             value: {
-              _light: "{colors.primary.700}",
-              _dark: "{colors.primary.300}",
+              base: "{colors.brand.500}",
+              _dark: "{colors.brand.400}",
+              deuteranopia: "{colors.brandColorblind.500}",
+              _dark__deuteranopia: "{colors.brandColorblind.400}",
             },
           },
-          muted: { value: "{colors.primary.100}" },
-          subtle: { value: "{colors.primary.200}" },
-          emphasized: { value: "{colors.primary.300}" },
-          focusRing: { value: "{colors.primary.500}" },
+          contrast: {
+            value: {
+              base: "{colors.brand.100}",
+              _dark: "{colors.brand.900}",
+              deuteranopia: "{colors.brandColorblind.100}",
+              _dark__deuteranopia: "{colors.brandColorblind.900}",
+            },
+          },
+          fg: {
+            value: {
+              base: "{colors.brand.700}",
+              _dark: "{colors.brand.300}",
+              deuteranopia: "{colors.brandColorblind.700}",
+              _dark__deuteranopia: "{colors.brandColorblind.300}",
+            },
+          },
+          muted: { value: "{colors.brand.100}" },
+          subtle: { value: "{colors.brand.200}" },
+          emphasized: { value: "{colors.brand.300}" },
+          focusRing: {
+            value: {
+              base: "{colors.brand.500}",
+              _dark: "{colors.brand.400}",
+              deuteranopia: "{colors.brandColorblind.500}",
+              _dark__deuteranopia: "{colors.brandColorblind.400}",
+            },
+          },
         },
 
-        // Header-specific colors
-        "header.bg": { value: "var(--theme-ui-header-bg)" },
-        "header.title": { value: "var(--theme-ui-header-title)" },
-        "header.nav": { value: "var(--theme-ui-header-nav)" },
-        "header.nav.hover": { value: "var(--theme-ui-header-nav-hover)" },
+        // Canvas colors
+        "canvas.background": {
+          value: {
+            base: "#f7f7f7",
+            _dark: "#1a1a1a",
+          },
+        },
+        "canvas.grid": {
+          value: {
+            base: "#CED8F7",
+            _dark: "#374151",
+          },
+        },
+        "canvas.selection.border": {
+          value: {
+            base: "#ff6b35",
+            _dark: "#ff8c5a",
+            deuteranopia: "{colors.brandColorblind.600}",
+            _dark__deuteranopia: "{colors.brandColorblind.400}",
+          },
+        },
+        "canvas.selection.fill": {
+          value: {
+            base: "rgba(255, 107, 53, 0.1)",
+            _dark: "rgba(255, 140, 90, 0.1)",
+            deuteranopia: "rgba(217, 119, 6, 0.1)",
+            _dark__deuteranopia: "rgba(251, 191, 36, 0.1)",
+          },
+        },
+        "canvas.selectionBox.border": {
+          value: {
+            base: "{colors.info.500}",
+            _dark: "{colors.info.400}",
+          },
+        },
+        "canvas.selectionBox.fill": {
+          value: {
+            base: "rgba(59, 130, 246, 0.1)",
+            _dark: "rgba(96, 165, 250, 0.1)",
+          },
+        },
+        "canvas.shapes.fill": {
+          value: {
+            base: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "canvas.shapes.stroke": {
+          value: {
+            base: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "canvas.shapes.text": {
+          value: {
+            base: "#000000",
+            _dark: "#f5f5f5",
+          },
+        },
+        "canvas.connectors.default": {
+          value: {
+            base: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "canvas.connectors.selected": {
+          value: {
+            base: "#ff6b35",
+            _dark: "#ff8c5a",
+            deuteranopia: "{colors.brandColorblind.600}",
+            _dark__deuteranopia: "{colors.brandColorblind.400}",
+          },
+        },
+        "canvas.connectors.hover": {
+          value: {
+            base: "{colors.brand.500}",
+            _dark: "{colors.brand.400}",
+            deuteranopia: "{colors.brandColorblind.500}",
+            _dark__deuteranopia: "{colors.brandColorblind.400}",
+          },
+        },
+        "canvas.connectionPoints.default": {
+          value: {
+            base: "{colors.brand.500}",
+            _dark: "{colors.brand.400}",
+            deuteranopia: "{colors.brandColorblind.500}",
+            _dark__deuteranopia: "{colors.brandColorblind.400}",
+          },
+        },
+        "canvas.connectionPoints.hover": {
+          value: {
+            base: "#ff6b35",
+            _dark: "#ff8c5a",
+            deuteranopia: "{colors.brandColorblind.600}",
+            _dark__deuteranopia: "{colors.brandColorblind.400}",
+          },
+        },
+        "canvas.connectionPoints.border": {
+          value: {
+            base: "#ffffff",
+            _dark: "#1a1a1a",
+          },
+        },
+
+        // Header colors
+        "header.bg": {
+          value: {
+            base: "{colors.brand.900}",
+            _dark: "{colors.brand.950}",
+            deuteranopia: "{colors.brandColorblind.900}",
+            _dark__deuteranopia: "{colors.brandColorblind.950}",
+          },
+        },
+        "header.title": {
+          value: {
+            base: "{colors.brand.100}",
+            _dark: "{colors.brand.100}",
+            deuteranopia: "{colors.brandColorblind.100}",
+            _dark__deuteranopia: "{colors.brandColorblind.100}",
+          },
+        },
+        "header.nav": {
+          value: {
+            base: "{colors.brand.100}",
+            _dark: "{colors.brand.100}",
+            deuteranopia: "{colors.brandColorblind.100}",
+            _dark__deuteranopia: "{colors.brandColorblind.100}",
+          },
+        },
+        "header.nav.hover": {
+          value: {
+            base: "{colors.brand.50}",
+            _dark: "{colors.brand.50}",
+            deuteranopia: "{colors.brandColorblind.50}",
+            _dark__deuteranopia: "{colors.brandColorblind.50}",
+          },
+        },
 
         // Panel colors
-        "panel.bg": { value: "var(--theme-ui-panel-bg)" },
-        "panel.text": { value: "var(--theme-ui-panel-text)" },
+        "panel.bg": {
+          value: {
+            base: "{colors.brand.900}",
+            _dark: "{colors.brand.950}",
+            deuteranopia: "{colors.brandColorblind.900}",
+            _dark__deuteranopia: "{colors.brandColorblind.950}",
+          },
+        },
+        "panel.text": {
+          value: {
+            base: "{colors.brand.100}",
+            _dark: "{colors.brand.100}",
+            deuteranopia: "{colors.brandColorblind.100}",
+            _dark__deuteranopia: "{colors.brandColorblind.100}",
+          },
+        },
 
         // Sidebar colors
-        "sidebar.bg": { value: "var(--theme-ui-sidebar-bg)" },
-        "sidebar.toolbar": { value: "var(--theme-ui-sidebar-toolbar)" },
-        "sidebar.text": { value: "var(--theme-ui-sidebar-text)" },
-        "sidebar.borderMain": { value: "var(--theme-ui-sidebar-border-main)" },
-        "sidebar.borderInternal": { value: "var(--theme-ui-sidebar-border-internal)" },
-        "sidebar.hoverBg": { value: "var(--theme-ui-sidebar-hover-bg)" },
-        "sidebar.hoverText": { value: "var(--theme-ui-sidebar-hover-text)" },
-        "sidebar.hoverButton": { value: "var(--theme-ui-sidebar-hover-button)" },
+        "sidebar.bg": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#1f1f1f",
+          },
+        },
+        "sidebar.toolbar": {
+          value: {
+            base: "{colors.brand.200}",
+            _dark: "{colors.brand.800}",
+            deuteranopia: "{colors.brandColorblind.200}",
+            _dark__deuteranopia: "{colors.brandColorblind.800}",
+          },
+        },
+        "sidebar.text": {
+          value: {
+            base: "{colors.brand.950}",
+            _dark: "{colors.brand.50}",
+            deuteranopia: "{colors.brandColorblind.950}",
+            _dark__deuteranopia: "{colors.brandColorblind.50}",
+          },
+        },
+        "sidebar.borderMain": {
+          value: {
+            _light: "{colors.neutral.300}",
+            _dark: "{colors.neutral.700}",
+          },
+        },
+        "sidebar.borderInternal": {
+          value: {
+            _light: "{colors.neutral.200}",
+            _dark: "{colors.neutral.800}",
+          },
+        },
+        "sidebar.hoverBg": {
+          value: {
+            base: "{colors.brand.50}",
+            _dark: "{colors.brand.900}",
+            deuteranopia: "{colors.brandColorblind.50}",
+            _dark__deuteranopia: "{colors.brandColorblind.900}",
+          },
+        },
+        "sidebar.hoverText": {
+          value: {
+            base: "{colors.brand.900}",
+            _dark: "{colors.brand.50}",
+            deuteranopia: "{colors.brandColorblind.900}",
+            _dark__deuteranopia: "{colors.brandColorblind.50}",
+          },
+        },
+        "sidebar.hoverButton": {
+          value: {
+            base: "{colors.brand.400}",
+            _dark: "{colors.brand.400}",
+            deuteranopia: "{colors.brandColorblind.400}",
+            _dark__deuteranopia: "{colors.brandColorblind.400}",
+          },
+        },
 
         // Tabs colors
-        "tabs.bg": { value: "var(--theme-ui-tabs-bg)" },
-        "tabs.border": { value: "var(--theme-ui-tabs-border)" },
-        "tabs.activeBg": { value: "var(--theme-ui-tabs-active-bg)" },
-        "tabs.activeText": { value: "var(--theme-ui-tabs-active-text)" },
-        "tabs.inactiveBg": { value: "var(--theme-ui-tabs-inactive-bg)" },
-        "tabs.inactiveText": { value: "var(--theme-ui-tabs-inactive-text)" },
-        "tabs.hoverBg": { value: "var(--theme-ui-tabs-hover-bg)" },
-        "tabs.hoverText": { value: "var(--theme-ui-tabs-hover-text)" },
+        "tabs.bg": {
+          value: {
+            _light: "{colors.neutral.50}",
+            _dark: "{colors.neutral.900}",
+          },
+        },
+        "tabs.border": {
+          value: {
+            _light: "{colors.neutral.300}",
+            _dark: "{colors.neutral.700}",
+          },
+        },
+        "tabs.activeBg": {
+          value: {
+            _light: "#ffffff",
+            _dark: "{colors.neutral.800}",
+          },
+        },
+        "tabs.activeText": {
+          value: {
+            base: "{colors.brand.900}",
+            _dark: "{colors.brand.50}",
+            deuteranopia: "{colors.brandColorblind.900}",
+            _dark__deuteranopia: "{colors.brandColorblind.50}",
+          },
+        },
+        "tabs.inactiveBg": {
+          value: {
+            _light: "{colors.neutral.50}",
+            _dark: "{colors.neutral.900}",
+          },
+        },
+        "tabs.inactiveText": {
+          value: {
+            _light: "{colors.neutral.500}",
+            _dark: "{colors.neutral.400}",
+          },
+        },
+        "tabs.hoverBg": {
+          value: {
+            base: "{colors.brand.50}",
+            _dark: "{colors.brand.900}",
+            deuteranopia: "{colors.brandColorblind.50}",
+            _dark__deuteranopia: "{colors.brandColorblind.900}",
+          },
+        },
+        "tabs.hoverText": {
+          value: {
+            base: "{colors.brand.950}",
+            _dark: "{colors.brand.50}",
+            deuteranopia: "{colors.brandColorblind.950}",
+            _dark__deuteranopia: "{colors.brandColorblind.50}",
+          },
+        },
 
         // Editor colors
-        "editor.bg": { value: "var(--theme-ui-editor-bg)" },
-        "editor.text": { value: "var(--theme-ui-editor-text)" },
-        "editor.lineNumbers": { value: "var(--theme-ui-editor-line-numbers)" },
-        "editor.lineNumbersText": { value: "var(--theme-ui-editor-line-numbers-text)" },
-        "editor.lineNumbersBorder": { value: "var(--theme-ui-editor-line-numbers-border)" },
-        "editor.inputBorder": { value: "var(--theme-ui-editor-input-border)" },
+        "editor.bg": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#1f1f1f",
+          },
+        },
+        "editor.text": {
+          value: {
+            base: "{colors.brand.950}",
+            _dark: "{colors.brand.50}",
+            deuteranopia: "{colors.brandColorblind.950}",
+            _dark__deuteranopia: "{colors.brandColorblind.50}",
+          },
+        },
+        "editor.lineNumbers": {
+          value: {
+            _light: "{colors.neutral.100}",
+            _dark: "{colors.neutral.800}",
+          },
+        },
+        "editor.lineNumbersText": {
+          value: {
+            _light: "{colors.neutral.500}",
+            _dark: "{colors.neutral.400}",
+          },
+        },
+        "editor.lineNumbersBorder": {
+          value: {
+            _light: "{colors.neutral.300}",
+            _dark: "{colors.neutral.700}",
+          },
+        },
+        "editor.inputBorder": {
+          value: {
+            base: "{colors.brand.600}",
+            _dark: "{colors.brand.400}",
+            deuteranopia: "{colors.brandColorblind.600}",
+            _dark__deuteranopia: "{colors.brandColorblind.400}",
+          },
+        },
+
+        // Diagram colors - BPMN
+        "diagram.bpmn.task.fill": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "diagram.bpmn.task.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "diagram.bpmn.event.fill": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "diagram.bpmn.event.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "diagram.bpmn.gateway.fill": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "diagram.bpmn.gateway.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "diagram.bpmn.pool.fill": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "diagram.bpmn.pool.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+
+        // Diagram colors - Sequence
+        "diagram.sequence.actor.fill": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "diagram.sequence.actor.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "diagram.sequence.lifeline.fill": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "diagram.sequence.lifeline.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "diagram.sequence.activation.fill": {
+          value: {
+            _light: "#e3f2fd",
+            _dark: "#1e3a5f",
+          },
+        },
+        "diagram.sequence.activation.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "diagram.sequence.note.fill": {
+          value: {
+            _light: "#fffde7",
+            _dark: "#3d3d1f",
+          },
+        },
+        "diagram.sequence.note.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+
+        // Diagram colors - Data Flow
+        "diagram.dataFlow.process.fill": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "diagram.dataFlow.process.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "diagram.dataFlow.dataStore.fill": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "diagram.dataFlow.dataStore.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "diagram.dataFlow.entity.fill": {
+          value: {
+            _light: "#ffffff",
+            _dark: "#2d2d2d",
+          },
+        },
+        "diagram.dataFlow.entity.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+        "diagram.dataFlow.subprocess.fill": {
+          value: {
+            _light: "#f5f5f5",
+            _dark: "#262626",
+          },
+        },
+        "diagram.dataFlow.subprocess.stroke": {
+          value: {
+            _light: "#000000",
+            _dark: "#e5e5e5",
+          },
+        },
+
+        // Markdown colors
+        "markdown.code.bg": {
+          value: {
+            _light: "{colors.neutral.100}",
+            _dark: "{colors.neutral.800}",
+          },
+        },
+        "markdown.code.border": {
+          value: {
+            _light: "{colors.neutral.200}",
+            _dark: "{colors.neutral.700}",
+          },
+        },
+        "markdown.blockquote.border": {
+          value: {
+            _light: "{colors.neutral.200}",
+            _dark: "{colors.neutral.700}",
+          },
+        },
+        "markdown.blockquote.text": {
+          value: {
+            _light: "{colors.neutral.500}",
+            _dark: "{colors.neutral.400}",
+          },
+        },
+        "markdown.link": {
+          value: {
+            base: "{colors.brand.600}",
+            _dark: "{colors.brand.400}",
+            deuteranopia: "{colors.brandColorblind.600}",
+            _dark__deuteranopia: "{colors.brandColorblind.400}",
+          },
+        },
+        "markdown.table.border": {
+          value: {
+            _light: "{colors.neutral.200}",
+            _dark: "{colors.neutral.700}",
+          },
+        },
+        "markdown.table.headerBg": {
+          value: {
+            _light: "{colors.neutral.100}",
+            _dark: "{colors.neutral.800}",
+          },
+        },
+        "markdown.headingBorder": {
+          value: {
+            _light: "{colors.neutral.200}",
+            _dark: "{colors.neutral.700}",
+          },
+        },
+        "markdown.hr": {
+          value: {
+            _light: "{colors.neutral.200}",
+            _dark: "{colors.neutral.700}",
+          },
+        },
       },
     },
-    // Customize text styles
-    textStyles: {
-      // Add custom text styles here if needed
-    },
-    // Customize layer styles (container styles)
-    layerStyles: {
-      // Add custom layer styles here if needed
-    },
   },
-  // Global CSS
-  globalCss: {
-    // Add global styles here if needed
-  },
+  globalCss: {},
 });
 
-export const system = createSystem(config, defaultConfig);
+export const system = createSystem(defaultConfig, config);

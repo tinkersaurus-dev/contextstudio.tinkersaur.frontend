@@ -15,7 +15,7 @@
 
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
-import { getCanvasColors, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+import { STROKE_WIDTHS } from '@/shared/config/canvas-config';
 import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
 
 // ============================================================================
@@ -126,26 +126,25 @@ export function resolveConnectorStyle(
   connector: Connector,
   state: StyleState = StyleState.Normal
 ): ConnectorStyle {
-  const colors = getCanvasColors();
-
   // Determine stroke color based on state
   let strokeColor: string;
   let strokeWidth: number;
 
+  // Placeholder colors - will be replaced with canvas theme system
   switch (state) {
     case StyleState.Selected:
-      strokeColor = colors.connectorStrokeSelected;
+      strokeColor = '#ff6b35';
       strokeWidth = STROKE_WIDTHS.connectorSelected;
       break;
 
     case StyleState.Hover:
-      strokeColor = colors.connectorStrokeHover;
+      strokeColor = '#3B82F6';
       strokeWidth = STROKE_WIDTHS.connectorSelected; // Same width as selected
       break;
 
     case StyleState.Normal:
     default:
-      strokeColor = connector.strokeColor ?? colors.connectorStroke;
+      strokeColor = connector.strokeColor ?? '#1F2937';
       strokeWidth = connector.strokeWidth ?? STROKE_WIDTHS.connector;
       break;
   }

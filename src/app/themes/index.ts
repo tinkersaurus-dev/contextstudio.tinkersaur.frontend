@@ -2,14 +2,8 @@
  * Theme system exports
  *
  * Central export point for the theme system.
- * Import theme-related types and functions from this file.
+ * Import theme-related utilities from this file.
  */
 
-export * from "./types";
-export * from "./theme-registry";
-export * from "./theme-css-vars";
-export { defaultTheme } from "./default.theme";
-export { lightTheme } from "./light.theme";
-export { darkTheme } from "./dark.theme";
-export { forestTheme } from "./forest.theme";
-export { ThemeProvider, useTheme } from "./use-theme";
+export { ThemeVariantProvider, useThemeVariant, type ThemeVariant } from "./use-theme-variant";
+export type { ColorPalette } from "./color-palettes";

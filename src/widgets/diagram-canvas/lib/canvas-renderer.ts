@@ -13,7 +13,6 @@ import { CanvasTransform } from '@/shared/lib/rendering';
 import type { SelectionBox } from './selection-box-renderer';
 import type { Shape } from '@/entities/shape';
 import type { Connector, AnchorPosition } from '@/entities/connector';
-import { getCanvasColors } from '@/shared/config/canvas-config';
 import { createError, logError, ErrorSeverity } from '@/shared/lib/core/result';
 
 export interface CanvasRenderContext {
@@ -40,6 +39,10 @@ export interface CanvasRenderContext {
   hoveredShapeIds?: string[];
   /** Specific connection point being hovered */
   hoveredConnectionPoint?: { shapeId: string; anchor: AnchorPosition } | null;
+  /** Color mode (light/dark) */
+  colorMode: string;
+  /** Theme variant (standard/deuteranopia) */
+  variant: string;
 }
 
 /**
@@ -81,6 +84,8 @@ export function renderCanvas(context: CanvasRenderContext): void {
     connectorDragEnd = null,
     hoveredShapeIds = [],
     hoveredConnectionPoint = null,
+    colorMode,
+    variant,
   } = context;
 
   try {
@@ -111,9 +116,8 @@ export function renderCanvas(context: CanvasRenderContext): void {
       return;
     }
 
-    // Fill canvas with background color
-    const colors = getCanvasColors();
-    ctx.fillStyle = colors.background;
+    // Fill canvas with background color (placeholder - will be replaced with canvas theme system)
+    ctx.fillStyle = '#f7f7f7';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Apply transform to context
@@ -121,7 +125,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
     transform.applyToContext(ctx);
 
     try {
-      // Render grid
+      // Render grid (placeholder - will be replaced with canvas theme system)
       GridSystem.render({
         ctx,
         width: canvas.width,
@@ -145,7 +149,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
     }
 
     try {
-      // Render all shapes with selection and selection box
+      // Render all shapes with selection and selection box (placeholder - will be replaced with canvas theme system)
       renderShapes(ctx, shapes, selectedEntityIds, transform.scale, selectionBox);
     } catch (err) {
       const error = createError(
@@ -162,7 +166,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
     }
 
     try {
-      // Render all connectors
+      // Render all connectors (placeholder - will be replaced with canvas theme system)
       renderConnectors(ctx, connectors, shapes, selectedEntityIds, transform.scale);
     } catch (err) {
       const error = createError(
@@ -195,7 +199,7 @@ export function renderCanvas(context: CanvasRenderContext): void {
         });
       }
 
-      // Show preview line if dragging connector
+      // Show preview line if dragging connector (placeholder - will be replaced with canvas theme system)
       if (connectorDragStart && connectorDragEnd) {
         ConnectionPointSystem.renderConnectorPreview(
           ctx,

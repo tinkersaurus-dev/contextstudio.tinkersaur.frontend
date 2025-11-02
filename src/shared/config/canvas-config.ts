@@ -1,12 +1,11 @@
-import { getThemeCSSVar } from "@/app/themes/theme-css-vars";
-
 /**
  * Canvas Configuration
  *
- * Centralized configuration for all canvas-related settings including zoom, grid, colors, and defaults.
- * This provides a single source of truth for canvas behavior and theming.
+ * Centralized configuration for canvas-related settings including zoom, grid, and rendering constants.
+ * This provides a single source of truth for canvas behavior.
  *
- * Colors are loaded dynamically from CSS variables to support runtime theme switching.
+ * Note: Colors are now managed through Chakra UI theme tokens.
+ * Use the `useCanvasColors()` hook to access theme-aware colors.
  */
 
 // ============================================================================
@@ -66,7 +65,7 @@ export interface GridConfig {
 /**
  * Default grid configuration
  *
- * Note: gridColor is a fallback. Use getCanvasColors().grid for runtime theme support.
+ * Note: gridColor is a fallback. Use theme tokens for runtime theme support.
  */
 export const DEFAULT_GRID_CONFIG: GridConfig = {
   minorGridSize: 20,
@@ -85,95 +84,6 @@ export const BASE_GRID = 5;
  * Floating point comparison tolerance for grid calculations
  */
 export const GRID_EPSILON = 0.01;
-
-// ============================================================================
-// COLOR PALETTE
-// ============================================================================
-
-/**
- * Canvas color palette interface
- */
-export interface CanvasColors {
-  // Background
-  background: string;
-
-  // Grid
-  grid: string;
-
-  // Selection
-  selectionBorder: string;
-  selectionFill: string;
-
-  // Selection Box (multi-select)
-  selectionBoxBorder: string;
-  selectionBoxFill: string;
-
-  // Default Shape Colors
-  defaultShapeFill: string;
-  defaultShapeStroke: string;
-  shapeText: string;
-
-  // Connector Colors
-  connectorStroke: string;
-  connectorStrokeSelected: string;
-  connectorStrokeHover: string;
-
-  // Connection Point Colors
-  connectionPoint: string;
-  connectionPointHover: string;
-  connectionPointBorder: string;
-}
-
-/**
- * Get current canvas colors from CSS variables
- *
- * This function reads theme colors dynamically from CSS variables,
- * allowing canvas rendering to respond to theme changes without reloads.
- *
- * Call this function each time you need canvas colors to ensure you
- * get the current theme's values.
- *
- * @returns Canvas color palette with current theme values
- *
- * @example
- * ```tsx
- * const colors = getCanvasColors();
- * ctx.fillStyle = colors.background;
- * ctx.strokeStyle = colors.selectionBorder;
- * ```
- */
-export function getCanvasColors(): CanvasColors {
-  return {
-    // Background
-    background: getThemeCSSVar("--theme-canvas-background") || "#f7f7f7",
-
-    // Grid
-    grid: getThemeCSSVar("--theme-canvas-grid") || "#CED8F7",
-
-    // Selection
-    selectionBorder: getThemeCSSVar("--theme-canvas-selection-border") || "#ff6b35",
-    selectionFill: getThemeCSSVar("--theme-canvas-selection-fill") || "rgba(255, 107, 53, 0.1)",
-
-    // Selection Box (multi-select)
-    selectionBoxBorder: getThemeCSSVar("--theme-canvas-selection-box-border") || "#3b82f6",
-    selectionBoxFill: getThemeCSSVar("--theme-canvas-selection-box-fill") || "rgba(59, 130, 246, 0.1)",
-
-    // Default Shape Colors
-    defaultShapeFill: getThemeCSSVar("--theme-canvas-shapes-fill") || "#ffffff",
-    defaultShapeStroke: getThemeCSSVar("--theme-canvas-shapes-stroke") || "#000000",
-    shapeText: getThemeCSSVar("--theme-canvas-shapes-text") || "#000000",
-
-    // Connector Colors
-    connectorStroke: getThemeCSSVar("--theme-canvas-connectors-default") || "#000000",
-    connectorStrokeSelected: getThemeCSSVar("--theme-canvas-connectors-selected") || "#ff6b35",
-    connectorStrokeHover: getThemeCSSVar("--theme-canvas-connectors-hover") || "#3b82f6",
-
-    // Connection Point Colors
-    connectionPoint: getThemeCSSVar("--theme-canvas-connection-points-default") || "#3b82f6",
-    connectionPointHover: getThemeCSSVar("--theme-canvas-connection-points-hover") || "#ff6b35",
-    connectionPointBorder: getThemeCSSVar("--theme-canvas-connection-points-border") || "#ffffff",
-  };
-}
 
 // ============================================================================
 // RENDERING CONSTANTS
@@ -298,3 +208,4 @@ export const ZOOM_CONTROL_POSITION = {
   bottom: 16, // pixels from bottom
   right: 16, // pixels from right
 } as const;
+

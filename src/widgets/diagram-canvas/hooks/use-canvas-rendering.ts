@@ -49,8 +49,10 @@ export interface UseCanvasRenderingOptions {
   } | null;
   /** Current end point of connector drag */
   connectorDragEnd: { x: number; y: number } | null;
-  /** Current theme ID (for triggering re-render on theme change) */
-  currentThemeId: string;
+  /** Color mode (light/dark) */
+  colorMode: string;
+  /** Theme variant (standard/deuteranopia) */
+  variant: string;
 }
 
 /**
@@ -78,7 +80,8 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
     hasMovedDuringDrag,
     connectorDragStart,
     connectorDragEnd,
-    currentThemeId,
+    colorMode,
+    variant,
   } = options;
 
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -123,6 +126,8 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
           connectorDragEnd: hasMovedDuringDrag ? connectorDragEnd : null,
           hoveredShapeIds,
           hoveredConnectionPoint,
+          colorMode,
+          variant,
         });
       } catch (error) {
         console.error('[useCanvasRendering] Render error:', error);
@@ -153,6 +158,7 @@ export function useCanvasRendering(options: UseCanvasRenderingOptions): void {
     connectorDragStart,
     connectorDragEnd,
     fontsLoaded,
-    currentThemeId,
+    colorMode,
+    variant,
   ]);
 }

@@ -6,7 +6,7 @@
 
 import type { BaseShape, EventShape } from '../model/types';
 import { getScaledLineWidth } from '@/shared/lib/rendering/canvas-utils';
-import { getCanvasColors, SHAPE_RENDERING_CONFIG } from '@/shared/config/canvas-config';
+import { SHAPE_RENDERING_CONFIG } from '@/shared/config/canvas-config';
 
 /**
  * Render a BPMN Event shape
@@ -23,7 +23,6 @@ export function renderEvent(
   isSelected: boolean,
   scale: number
 ): void {
-  const colors = getCanvasColors();
   const eventShape = shape as EventShape;
   const {
     position,
@@ -32,9 +31,10 @@ export function renderEvent(
     subType,
   } = eventShape;
 
-  // Use theme colors as fallback if shape doesn't have custom colors
-  const fillColor = eventShape.fillColor ?? colors.defaultShapeFill;
-  const strokeColor = eventShape.strokeColor ?? colors.defaultShapeStroke;
+  // Use placeholder colors as fallback if shape doesn't have custom colors
+  // Will be replaced with canvas theme system
+  const fillColor = eventShape.fillColor ?? '#F3F4F6';
+  const strokeColor = eventShape.strokeColor ?? '#1F2937';
 
   const { x, y } = position;
   const { width } = dimensions;

@@ -6,7 +6,7 @@
 
 import type { Position } from '@/entities/diagram-entity';
 import type { Connector } from '../model/types';
-import { ARROWHEAD_CONFIG, getCanvasColors, STROKE_WIDTHS } from '@/shared/config/canvas-config';
+import { ARROWHEAD_CONFIG, STROKE_WIDTHS } from '@/shared/config/canvas-config';
 
 /**
  * Render an arrowhead at a specific position and angle
@@ -90,10 +90,10 @@ export function getConnectorStrokeColor(
   connector: Connector,
   isSelected: boolean
 ): string {
-  const colors = getCanvasColors();
+  // Placeholder - will be replaced with canvas theme system
   return isSelected
-    ? colors.connectorStrokeSelected
-    : (connector.strokeColor ?? colors.connectorStroke);
+    ? '#ff6b35'
+    : (connector.strokeColor ?? '#1F2937');
 }
 
 /**

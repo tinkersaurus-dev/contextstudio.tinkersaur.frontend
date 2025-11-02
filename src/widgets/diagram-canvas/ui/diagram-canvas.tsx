@@ -18,7 +18,8 @@ import { useConnectionPointInteraction } from '../hooks/use-connection-point-int
 import { useMouseInteraction } from '../hooks/use-mouse-interaction';
 import { useKeyboardInteraction } from '../hooks/use-keyboard-interaction';
 import { useCanvasRendering } from '../hooks/use-canvas-rendering';
-import { useTheme } from '@/app/themes';
+import { useColorMode } from '@/shared/ui/color-mode';
+import { useThemeVariant } from '@/app/themes/use-theme-variant';
 import type { DiagramType } from '@/shared/types/content-data';
 import type { Shape } from '@/entities/shape';
 import type { Connector } from '@/entities/connector';
@@ -102,8 +103,10 @@ export function DiagramCanvas({
   const [transform, setTransform] = useState<CanvasTransform>(CanvasTransform.identity());
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
 
-  // Get current theme ID to trigger canvas re-render on theme change
-  const { currentThemeId } = useTheme();
+  // Get theme mode - component re-renders automatically on theme change
+  const { colorMode } = useColorMode();
+  const { variant } = useThemeVariant();
+
 
   // Use a ref to always have access to current transform without recreating handlers
   const transformRef = useRef(transform);
@@ -369,7 +372,8 @@ export function DiagramCanvas({
     hasMovedDuringDrag: connectionPointState.hasMovedDuringDrag,
     connectorDragStart: connectionPointState.connectorDragStart,
     connectorDragEnd: connectionPointState.connectorDragEnd,
-    currentThemeId,
+    colorMode: colorMode ?? 'light',
+    variant: variant ?? 'standard',
   });
 
   // Handler to reset zoom to 100%
